@@ -1,7 +1,6 @@
 # KomfyDB
 
 Simple database C++ implemenatation based on MIT SimpleDB.
-The best database we've ever made.
 
 ## Requierments
 
