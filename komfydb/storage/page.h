@@ -1,12 +1,10 @@
-#ifndef __PAGE_H__ 
+#ifndef __PAGE_H__
 #define __PAGE_H__
-
 
 #include <vector>
 
 #include "komfydb/storage/page_id.h"
 #include "komfydb/transaction/transaction_id.h"
-
 
 namespace {
 
@@ -14,11 +12,10 @@ using komfydb::transaction::TransactionId;
 
 };  //namespace
 
-
 namespace komfydb::storage {
 
 class Page {
-public:
+ public:
   virtual PageId GetId();
 
   virtual TransactionId IsDirty();
@@ -32,7 +29,6 @@ public:
   virtual void SetBeforeImage();
 };
 
-};  // komfydb::storage
-
+};  // namespace komfydb::storage
 
 #endif  // __PAGE_H__

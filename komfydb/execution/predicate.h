@@ -7,18 +7,17 @@
 #include "komfydb/storage/field.h"
 #include "komfydb/storage/tuple.h"
 
-
 namespace {
 
-  using komfydb::storage::Field;
-  using komfydb::storage::Tuple;
+using komfydb::storage::Field;
+using komfydb::storage::Tuple;
 
 };  // namespace
 
 namespace komfydb::execution {
 
 class Op {
-public:
+ public:
   enum Value : uint8_t {
     EQUALS,
     GREATER_THAN,
@@ -26,21 +25,22 @@ public:
     LESS_THAN_OR_EQ,
     GREATER_THAN_OR_EQ,
     LIKE,
-    NOT_EQUALS, 
+    NOT_EQUALS,
   };
 
   operator std::string() const;
 
-private:
+ private:
   Value value;
 };
 
 class Predicate {
-private:
+ private:
   int field;
   Op op;
   Field operand;
-public:
+
+ public:
   Predicate(int field, Op op, Field operand);
 
   int GetField();
@@ -54,7 +54,6 @@ public:
   operator std::string() const;
 };
 
-};
-
+};  // namespace komfydb::execution
 
 #endif  // __PREDICATE_H__
