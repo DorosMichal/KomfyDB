@@ -38,3 +38,8 @@ To simply see if bazel is working run (anywhere in the source tree!):
 CC=clang-13 bazel run //komfydb:main
 ```
 
+To cleanup simply run
+```
+bazel clean --expunge
+```
+
