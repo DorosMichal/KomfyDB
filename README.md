@@ -35,7 +35,7 @@ it's really short and shows almost everything we need here.
 To simply see if bazel is working run (anywhere in the source tree!):
 
 ```
-CC=clang-13 bazel run //komfydb:main
+bazel run //komfydb:komfydb -- --logtostderr=1
 ```
 
 To cleanup simply run
