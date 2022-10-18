@@ -6,14 +6,15 @@
 namespace komfydb::storage {
 
 class Tuple {
-private:
+ private:
   TupleDesc td;
-public:
+
+ public:
   Tuple(const TupleDesc& td);
 
   TupleDesc getTupleDesc();
 };
-  
-};
+
+};  // namespace komfydb::storage
 
 #endif  // __TUPLE_H__
