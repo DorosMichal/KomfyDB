@@ -8,7 +8,7 @@
 namespace komfydb::common {
 
 class Type {
-public:
+ public:
   enum Value {
     INT,
     STRING,
@@ -22,11 +22,10 @@ public:
 
   virtual storage::Field Parse(std::istream& ist);
 
-private:
+ private:
   Value value;
 };
 
-};
-
+};  // namespace komfydb::common
 
 #endif  // __TYPE_H__

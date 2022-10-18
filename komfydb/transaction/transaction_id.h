@@ -6,21 +6,21 @@
 namespace komfydb::transaction {
 
 class TransactionId {
-private:
+ private:
   static std::atomic<long> counter;
 
   long id;
 
-public:
+ public:
   TransactionId();
-  
+
   long GetId();
 
-  bool operator == (const TransactionId &tid) const;
+  bool operator==(const TransactionId& tid) const;
 
   int HashCode();
 };
 
-};  // komfydb::storage
+};  // namespace komfydb::transaction
 
-#endif  //__TRANSACTION_ID_H__ 
+#endif  //__TRANSACTION_ID_H__
