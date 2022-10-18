@@ -1,1 +1,6 @@
 .ccls-cache/
+bazel-bin
+bazel-komfydb
+bazel-out
+bazel-testlogs
+compile_commands.json
