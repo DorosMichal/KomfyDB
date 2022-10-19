@@ -29,6 +29,7 @@ cc_library(
     "buffer_pool.h",
     "heap_file.h",
     "heap_page.h",
+    "heap_page_factory.h",
   ],
   deps = [
     "//komfydb/common:common",
