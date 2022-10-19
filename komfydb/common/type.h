@@ -3,8 +3,6 @@
 
 #include <iostream>
 
-#include "komfydb/storage/field.h"
-
 namespace komfydb::common {
 
 class Type {
@@ -16,11 +14,9 @@ class Type {
 
   Type(const Value& value);
 
-  virtual int GetLen();
+  int GetLen();
 
-  virtual Value GetValue();
-
-  virtual storage::Field Parse(std::istream& ist);
+  Value GetValue();
 
  private:
   Value value;

@@ -5,13 +5,12 @@
 #include <string>
 
 #include "komfydb/common/type.h"
-#include "komfydb/execution/predicate.h"
+#include "komfydb/execution/op.h"
 
 namespace {
 
 using komfydb::common::Type;
 using komfydb::execution::Op;
-using komfydb::execution::Predicate;
 
 };  // namespace
 
@@ -19,7 +18,7 @@ namespace komfydb::storage {
 
 class Field {
  public:
-  virtual void Serialize(std::ostream& os) const;
+  Field(std::istream& is);
 
   virtual bool Compare(const Op& op, const Field& value) const;
 
