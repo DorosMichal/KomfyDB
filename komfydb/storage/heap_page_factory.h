@@ -13,13 +13,13 @@
 namespace komfydb::storage {
 
 class HeapPageFactory {
-public:
+ public:
   HeapPageFactory();
 
-  absl::StatusOr<std::unique_ptr<HeapPage>> Create(HeapPageId id, std::vector<uint8_t> data);
+  absl::StatusOr<std::unique_ptr<HeapPage>> Create(HeapPageId id,
+                                                   std::vector<uint8_t> data);
 };
 
-};
-
+};  // namespace komfydb::storage
 
 #endif  // __HEAP_PAGE_FACTORY_H__

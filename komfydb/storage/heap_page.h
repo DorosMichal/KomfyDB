@@ -9,16 +9,16 @@
 
 #include "komfydb/common/tuple.h"
 #include "komfydb/common/tuple_desc.h"
+#include "komfydb/storage/heap_page_id.h"
 #include "komfydb/storage/page.h"
 #include "komfydb/storage/page_id.h"
-#include "komfydb/storage/heap_page_id.h"
 #include "komfydb/transaction/transaction_id.h"
 
 namespace {
 
-using komfydb::transaction::TransactionId;
-using komfydb::common::TupleDesc;
 using komfydb::common::Tuple;
+using komfydb::common::TupleDesc;
+using komfydb::transaction::TransactionId;
 
 };  //namespace
 
@@ -35,7 +35,7 @@ class HeapPage : Page {
   int num_slots;  // TODO I don't like this name
   std::vector<uint8_t> old_data;
   // Take a look on absl::MutexLock to see how to aquire it
-  absl::Mutex old_data_lock;  
+  absl::Mutex old_data_lock;
 
   HeapPage() = default;
 
@@ -53,6 +53,6 @@ class HeapPage : Page {
   void SetBeforeImage() override;
 };
 
-};
+};  // namespace komfydb::storage
 
 #endif  // __HEAP_PAGE_H__
