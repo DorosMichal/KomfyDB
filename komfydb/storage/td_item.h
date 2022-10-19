@@ -15,7 +15,6 @@ class TDItem {
  public:
   TDItem(const Type& t, std::string& field_name);
 
- public
   Type field_type;
 
   std::string field_name;
