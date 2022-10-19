@@ -6,13 +6,11 @@
 
 #include "komfydb/common/tuple.h"
 
-
 namespace {
 
 using komfydb::common::Tuple;
 
 };  // namespace
-
 
 namespace komfydb::storage {
 
