@@ -6,6 +6,9 @@ cc_library(
     "debug.h",
     "permissions.h",
     "type.h",
+    "tuple.h",
+    "tuple_desc.h",
+    "td_item.h",
     "utility.h",
   ],
   srcs = [
@@ -13,6 +16,8 @@ cc_library(
     "database.cc",
     "debug.cc",
     "permissions.cc",
+    "tuple.cc",
+    "tuple_desc.cc",
     "type.cc",
     "utility.cc",
   ],
