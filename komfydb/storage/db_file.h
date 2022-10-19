@@ -6,20 +6,20 @@
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
 
+#include "komfydb/common/tuple.h"
+#include "komfydb/common/tuple_desc.h"
 #include "komfydb/storage/db_file_iterator.h"
 #include "komfydb/storage/page.h"
 #include "komfydb/storage/page_id.h"
-#include "komfydb/common/tuple.h"
-#include "komfydb/common/tuple_desc.h"
 #include "komfydb/transaction/transaction_id.h"
 
 namespace {
 
-using komfydb::transaction::TransactionId;
 using komfydb::common::Tuple;
 using komfydb::common::TupleDesc;
+using komfydb::transaction::TransactionId;
 
-};
+};  // namespace
 
 namespace komfydb::storage {
 
