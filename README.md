@@ -1,12 +1,7 @@
 # KomfyDB
-<<<<<<< HEAD
-<<<<<<< HEAD
-The best database we've ever made
-=======
->>>>>>> ec35cc6 (Initial commit)
-=======
 
 Simple database C++ implemenatation based on MIT SimpleDB.
+The best database we've ever made.
 
 ## Requierments
 
@@ -31,9 +26,6 @@ Or, everytime you issue a bazel command, add this as a prefix:
 ```
 CC=clang-13 bazel ...
 ```
-<<<<<<< HEAD
->>>>>>> ed34509 (Updated readme)
-=======
 
 ## Using bazel
 
@@ -47,4 +39,3 @@ To simply see if bazel is working run (anywhere in the source tree!):
 CC=clang-13 bazel run //komfydb:main
 ```
 
->>>>>>> d6d0c0e (Updated readme)
