@@ -4,14 +4,14 @@
 #include <iostream>
 #include <string>
 
+#include "komfydb/common/tuple.h"
 #include "komfydb/execution/op.h"
 #include "komfydb/storage/field.h"
-#include "komfydb/storage/tuple.h"
 
 namespace {
 
+using komfydb::common::Tuple;
 using komfydb::storage::Field;
-using komfydb::storage::Tuple;
 
 };  // namespace
 
