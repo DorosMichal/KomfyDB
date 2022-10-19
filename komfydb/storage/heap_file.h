@@ -1,19 +1,19 @@
 #ifndef __HEAP_FILE_H__
 #define __HEAP_FILE_H__
 
-#include <iostream>
 #include <fstream>
+#include <iostream>
 #include <list>
 
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
 
+#include "komfydb/common/tuple_desc.h"
 #include "komfydb/storage/db_file.h"
+#include "komfydb/storage/db_file_iterator.h"
 #include "komfydb/storage/page.h"
 #include "komfydb/storage/page_id.h"
-#include "komfydb/storage/db_file_iterator.h"
 #include "komfydb/transaction/transaction_id.h"
-#include "komfydb/common/tuple_desc.h"
 
 namespace {
 
@@ -39,10 +39,10 @@ class HeapFile : DbFile {
   absl::Status WritePage(Page p) override;
 
   absl::StatusOr<std::list<Page>> InsertTuple(TransactionId tid,
-                                                      Tuple t) override;
+                                              Tuple t) override;
 
   absl::StatusOr<std::list<Page>> DeleteTuple(TransactionId tid,
-                                                      Tuple t) override;
+                                              Tuple t) override;
 
   DbFileIterator Iterator(TransactionId tid) override;
 
@@ -51,6 +51,6 @@ class HeapFile : DbFile {
   TupleDesc GetTupleDesc() override;
 };
 
-};
+};  // namespace komfydb::storage
 
 #endif  // __HEAP_FILE_H__
