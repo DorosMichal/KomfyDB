@@ -7,9 +7,9 @@
 
 #include "absl/status/statusor.h"
 
-#include "komfydb/storage/td_item.h"
+#include "komfydb/common/td_item.h"
 
-namespace komfydb::storage {
+namespace komfydb::common {
 
 class TupleDesc {
  public:
@@ -38,6 +38,6 @@ class TupleDesc {
   operator std::string() const;
 };
 
-};  // namespace komfydb::storage
+};  // namespace komfydb::common
 
 #endif  // __TUPLE_DESC_H__

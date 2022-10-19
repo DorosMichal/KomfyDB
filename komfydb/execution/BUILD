@@ -12,5 +12,8 @@ cc_library(
     "predicate.cc",
     "seq_scan.cc",
   ],
+  deps = [
+    "@com_google_absl//absl/status",
+  ],
   visibility = ["//visibility:public"],
 )

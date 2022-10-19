@@ -1,9 +1,9 @@
 #ifndef __TUPLE_H__
 #define __TUPLE_H__
 
-#include "komfydb/storage/tuple_desc.h"
+#include "komfydb/common/tuple_desc.h"
 
-namespace komfydb::storage {
+namespace komfydb::common {
 
 class Tuple {
  private:
@@ -15,6 +15,6 @@ class Tuple {
   TupleDesc getTupleDesc();
 };
 
-};  // namespace komfydb::storage
+};  // namespace komfydb::common
 
 #endif  // __TUPLE_H__

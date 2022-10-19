@@ -5,11 +5,7 @@
 
 #include "komfydb/common/type.h"
 
-namespace {
-using komfydb::common::Type;
-};
-
-namespace komfydb::storage {
+namespace komfydb::common {
 
 class TDItem {
  public:
@@ -22,6 +18,6 @@ class TDItem {
   operator std::string();
 };
 
-};  // namespace komfydb::storage
+};  // namespace komfydb::common
 
 #endif  // __TD_ITEM_H__
