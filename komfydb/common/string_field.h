@@ -3,9 +3,9 @@
 
 #include "absl/strings/string_view.h"
 
-#include "komfydb/storage/field.h"
+#include "komfydb/common/field.h"
 
-namespace komfydb::storage {
+namespace komfydb::common {
 
 class StringField : Field {
  private:
@@ -21,11 +21,12 @@ class StringField : Field {
 
   Type GetType() override;
 
-  int HashCode() override;
+  // TODO(HashCode)
+  // int HashCode() override;
 
   operator std::string() override;
 };
 
-};  // namespace komfydb::storage
+};  // namespace komfydb::common
 
 #endif  // __STRING_FIELD_H__
