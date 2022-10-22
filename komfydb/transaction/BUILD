@@ -17,7 +17,7 @@ cc_test(
     "transaction_id_test.cc",
   ],
   deps = [
-    "transaction",
+    ":transaction",
     "@com_google_googletest//:gtest_main",
   ],
 )
