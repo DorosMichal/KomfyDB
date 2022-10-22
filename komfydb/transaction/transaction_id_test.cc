@@ -6,7 +6,9 @@
 
 #include "komfydb/transaction/transaction_id.h"
 
-namespace komfydb::transaction {
+namespace {
+
+using namespace komfydb::transaction;
 
 void* InstantiateTransactionIds(void* args) {
   long cnt = (long)args;
@@ -51,4 +53,4 @@ TEST(TransacionId, MultithreadedConstructing) {
   }
 }
 
-};  // namespace komfydb::transaction
+};  // namespace
