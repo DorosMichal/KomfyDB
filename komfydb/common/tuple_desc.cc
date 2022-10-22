@@ -12,22 +12,22 @@ namespace komfydb::common {
 TupleDesc::TupleDesc(std::vector<Type>& types,
                      std::vector<std::string>& fields) {
   int sz = types.size();
-  items.resize(sz);
+  items.reserve(sz);
 
   // XXX This can throw a segfault if fields.sz != type.sz. This shouldn't
   // ever happen so probably we don't need to worry about it (and if this
   // happens then there's a bug anyway).
   for (int i = 0; i < sz; i++) {
-    items[i] = TDItem(types[i], fields[i]);
+    items.push_back(TDItem(types[i], fields[i]));
   }
 }
 
 TupleDesc::TupleDesc(std::vector<Type>& types) {
   int sz = types.size();
-  items.resize(sz);
+  items.reserve(sz);
 
   for (int i = 0; i < sz; i++) {
-    items[i] = TDItem(types[i], "");
+    items.push_back(TDItem(types[i], ""));
   }
 }
 
