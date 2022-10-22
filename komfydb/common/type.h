@@ -21,7 +21,9 @@ class Type {
 
   Value GetValue();
 
-  operator std::string();
+  operator std::string() const;
+
+  bool operator==(const Type& t) const;
 
  private:
   Value value;
