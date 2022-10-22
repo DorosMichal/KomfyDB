@@ -15,6 +15,24 @@ cc_test(
 )
 
 cc_library(
+  name = "fields",
+  srcs = [
+    "string_field.cc",
+    "int_field.cc",
+  ],
+  hdrs = [
+    "string_field.h",
+    "int_field.h",
+    "field.h",
+  ],
+  deps = [
+    "@com_google_absl//absl/status:statusor",
+    "@com_google_absl//absl/status",
+    "@com_google_absl//absl/strings",
+  ],
+)
+
+cc_library(
   name = "tuple",
   srcs = [
     "type.cc",
@@ -29,6 +47,7 @@ cc_library(
     "td_item.h",
   ],
   deps = [
+    ":fields",
     ":utility",
     "@com_google_absl//absl/strings",
     "@com_google_absl//absl/status:statusor",
@@ -59,6 +78,7 @@ cc_library(
     "permissions.cc",
   ],
   deps = [
+    ":fields",
     ":utility",
     ":tuple",
     "@com_google_absl//absl/strings",
