@@ -16,10 +16,15 @@ cc_library(
     "database.cc",
     "debug.cc",
     "permissions.cc",
+    "td_item.cc",
     "tuple.cc",
     "tuple_desc.cc",
     "type.cc",
     "utility.cc",
+  ],
+  deps = [
+    "@com_google_absl//absl/strings",
+    "@com_google_absl//absl/status",
   ],
   visibility = ["//visibility:public"],
 )
