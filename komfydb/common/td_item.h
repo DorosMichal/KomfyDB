@@ -17,7 +17,11 @@ class TDItem {
 
   std::string field_name;
 
-  operator std::string();
+  operator std::string() const;
+
+  bool operator==(const TDItem& tdi) const;
+
+  bool operator!=(const TDItem& tdi) const;
 };
 
 };  // namespace komfydb::common
