@@ -9,3 +9,15 @@ cc_library(
 
   visibility = ["//visibility:public"],
 )
+
+cc_test(
+  name = "transaction_id_test",
+  size = "small",
+  srcs = [
+    "transaction_id_test.cc",
+  ],
+  deps = [
+    "transaction",
+    "@com_google_googletest//:gtest_main",
+  ],
+)
