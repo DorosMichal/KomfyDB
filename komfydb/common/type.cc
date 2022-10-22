@@ -19,12 +19,16 @@ Type::Value Type::GetValue() {
   return value;
 }
 
-Type::operator std::string() {
+Type::operator std::string() const {
   if (value == Value::INT) {
     return "int";
   } else {
     return "str";
   }
+}
+
+bool Type::operator==(const Type& t) const {
+  return t.value == value;
 }
 
 };  // namespace komfydb::common
