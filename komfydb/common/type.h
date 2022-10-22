@@ -7,6 +7,9 @@ namespace komfydb::common {
 
 class Type {
  public:
+  const static int STR_LEN = 128;
+  const static int INT_LEN = 4;
+
   enum Value {
     INT,
     STRING,
@@ -17,6 +20,8 @@ class Type {
   int GetLen();
 
   Value GetValue();
+
+  operator std::string();
 
  private:
   Value value;

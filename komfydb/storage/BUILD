@@ -1,16 +1,11 @@
 cc_library(
   name = "storage",
   srcs = [
-    "page_id.cc",
     "int_field.cc",
-    "db_file_iterator.cc",
     "string_field.cc",
     "log_file.cc",
-    "db_file.cc",
     "record_id.cc",
-    "page.cc",
     "heap_page_id.cc",
-    "field.cc",
     "buffer_pool.cc",
     "heap_file.cc",
     "heap_page.cc",
