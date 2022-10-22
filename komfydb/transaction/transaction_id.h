@@ -7,7 +7,7 @@ namespace komfydb::transaction {
 
 class TransactionId {
  private:
-  static std::atomic<long> counter;
+  static std::atomic_long counter;
 
   long id;
 
@@ -17,8 +17,9 @@ class TransactionId {
   long GetId();
 
   bool operator==(const TransactionId& tid) const;
-
-  int HashCode();
+  
+  // TODO(HashCode): is this necessary?
+  // int HashCode();
 };
 
 };  // namespace komfydb::transaction
