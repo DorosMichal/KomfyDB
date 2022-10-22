@@ -8,7 +8,6 @@ cc_library(
   ],
   srcs = [
     "op.cc",
-    "op_iterator.cc",
     "predicate.cc",
     "seq_scan.cc",
   ],
