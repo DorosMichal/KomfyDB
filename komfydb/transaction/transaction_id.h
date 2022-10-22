@@ -17,7 +17,7 @@ class TransactionId {
   long GetId();
 
   bool operator==(const TransactionId& tid) const;
-  
+
   // TODO(HashCode): is this necessary?
   // int HashCode();
 };
