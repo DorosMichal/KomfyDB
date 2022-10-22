@@ -3,6 +3,11 @@
 
 #include <string>
 
+#include "absl/status/status.h"
+#include "absl/status/statusor.h"
+
+#include "komfydb/common/tuple.h"
+#include "komfydb/common/tuple_desc.h"
 #include "komfydb/execution/op_iterator.h"
 #include "komfydb/transaction/transaction_id.h"
 

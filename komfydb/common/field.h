@@ -9,13 +9,14 @@
 
 namespace {
 
-using komfydb::common::Type;
 using komfydb::execution::Op;
 
 };  // namespace
 
-namespace komfydb::storage {
+namespace komfydb::common {
 
+// TODO make this class a template class and explicitily create only
+// classes with string and int (doable in C++).
 class Field {
  public:
   Field(std::istream& is);
@@ -24,11 +25,12 @@ class Field {
 
   virtual Type GetType();
 
-  virtual int HashCode();
+  // TODO(HashCode)
+  // virtual int HashCode();
 
   virtual operator std::string();
 };
 
-};  // namespace komfydb::storage
+};  // namespace komfydb::common
 
 #endif  // __FIELD_H__

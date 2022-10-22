@@ -1,9 +1,9 @@
 #ifndef __INT_FIELD_H__
 #define __INT_FIELD_H__
 
-#include "komfydb/storage/field.h"
+#include "komfydb/common/field.h"
 
-namespace komfydb::storage {
+namespace komfydb::common {
 
 class IntField : Field {
  private:
@@ -16,13 +16,14 @@ class IntField : Field {
 
   bool Compare(const Op& op, const Field& value) const override;
 
-  Type GetType() override;
+  constexpr Type GetType() override;
 
-  int HashCode() override;
+  // TODO(HashCode)
+  // int HashCode() override;
 
   operator std::string() override;
 };
 
-};  // namespace komfydb::storage
+};  // namespace komfydb::common
 
 #endif  // __INT_FIELD_H__

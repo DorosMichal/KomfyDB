@@ -3,12 +3,10 @@ cc_library(
   hdrs = [
     "op.h",
     "op_iterator.h",
-    "predicate.h",
     "seq_scan.h",
   ],
   srcs = [
     "op.cc",
-    "predicate.cc",
     "seq_scan.cc",
   ],
   deps = [
