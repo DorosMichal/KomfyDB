@@ -21,14 +21,16 @@ class Field {
  public:
   Field(std::istream& is);
 
-  virtual bool Compare(const Op& op, const Field& value) const;
+  virtual ~Field(){};
 
-  virtual Type GetType();
+  virtual bool Compare(const Op& op, const Field& value) const = 0;
+
+  virtual Type GetType() = 0;
 
   // TODO(HashCode)
   // virtual int HashCode();
 
-  virtual operator std::string();
+  virtual operator std::string() const = 0;
 };
 
 };  // namespace komfydb::common

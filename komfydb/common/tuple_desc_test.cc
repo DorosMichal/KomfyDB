@@ -14,7 +14,7 @@ using ::testing::ElementsAre;
 
 TEST(TupleDesc, JoinTwoTDs) {
   Type int_t(Type::INT);
-  Type str_t(Type::INT);
+  Type str_t(Type::STRING);
   std::vector<Type> tv1{int_t, str_t};
   std::vector<Type> tv2{str_t, int_t, str_t};
   std::vector<std::string> nv1{"f1", "f2"};
@@ -43,5 +43,7 @@ TEST(TupleDesc, JoinTwoTDs) {
   EXPECT_TRUE(t.ok());
   EXPECT_EQ(*t, int_t);
   EXPECT_FALSE(td3.GetFieldType(6).ok());
+
+  EXPECT_EQ((std::string)td1, "f1(int), f2(str)");
 }
 };  // namespace komfydb::common
