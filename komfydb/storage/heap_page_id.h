@@ -1,6 +1,8 @@
 #ifndef __HEAP_PAGE_ID_H__
 #define __HEAP_PAGE_ID_H__
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "komfydb/storage/page_id.h"
@@ -9,23 +11,21 @@ namespace komfydb::storage {
 
 class HeapPageId : PageId {
  private:
-  // TODO how to represent this?
+  int table_id;
+  int page_no;
  public:
   HeapPageId(int table_id, int page_no);
 
-  int GetPageNumer();
+  std::vector<uint8_t> Serialize() override;
 
-  std::vector<int> Serialize() override;
+  int GetTableId() const override;
 
-  int GetTableId() override;
+  int GetPageNumber() const override;
 
-  int HashCode() override;
+  // TODO(HashCode)
+  // int HashCode() override;
 
-  // TODO Should this be a overriden virtual function? I guess the argument
-  // should be HeapPageId rather than PageId...
   bool operator==(const PageId& p) const override;
-
-  int GetPageNumber() override;
 };
 
 };  // namespace komfydb::storage

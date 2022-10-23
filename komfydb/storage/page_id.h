@@ -1,21 +1,24 @@
 #ifndef __PAGE_ID_H__
 #define __PAGE_ID_H__
 
+#include <stdint.h>
+
 #include <vector>
 
 namespace komfydb::storage {
 
 class PageId {
  public:
-  virtual std::vector<int> Serialize();
+  virtual std::vector<uint8_t> Serialize();
 
-  virtual int GetTableId();
+  virtual int GetTableId() const;
 
-  virtual int HashCode();
+  virtual int GetPageNumber() const;
+
+  // TODO(HashCode)
+  // virtual int HashCode();
 
   virtual bool operator==(const PageId& p) const;
-
-  virtual int GetPageNumber();
 };
 
 };  // namespace komfydb::storage
