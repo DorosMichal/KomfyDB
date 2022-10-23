@@ -30,4 +30,4 @@ TEST(Tuple, StringConversion) {
   EXPECT_EQ(i, 1);
 };
 
-};  // namespace komfydb::common
+};  // namespace

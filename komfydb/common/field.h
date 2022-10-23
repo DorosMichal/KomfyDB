@@ -21,7 +21,7 @@ namespace komfydb::common {
 // classes with string and int (doable in C++).
 class Field {
  public:
-  virtual ~Field() { };
+  virtual ~Field(){};
 
   virtual absl::StatusOr<bool> Compare(const Op& op, const Field& f) const = 0;
 

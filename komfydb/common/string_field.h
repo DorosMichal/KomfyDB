@@ -19,9 +19,9 @@ class StringField : public Field {
  public:
   StringField(const absl::string_view& s, int max_size);
 
-  ~StringField() override { }
+  ~StringField() override {}
 
-  void GetValue(int& i) const override { };
+  void GetValue(int& i) const override{};
 
   void GetValue(std::string& s) const override;
 

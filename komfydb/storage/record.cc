@@ -15,4 +15,4 @@ void Record::SetId(RecordId rid) {
   SetId(rid.GetPageId(), rid.GetTupleNumber());
 }
 
-};
+};  // namespace komfydb::storage

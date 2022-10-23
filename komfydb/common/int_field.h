@@ -20,7 +20,7 @@ class IntField : public Field {
 
   void GetValue(int& i) const override;
 
-  void GetValue(std::string& s) const override { };
+  void GetValue(std::string& s) const override{};
 
   // TODO(HashCode)
   // int HashCode() override;
