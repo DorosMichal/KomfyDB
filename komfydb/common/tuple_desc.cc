@@ -43,7 +43,7 @@ int TupleDesc::Length() const {
   return items.size();
 }
 
-absl::StatusOr<std::string> TupleDesc::GetFieldName(int i) {
+absl::StatusOr<std::string> TupleDesc::GetFieldName(int i) const {
   if (i > items.size()) {
     return absl::InvalidArgumentError("Index out of range");
   }
@@ -51,7 +51,7 @@ absl::StatusOr<std::string> TupleDesc::GetFieldName(int i) {
   return items[i].field_name;
 }
 
-absl::StatusOr<Type> TupleDesc::GetFieldType(int i) {
+absl::StatusOr<Type> TupleDesc::GetFieldType(int i) const {
   if (i > items.size()) {
     return absl::InvalidArgumentError("Index out of range");
   }
@@ -60,7 +60,7 @@ absl::StatusOr<Type> TupleDesc::GetFieldType(int i) {
 }
 
 absl::StatusOr<int> TupleDesc::IndexForFieldName(
-    const absl::string_view& name) {
+    const absl::string_view& name) const {
   for (int i = 0; i < items.size(); i++) {
     if (items[i].field_name == name) {
       return i;

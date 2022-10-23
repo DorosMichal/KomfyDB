@@ -14,10 +14,8 @@ class StringField : public Field {
  private:
   std::string value;
 
-  int max_size;
-
  public:
-  StringField(const absl::string_view& s, int max_size);
+  StringField(const absl::string_view& s);
 
   ~StringField() override {}
 

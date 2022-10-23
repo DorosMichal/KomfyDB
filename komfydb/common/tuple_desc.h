@@ -23,11 +23,11 @@ class TupleDesc {
 
   int Length() const;
 
-  absl::StatusOr<std::string> GetFieldName(int i);
+  absl::StatusOr<std::string> GetFieldName(int i) const;
 
-  absl::StatusOr<Type> GetFieldType(int i);
+  absl::StatusOr<Type> GetFieldType(int i) const;
 
-  absl::StatusOr<int> IndexForFieldName(const absl::string_view& name);
+  absl::StatusOr<int> IndexForFieldName(const absl::string_view& name) const;
 
   int GetSize() const;
 
