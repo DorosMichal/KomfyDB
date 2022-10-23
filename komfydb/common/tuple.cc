@@ -9,6 +9,12 @@ Tuple::Tuple(const TupleDesc* td) : td(td) {
   fields.resize(td->Length());
 }
 
+Tuple::~Tuple() {
+  for (auto f: fields) {
+    delete f;
+  }
+}
+
 const TupleDesc* Tuple::GetTupleDesc() {
   return td;
 }
@@ -20,10 +26,16 @@ absl::StatusOr<Field*> Tuple::GetField(int i) {
   return fields[i];
 }
 
+// TODO(Tuple) This is bad imho. Here we assume that f is allocated by the 
+// caller and what if this is not the case? We need to be careful..
 absl::Status Tuple::SetField(int i, Field* f) {
   if (fields.size() <= i || i < 0) {
     return absl::InvalidArgumentError("Index out of range");
   }
+  if (fields[i]->GetType() != f->GetType()) {
+    return absl::InvalidArgumentError("Fields differ in type");
+  }
+  delete fields[i];
   fields[i] = f;
   return absl::OkStatus();
 }
