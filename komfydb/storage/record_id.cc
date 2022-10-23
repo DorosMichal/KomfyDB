@@ -16,4 +16,4 @@ bool RecordId::operator==(const RecordId& rid) const {
   return tuple_no == rid.tuple_no && pid == rid.pid;
 }
 
-};
+};  // namespace komfydb::storage

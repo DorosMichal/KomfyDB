@@ -9,7 +9,7 @@ namespace {
 using komfydb::common::Tuple;
 using komfydb::common::TupleDesc;
 
-};
+};  // namespace
 
 namespace komfydb::storage {
 
@@ -21,8 +21,8 @@ namespace komfydb::storage {
 // it's own RecordId.
 class Record : Tuple, RecordId {
  public:
-  Record(const TupleDesc &td, PageId pid, int tuple_no)
-    : Tuple(td), RecordId(pid, tuple_no) {}
+  Record(const TupleDesc& td, PageId pid, int tuple_no)
+      : Tuple(td), RecordId(pid, tuple_no) {}
 
   RecordId GetId();
 
