@@ -23,6 +23,8 @@ class Tuple {
  public:
   Tuple(const TupleDesc* td);
 
+  ~Tuple();
+
   const TupleDesc* GetTupleDesc();
 
   absl::StatusOr<Field*> GetField(int i);
