@@ -16,22 +16,18 @@ namespace komfydb::common {
 // representing a Tuple in memory.
 class Tuple {
  protected:
-  TupleDesc td;
+  const TupleDesc *td;
 
-  std::vector<std::shared_ptr<Field>> fields;
+  std::vector<Field*> fields;
 
  public:
-  Tuple(const TupleDesc& td);
+  Tuple(const TupleDesc* td);
 
-  TupleDesc GetTupleDesc();
+  const TupleDesc* GetTupleDesc();
 
-  // TODO it would be much nicer to have absl::StatusOr<Field> instead, but
-  // unfortunately it cannot be done as StatusOr tries to instatiate
-  // the object of the Field type (which is an abstract class).
-  // Try changing Field class so it can work (and don't break the abstraction).
-  absl::StatusOr<std::shared_ptr<Field>> GetField(int i);
+  absl::StatusOr<Field*> GetField(int i);
 
-  absl::Status SetField(int i, std::shared_ptr<Field> f);
+  absl::Status SetField(int i, Field* f);
 
   operator std::string() const;
 
