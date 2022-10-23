@@ -36,3 +36,12 @@ To cleanup simply run
 bazel clean --expunge
 ```
 
+## Set up pre-commit
+```
+pip3 install pre-commit
+pre-commit install
+```
+If the first one throws an FileNotFoundError try running 
+```
+pip3 install --upgrade pip
+```
