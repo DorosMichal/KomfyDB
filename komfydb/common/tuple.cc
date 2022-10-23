@@ -5,20 +5,22 @@
 
 namespace komfydb::common {
 
-Tuple::Tuple(const TupleDesc& td) : td(td) {}
+Tuple::Tuple(const TupleDesc& td) : td(td) {
+  fields.resize(td.Length());
+}
 
 TupleDesc Tuple::GetTupleDesc() {
   return TupleDesc(td);
 }
 
-absl::StatusOr<Field*> Tuple::GetField(int i) {
+absl::StatusOr<std::shared_ptr<Field>> Tuple::GetField(int i) {
   if (fields.size() <= i || i < 0) {
     return absl::InvalidArgumentError("Index out of range");
   }
-  return &fields[i];
+  return fields[i];
 }
 
-absl::Status Tuple::SetField(int i, Field f) {
+absl::Status Tuple::SetField(int i, std::shared_ptr<Field> f) {
   if (fields.size() <= i || i < 0) {
     return absl::InvalidArgumentError("Index out of range");
   }
@@ -29,10 +31,10 @@ absl::Status Tuple::SetField(int i, Field f) {
 Tuple::operator std::string() const {
   std::string res = "";
   for (int i = 0; i < fields.size() - 1; i++) {
-    res += (std::string)fields[i];
+    res += (std::string)*fields[i];
     res += " ";
   }
-  res += (std::string)fields.back();
+  res += (std::string)*fields.back();
   return res;
 }
 

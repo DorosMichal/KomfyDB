@@ -5,12 +5,14 @@
 
 namespace komfydb::common {
 
-class IntField : Field {
+class IntField : public Field {
  private:
   int value;
 
  public:
   IntField(int value);
+
+  ~IntField() override {}
 
   absl::StatusOr<bool> Compare(const Op& op, const Field& f) const override;
 
@@ -18,7 +20,7 @@ class IntField : Field {
 
   void GetValue(int& i) const override;
 
-  void GetValue(std::string& s) const override;
+  void GetValue(std::string& s) const override { };
 
   // TODO(HashCode)
   // int HashCode() override;

@@ -1,6 +1,7 @@
 #ifndef __TUPLE_H__
 #define __TUPLE_H__
 
+#include <memory>
 #include <vector>
 
 #include "absl/status/statusor.h"
@@ -17,7 +18,7 @@ class Tuple {
  private:
   TupleDesc td;
 
-  std::vector<Field> fields;
+  std::vector<std::shared_ptr<Field>> fields;
 
  public:
   Tuple(const TupleDesc& td);
@@ -28,9 +29,9 @@ class Tuple {
   // unfortunately it cannot be done as StatusOr tries to instatiate
   // the object of the Field type (which is an abstract class).
   // Try changing Field class so it can work (and don't break the abstraction).
-  absl::StatusOr<Field*> GetField(int i);
+  absl::StatusOr<std::shared_ptr<Field>> GetField(int i);
 
-  absl::Status SetField(int i, Field f);
+  absl::Status SetField(int i, std::shared_ptr<Field> f);
 
   operator std::string() const;
 

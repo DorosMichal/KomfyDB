@@ -21,7 +21,7 @@ namespace komfydb::common {
 // classes with string and int (doable in C++).
 class Field {
  public:
-  virtual ~Field(){};
+  virtual ~Field() { };
 
   virtual absl::StatusOr<bool> Compare(const Op& op, const Field& f) const = 0;
 
@@ -33,9 +33,9 @@ class Field {
   // different. Also we'd like to have functions that take Field
   // as an argument and we want to be able to call these functions,
   // so this is the only idea that I had to do it.
-  virtual void GetValue(int& i) const;
+  virtual void GetValue(int& i) const = 0;
 
-  virtual void GetValue(std::string& s) const;
+  virtual void GetValue(std::string& s) const = 0;
 
   // TODO(HashCode)
   // virtual int HashCode();

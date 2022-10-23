@@ -10,7 +10,7 @@
 
 namespace komfydb::common {
 
-class StringField : Field {
+class StringField : public Field {
  private:
   std::string value;
 
@@ -19,7 +19,9 @@ class StringField : Field {
  public:
   StringField(const absl::string_view& s, int max_size);
 
-  void GetValue(int& i) const override;
+  ~StringField() override { }
+
+  void GetValue(int& i) const override { };
 
   void GetValue(std::string& s) const override;
 
