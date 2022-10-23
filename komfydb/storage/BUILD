@@ -1,8 +1,6 @@
 cc_library(
   name = "storage",
   srcs = [
-    "int_field.cc",
-    "string_field.cc",
     "log_file.cc",
     "record_id.cc",
     "heap_page_id.cc",
@@ -12,15 +10,12 @@ cc_library(
   ],
   hdrs = [
     "page_id.h",
-    "int_field.h",
     "db_file_iterator.h",
-    "string_field.h",
     "log_file.h",
     "db_file.h",
     "record_id.h",
     "page.h",
     "heap_page_id.h",
-    "field.h",
     "buffer_pool.h",
     "heap_file.h",
     "heap_page.h",

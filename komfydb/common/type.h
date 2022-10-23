@@ -25,6 +25,8 @@ class Type {
 
   bool operator==(const Type& t) const;
 
+  bool operator!=(const Type& t) const;
+
  private:
   Value value;
 };
