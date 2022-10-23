@@ -1,16 +1,30 @@
 #include "absl/status/statusor.h"
 
 #include "komfydb/common/field.h"
+#include "komfydb/common/int_field.h"
+#include "komfydb/common/string_field.h"
 #include "komfydb/common/tuple.h"
 
 namespace komfydb::common {
 
 Tuple::Tuple(const TupleDesc* td) : td(td) {
   fields.resize(td->Length());
+  for (int i = 0; i < td->Length(); i++) {
+    switch (td->GetFieldType(i)->GetValue()) {
+      case Type::INT:
+        fields[i] = new IntField(0);
+        break;
+      case Type::STRING:
+        fields[i] = new StringField("");
+        break;
+      default:
+        assert(false);
+    }
+  }
 }
 
 Tuple::~Tuple() {
-  for (auto f: fields) {
+  for (auto f : fields) {
     delete f;
   }
 }
@@ -26,7 +40,7 @@ absl::StatusOr<Field*> Tuple::GetField(int i) {
   return fields[i];
 }
 
-// TODO(Tuple) This is bad imho. Here we assume that f is allocated by the 
+// TODO(Tuple) This is bad imho. Here we assume that f is allocated by the
 // caller and what if this is not the case? We need to be careful..
 absl::Status Tuple::SetField(int i, Field* f) {
   if (fields.size() <= i || i < 0) {

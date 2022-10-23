@@ -16,7 +16,7 @@ namespace komfydb::common {
 // representing a Tuple in memory.
 class Tuple {
  protected:
-  const TupleDesc *td;
+  const TupleDesc* td;
 
   std::vector<Field*> fields;
 
