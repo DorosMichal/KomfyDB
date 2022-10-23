@@ -1,0 +1,23 @@
+name: CI
+
+on:
+  push:
+    branches:
+     - '*'
+
+env:
+  CC: clang-13
+  BAZEL_CXXOPTS: "-std=c++17"
+
+jobs:
+  run_tests:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: bazelbuild/setup-bazelisk@v2
+    - uses: egor-tensin/setup-clang@v1
+      with:
+        version: '13'
+        platform: x64
+    - run: bazel build //...
+    - run: bazel test //...
