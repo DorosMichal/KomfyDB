@@ -13,6 +13,7 @@ class HeapPageId : PageId {
  private:
   int table_id;
   int page_no;
+
  public:
   HeapPageId(int table_id, int page_no);
 
