@@ -31,4 +31,8 @@ bool Type::operator==(const Type& t) const {
   return t.value == value;
 }
 
+bool Type::operator!=(const Type& t) const {
+  return t.value != value;
+}
+
 };  // namespace komfydb::common

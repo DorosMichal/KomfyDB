@@ -19,11 +19,13 @@ cc_library(
   srcs = [
     "string_field.cc",
     "int_field.cc",
+    "type.cc",
   ],
   hdrs = [
     "string_field.h",
     "int_field.h",
     "field.h",
+    "type.h",
   ],
   deps = [
     "//komfydb/execution:op",
@@ -36,7 +38,6 @@ cc_library(
 cc_library(
   name = "tuple",
   srcs = [
-    "type.cc",
     "tuple.cc",
     "tuple_desc.cc",
     "td_item.cc",

@@ -12,16 +12,18 @@ class IntField : Field {
  public:
   IntField(int value);
 
-  int GetValue();
+  absl::StatusOr<bool> Compare(const Op& op, const Field& f) const override;
 
-  bool Compare(const Op& op, const Field& value) const override;
+  Type GetType() const override;
 
-  constexpr Type GetType() override;
+  void GetValue(int& i) const override;
+
+  void GetValue(std::string& s) const override;
 
   // TODO(HashCode)
   // int HashCode() override;
 
-  operator std::string() override;
+  operator std::string() const override;
 };
 
 };  // namespace komfydb::common

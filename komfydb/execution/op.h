@@ -17,11 +17,11 @@ class Op {
     LIKE,
     NOT_EQUALS,
   };
+  Value value;
+
+  Op(Value value) : value(value) {}
 
   operator std::string() const;
-
- private:
-  Value value;
 };
 
 };  // namespace komfydb::execution
