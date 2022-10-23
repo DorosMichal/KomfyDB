@@ -14,7 +14,7 @@ namespace komfydb::common {
 // storage and it shouldn't have. See storage/record.h, which is a class
 // representing a Tuple in memory.
 class Tuple {
- private:
+ protected:
   TupleDesc td;
 
   std::vector<Field> fields;

@@ -65,6 +65,15 @@ cc_test(
   ],
 )
 
+cc_test(
+  name = "tuple_test",
+  srcs = ["tuple_test.cc"],
+  deps = [
+    ":tuple",
+    "@com_google_googletest//:gtest_main"
+  ],
+)
+
 cc_library(
   name = "common",
   hdrs = [
