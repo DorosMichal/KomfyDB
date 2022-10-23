@@ -16,12 +16,12 @@ TEST(Tuple, StringConversion) {
   std::vector<std::string> nv{"f1", "f2"};
 
   TupleDesc td(tv, nv);
-  Tuple tuple(td);
+  Tuple tuple(&td);
 
-  std::shared_ptr<IntField> f(new IntField(1));
-  std::cout << tuple.SetField(0, f).ok() << "\n";
-  std::cout << tuple.SetField(0, f).message() << "\n";
-  EXPECT_TRUE(tuple.SetField(0, f).ok());
+  IntField f(1);
+  std::cout << tuple.SetField(0, &f).ok() << "\n";
+  std::cout << tuple.SetField(0, &f).message() << "\n";
+  EXPECT_TRUE(tuple.SetField(0, &f).ok());
 
   auto f1 = tuple.GetField(0);
   ASSERT_TRUE(f1.ok());
