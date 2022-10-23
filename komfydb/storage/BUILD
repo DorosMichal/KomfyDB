@@ -7,6 +7,7 @@ cc_library(
     "buffer_pool.cc",
     "heap_file.cc",
     "heap_page.cc",
+    "record.cc",
   ],
   hdrs = [
     "page_id.h",
@@ -14,6 +15,7 @@ cc_library(
     "log_file.h",
     "db_file.h",
     "record_id.h",
+    "record.h",
     "page.h",
     "heap_page_id.h",
     "buffer_pool.h",

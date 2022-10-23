@@ -6,19 +6,22 @@
 namespace komfydb::storage {
 
 class RecordId {
- private:
+ protected:
+  PageId pid;
+
   int tuple_no;
 
  public:
   RecordId(PageId pid, int tuple_no);
 
-  int GetTupleNumber();
+  int GetTupleNumber() const;
 
-  PageId GetPageId();
+  PageId GetPageId() const;
 
   bool operator==(const RecordId& rid) const;
 
-  int HashCode();
+  // TODO(HashCode)
+  // int HashCode();
 };
 
 };  // namespace komfydb::storage

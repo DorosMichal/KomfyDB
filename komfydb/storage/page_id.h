@@ -6,6 +6,7 @@
 namespace komfydb::storage {
 
 class PageId {
+ public:
   virtual std::vector<int> Serialize();
 
   virtual int GetTableId();
