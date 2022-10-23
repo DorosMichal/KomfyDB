@@ -1,11 +1,13 @@
 #include "gtest/gtest.h"
 
-#include "komfydb/common/tuple.h"
-#include "komfydb/common/tuple_desc.h"
 #include "komfydb/common/int_field.h"
 #include "komfydb/common/string_field.h"
+#include "komfydb/common/tuple.h"
+#include "komfydb/common/tuple_desc.h"
 
-namespace komfydb::common {
+namespace {
+
+using namespace komfydb::common;
 
 TEST(Tuple, StringConversion) {
   Type int_t(Type::INT);
@@ -14,10 +16,12 @@ TEST(Tuple, StringConversion) {
   std::vector<std::string> nv{"f1", "f2"};
 
   TupleDesc td(tv, nv);
-  Tuple tuple(td);   
+  Tuple tuple(td);
 
-  EXPECT_OK(tuple.SetField(0, Field()));
-  
-}
-
+  std::shared_ptr<IntField> f(new IntField(1));
+  std::cout << tuple.SetField(0, f).ok() << "\n";
+  std::cout << tuple.SetField(0, f).message() << "\n";
+  EXPECT_TRUE(tuple.SetField(0, f).ok());
 };
+
+};  // namespace komfydb::common
