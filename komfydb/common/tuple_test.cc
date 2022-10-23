@@ -22,6 +22,12 @@ TEST(Tuple, StringConversion) {
   std::cout << tuple.SetField(0, f).ok() << "\n";
   std::cout << tuple.SetField(0, f).message() << "\n";
   EXPECT_TRUE(tuple.SetField(0, f).ok());
+
+  auto f1 = tuple.GetField(0);
+  ASSERT_TRUE(f1.ok());
+  int i;
+  (*f1)->GetValue(i);
+  EXPECT_EQ(i, 1);
 };
 
 };  // namespace komfydb::common
