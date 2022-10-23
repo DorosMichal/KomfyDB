@@ -8,7 +8,7 @@
 namespace komfydb::common {
 
 StringField::StringField(const absl::string_view& s, int max_size)
-  : value(s), max_size(max_size) {}
+    : value(s), max_size(max_size) {}
 
 void StringField::GetValue(std::string& s) const {
   s = value;
@@ -51,4 +51,4 @@ StringField::operator std::string() const {
   return value;
 }
 
-};
+};  // namespace komfydb::common
