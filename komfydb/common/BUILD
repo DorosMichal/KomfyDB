@@ -1,7 +1,10 @@
 cc_library(
   name = "utility",
   srcs = ["utility.cc"],
-  hdrs = ["utility.h"],
+  hdrs = [
+    "utility.h",
+    "status_macros.h",
+  ],
   visibility = ["//visibility:public"],
 )
 
