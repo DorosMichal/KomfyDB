@@ -4,6 +4,11 @@ cc_library(
   hdrs = [
     "utility.h",
     "status_macros.h",
+    "status_builder.h",
+  ],
+  deps = [
+    "@com_google_absl//absl/status",
+    "@com_google_absl//absl/strings",
   ],
   visibility = ["//visibility:public"],
 )
