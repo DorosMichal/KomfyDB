@@ -16,6 +16,8 @@ namespace komfydb::storage {
 
 class Page {
  public:
+  virtual ~Page();
+
   virtual PageId GetId();
 
   virtual TransactionId IsDirty();
