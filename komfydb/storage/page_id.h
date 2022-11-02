@@ -8,17 +8,23 @@
 namespace komfydb::storage {
 
 class PageId {
+ private:
+  int table_id;
+  int page_no;
+
  public:
-  virtual std::vector<uint8_t> Serialize();
+  PageId(int table_id, int page_no);
 
-  virtual int GetTableId() const;
+  std::vector<uint8_t> Serialize();
 
-  virtual int GetPageNumber() const;
+  int GetTableId() const;
+
+  int GetPageNumber() const;
 
   // TODO(HashCode)
-  // virtual int HashCode();
+  // int HashCode();
 
-  virtual bool operator==(const PageId& p) const;
+  bool operator==(const PageId& p) const;
 };
 
 };  // namespace komfydb::storage
