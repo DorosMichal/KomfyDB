@@ -28,6 +28,7 @@ cc_library(
     "//komfydb/transaction:transaction",
     "//komfydb/utils:utility",
     "//komfydb/common:common",
+    "//komfydb:config",
     "@com_google_absl//absl/status",
     "@com_google_absl//absl/container:flat_hash_map",
   ],
