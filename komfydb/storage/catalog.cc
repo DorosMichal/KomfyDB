@@ -9,12 +9,11 @@ namespace {
 
 template <typename K, typename V>
 absl::StatusOr<V> StatusOrMapElement(const absl::flat_hash_map<K, V>& map,
-                                     const K& value) {
-  auto it = map.find(value);
-  if (it == map.end()) {
-    return absl::InvalidArgumentError("No table with given name");
+                                     const K& key) {
+  if (!map.contains(key)) {
+    return absl::InvalidArgumentError("No element for given key.");
   }
-  return it->second;
+  return map.at(key);
 }
 
 };  // namespace
