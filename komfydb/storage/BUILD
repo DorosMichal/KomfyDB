@@ -3,7 +3,7 @@ cc_library(
   srcs = [
     "log_file.cc",
     "record_id.cc",
-    "heap_page_id.cc",
+    "page_id.cc",
     "buffer_pool.cc",
     "heap_file.cc",
     "heap_page.cc",
@@ -17,7 +17,6 @@ cc_library(
     "record_id.h",
     "record.h",
     "page.h",
-    "heap_page_id.h",
     "buffer_pool.h",
     "heap_file.h",
     "heap_page.h",
