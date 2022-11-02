@@ -21,27 +21,21 @@ absl::StatusOr<V> StatusOrMapElement(const absl::flat_hash_map<K, V>& map,
 
 namespace komfydb::storage {
 
-Catalog::~Catalog() {
-  for (auto it : db_files) {
-    delete it.second;
-  }
-}
-
-void Catalog::AddTable(DbFile* file, std::string name,
+void Catalog::AddTable(std::unique_ptr<DbFile> file, std::string name,
                        std::string primary_key) {
   int id = file->GetId();
 
-  db_files[id] = file;
+  db_files[id] = std::move(file);
   table_names[id] = name;
   primary_keys[id] = primary_key;
   table_name_to_id[name] = id;
 }
 
-void Catalog::AddTable(DbFile* file, std::string name) {
+void Catalog::AddTable(std::unique_ptr<DbFile> file, std::string name) {
   AddTable(std::move(file), name, "");
 }
 
-void Catalog::AddTable(DbFile* file) {
+void Catalog::AddTable(std::unique_ptr<DbFile> file) {
   AddTable(std::move(file), common::GenerateUuidV4());
 }
 
@@ -54,7 +48,11 @@ absl::StatusOr<std::string> Catalog::GetTableName(int table_id) const {
 }
 
 absl::StatusOr<DbFile*> Catalog::GetDatabaseFile(int table_id) const {
-  return StatusOrMapElement(db_files, table_id);
+  auto it = db_files.find(table_id);
+  if (it == db_files.end()) {
+    return absl::InvalidArgumentError("No table with given name");
+  }
+  return it->second.get();
 }
 
 absl::StatusOr<TupleDesc*> Catalog::GetTupleDesc(int table_id) const {
@@ -68,7 +66,7 @@ absl::StatusOr<std::string> Catalog::GetPrimaryKey(int table_id) const {
 
 std::vector<int> Catalog::GetTableIds() {
   std::vector<int> result;
-  for (auto it : db_files) {
+  for (auto& it : db_files) {
     result.push_back(it.first);
   }
   return result;
