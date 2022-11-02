@@ -1,9 +1,9 @@
 #include "absl/container/flat_hash_map.h"
 #include "absl/status/statusor.h"
 
+#include "komfydb/storage/catalog.h"
 #include "komfydb/utils/status_macros.h"
 #include "komfydb/utils/utility.h"
-#include "komfydb/storage/catalog.h"
 
 namespace {
 
