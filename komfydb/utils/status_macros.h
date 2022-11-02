@@ -16,7 +16,7 @@
 
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
-#include "komfydb/common/status_builder.h"
+#include "komfydb/utils/status_builder.h"
 
 // Run a command that returns a absl::Status.  If the called code returns an
 // error status, return that status up out of this method too.

@@ -1,8 +1,11 @@
 #ifndef __UTILITY_H__
 #define __UTILITY_H__
 
+#include <sstream>
 #include <string>
 #include <vector>
+
+#include "absl/random/random.h"
 
 namespace komfydb::common {
 
@@ -14,6 +17,8 @@ void JoinVectors(const std::vector<T>& v1, const std::vector<T>& v2,
   res.insert(res.end(), v1.begin(), v1.end());
   res.insert(res.end(), v2.begin(), v2.end());
 }
+
+std::string GenerateUuidV4();
 
 };  // namespace komfydb::common
 
