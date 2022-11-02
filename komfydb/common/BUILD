@@ -68,7 +68,6 @@ cc_library(
   srcs = [
     "database.cc",
     "debug.cc",
-    "permissions.cc",
   ],
   deps = [
     ":fields",
