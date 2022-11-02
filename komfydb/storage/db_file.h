@@ -27,7 +27,8 @@ class DbFile {
  public:
   virtual ~DbFile() = 0;
 
-  virtual Page ReadPage(PageId id);
+  // TODO Shouldn't this return StatusOr?
+  virtual std::unique_ptr<Page> ReadPage(PageId id);
 
   virtual absl::Status WritePage(Page p);
 
