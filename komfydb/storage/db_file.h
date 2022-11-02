@@ -25,6 +25,8 @@ namespace komfydb::storage {
 
 class DbFile {
  public:
+  virtual ~DbFile() = 0;
+
   virtual Page ReadPage(PageId id);
 
   virtual absl::Status WritePage(Page p);
@@ -39,7 +41,7 @@ class DbFile {
 
   virtual int GetId();
 
-  virtual TupleDesc GetTupleDesc();
+  virtual TupleDesc* GetTupleDesc();
 };
 
 };  // namespace komfydb::storage

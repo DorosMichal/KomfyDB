@@ -1,6 +1,7 @@
 cc_library(
   name = "storage",
   srcs = [
+    "catalog.cc",
     "log_file.cc",
     "record_id.cc",
     "heap_page_id.cc",
@@ -10,6 +11,7 @@ cc_library(
     "record.cc",
   ],
   hdrs = [
+    "catalog.h",
     "page_id.h",
     "db_file_iterator.h",
     "log_file.h",
@@ -24,7 +26,10 @@ cc_library(
     "heap_page_factory.h",
   ],
   deps = [
+    "//komfydb/transaction:transaction",
+    "//komfydb/utils:utility",
     "//komfydb/common:common",
     "@com_google_absl//absl/status",
+    "@com_google_absl//absl/container:flat_hash_map",
   ],
   visibility = ["//visibility:public"],)

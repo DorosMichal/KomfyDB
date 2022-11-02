@@ -5,7 +5,7 @@
 
 #include "komfydb/common/tuple_desc.h"
 #include "komfydb/common/type.h"
-#include "komfydb/common/utility.h"
+#include "komfydb/utils/utility.h"
 
 namespace komfydb::common {
 

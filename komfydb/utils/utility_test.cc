@@ -1,8 +1,8 @@
 #include "gmock/gmock-matchers.h"
 #include "gtest/gtest.h"
 
-#include "komfydb/common/status_macros.h"
-#include "komfydb/common/utility.h"
+#include "komfydb/utils/status_macros.h"
+#include "komfydb/utils/utility.h"
 
 namespace {
 

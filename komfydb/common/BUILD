@@ -1,29 +1,4 @@
 cc_library(
-  name = "utility",
-  srcs = ["utility.cc"],
-  hdrs = [
-    "utility.h",
-    "status_macros.h",
-    "status_builder.h",
-  ],
-  deps = [
-    "@com_google_absl//absl/status:statusor",
-    "@com_google_absl//absl/status",
-    "@com_google_absl//absl/strings",
-  ],
-  visibility = ["//visibility:public"],
-)
-
-cc_test(
-  name = "utility_test",
-  srcs = [ "utility_test.cc" ],
-  deps = [
-    ":utility",
-    "@com_google_googletest//:gtest_main",
-  ],
-)
-
-cc_library(
   name = "fields",
   srcs = [
     "string_field.cc",
@@ -59,7 +34,7 @@ cc_library(
   ],
   deps = [
     ":fields",
-    ":utility",
+    "//komfydb/utils:utility",
     "@com_google_absl//absl/strings",
     "@com_google_absl//absl/status:statusor",
   ],
@@ -86,21 +61,19 @@ cc_test(
 cc_library(
   name = "common",
   hdrs = [
-    "catalog.h",
     "database.h",
     "debug.h",
     "permissions.h",
   ],
   srcs = [
-    "catalog.cc",
     "database.cc",
     "debug.cc",
     "permissions.cc",
   ],
   deps = [
     ":fields",
-    ":utility",
     ":tuple",
+    "//komfydb/utils:utility",
     "@com_google_absl//absl/strings",
     "@com_google_absl//absl/status:statusor",
   ],
