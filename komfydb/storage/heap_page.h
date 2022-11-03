@@ -40,12 +40,11 @@ class HeapPage : Page {
   HeapPage() = default;
 
  public:
-  static absl::StatusOr<std::unique_ptr<HeapPage>> Create(PageId id,
-                                                          TupleDesc td,
-                                                          std::vector<uint8_t> data);
+  static absl::StatusOr<std::unique_ptr<HeapPage>> Create(
+      PageId id, TupleDesc td, std::vector<uint8_t> data);
 
   PageId* GetId() override;
-  
+
   TransactionId* IsDirty() override;
 
   void MarkDirty(bool dirty, TransactionId tid) override;
