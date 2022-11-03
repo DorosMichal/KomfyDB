@@ -9,7 +9,6 @@
 
 #include "komfydb/common/tuple.h"
 #include "komfydb/common/tuple_desc.h"
-#include "komfydb/storage/heap_page_id.h"
 #include "komfydb/storage/page.h"
 #include "komfydb/storage/page_id.h"
 #include "komfydb/transaction/transaction_id.h"
@@ -28,27 +27,32 @@ class HeapPage : Page {
   friend class HeapPageFactory;
 
  private:
-  HeapPageId pid;
+  PageId pid;
   TupleDesc td;
   std::vector<uint8_t> header;
   std::vector<Tuple> tuples;
-  int num_slots;  // TODO I don't like this name
+  int num_slots;  // TODO I don't like this name ; do we even need this?
   std::vector<uint8_t> old_data;
-  // Take a look on absl::MutexLock to see how to aquire it
+  // Take a look on absl::MutexLock to see how to acquire it
   absl::Mutex old_data_lock;
 
+  absl::StatusOr<bool> TuplePresent(int i);
   HeapPage() = default;
 
  public:
-  PageId GetId() override;
+  static absl::StatusOr<std::unique_ptr<HeapPage>> Create(PageId id,
+                                                          TupleDesc td,
+                                                          std::vector<uint8_t> data);
 
-  TransactionId IsDirty() override;
+  PageId* GetId() override;
+  
+  TransactionId* IsDirty() override;
 
   void MarkDirty(bool dirty, TransactionId tid) override;
 
-  std::vector<bool> GetPageData() override;
+  absl::StatusOr<std::vector<uint8_t>> GetPageData() override;
 
-  Page GetBeforeImage() override;
+  std::unique_ptr<Page> GetBeforeImage() override;
 
   void SetBeforeImage() override;
 };

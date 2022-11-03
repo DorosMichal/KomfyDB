@@ -18,15 +18,15 @@ class Page {
  public:
   virtual ~Page();
 
-  virtual PageId GetId();
+  virtual PageId* GetId();
 
-  virtual TransactionId IsDirty();
+  virtual TransactionId* IsDirty();
 
   virtual void MarkDirty(bool dirty, TransactionId tid);
 
-  virtual std::vector<bool> GetPageData();
+  virtual absl::StatusOr<std::vector<uint8_t>> GetPageData();
 
-  virtual Page GetBeforeImage();
+  virtual std::unique_ptr<Page> GetBeforeImage();
 
   virtual void SetBeforeImage();
 };

@@ -44,7 +44,7 @@ int TupleDesc::Length() const {
 }
 
 absl::StatusOr<std::string> TupleDesc::GetFieldName(int i) const {
-  if (i > items.size()) {
+  if (i >= items.size() || i < 0) {
     return absl::InvalidArgumentError("Index out of range");
   }
 
@@ -52,7 +52,7 @@ absl::StatusOr<std::string> TupleDesc::GetFieldName(int i) const {
 }
 
 absl::StatusOr<Type> TupleDesc::GetFieldType(int i) const {
-  if (i > items.size()) {
+  if (i >= items.size() || i < 0) {
     return absl::InvalidArgumentError("Index out of range");
   }
 
