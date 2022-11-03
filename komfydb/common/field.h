@@ -28,7 +28,7 @@ class Field {
   virtual Type GetType() const = 0;
 
   // I'm not sure how to solve it better. The case is that we
-  // want to have to derived classes, IntField and StrintField,
+  // want to have to derived classes, IntField and StringField,
   // both of them implementing  'GetValue', but returning something
   // different. Also we'd like to have functions that take Field
   // as an argument and we want to be able to call these functions,
