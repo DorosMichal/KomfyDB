@@ -23,7 +23,7 @@ using komfydb::transaction::TransactionId;
 
 namespace komfydb::storage {
 
-class HeapPage : Page {
+class HeapPage : public Page {
   friend class HeapPageFactory;
 
  private:
@@ -41,9 +41,9 @@ class HeapPage : Page {
 
  public:
   static absl::StatusOr<std::unique_ptr<HeapPage>> Create(
-      PageId id, TupleDesc td, std::vector<uint8_t> data);
+      PageId id, TupleDesc* td, std::vector<uint8_t>& data);
 
-  PageId* GetId() override;
+  PageId GetId() override;
 
   TransactionId* IsDirty() override;
 
@@ -51,7 +51,7 @@ class HeapPage : Page {
 
   absl::StatusOr<std::vector<uint8_t>> GetPageData() override;
 
-  std::unique_ptr<Page> GetBeforeImage() override;
+  absl::StatusOr<std::unique_ptr<Page>> GetBeforeImage() override;
 
   void SetBeforeImage() override;
 };

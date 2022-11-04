@@ -18,7 +18,7 @@ class Page {
  public:
   virtual ~Page();
 
-  virtual PageId* GetId();
+  virtual PageId GetId();
 
   virtual TransactionId* IsDirty();
 
@@ -26,7 +26,7 @@ class Page {
 
   virtual absl::StatusOr<std::vector<uint8_t>> GetPageData();
 
-  virtual std::unique_ptr<Page> GetBeforeImage();
+  virtual absl::StatusOr<std::unique_ptr<Page>> GetBeforeImage();
 
   virtual void SetBeforeImage();
 };

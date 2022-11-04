@@ -5,27 +5,19 @@
 #include "komfydb/utils/status_macros.h"
 
 namespace {
+
 using namespace komfydb::common;
-}
 
-namespace komfydb::storage {
-
-absl::StatusOr<std::unique_ptr<HeapPage>> HeapPage::Create(
-    PageId id, TupleDesc td, std::vector<uint8_t> data) {
-  int n_slots = (CONFIG_PAGE_SIZE * 8) / (td.GetSize() * 8 + 1);
-  int header_len = (n_slots + 7) / 8;
-  std::vector<uint8_t> header;
-  for (int i = 0; i < header_len; i++)
-    header.push_back(data[i]);
-
-  std::vector<Tuple> tuples;
-  int n_fields = td.Length();
-  int data_idx = header_len;
-
+absl::StatusOr<std::vector<Tuple>> ParseTuples(std::vector<uint8_t>& data,
+                                               TupleDesc* td, int n_slots,
+                                               int n_fields, int data_idx) {
+  std::vector<Tuple> result;
   for (int i = 0; i < n_slots; i++) {
-    Tuple tuple = Tuple(&td);
+    Tuple tuple = Tuple(td);
+
     for (int j = 0; j < n_fields; j++) {
-      ASSIGN_OR_RETURN(Type field_type, td.GetFieldType(j));
+      ASSIGN_OR_RETURN(Type field_type, td->GetFieldType(j));
+
       if (field_type.GetValue() == Type::INT) {
         uint8_t bytes[Type::INT_LEN];
         for (int byte = 0; byte < Type::INT_LEN; byte++)
@@ -42,19 +34,50 @@ absl::StatusOr<std::unique_ptr<HeapPage>> HeapPage::Create(
         tuple.SetField(j, field);
       }
     }
-    tuples.push_back(tuple);
+    result.push_back(tuple);
   }
+  return result;
+}
+
+void DumpString(Field* field, std::vector<uint8_t>& result) {
+  std::string data;
+  field->GetValue(data);
+  int padding = Type::STR_LEN - data.size();
+  result.insert(result.end(), data.begin(), data.end());
+  result.insert(result.end(), padding, '\0');
+}
+
+void DumpInt(Field* field, std::vector<uint8_t>& result) {
+  int data;
+  field->GetValue(data);
+  uint8_t* bytes = reinterpret_cast<uint8_t*>(&data);
+  result.insert(result.end(), bytes, bytes + sizeof(data));
+}
+
+}  // namespace
+
+namespace komfydb::storage {
+
+absl::StatusOr<std::unique_ptr<HeapPage>> HeapPage::Create(
+    PageId id, TupleDesc* td, std::vector<uint8_t>& data) {
   std::unique_ptr<HeapPage> result = std::make_unique<HeapPage>();
+  int n_slots = (CONFIG_PAGE_SIZE * 8) / (td->GetSize() * 8 + 1);
+  int header_len = (n_slots + 7) / 8;
+  int n_fields = td->Length();
+
+  result->header.insert(result->header.end(), data.begin(),
+                        data.begin() + header_len);
+  ASSIGN_OR_RETURN(result->tuples,
+                   ParseTuples(data, td, n_slots, n_fields, header_len));
+
   result->pid = id;
-  result->td = td;
-  result->header = header;
-  result->tuples = tuples;
+  result->td = *td;
   result->num_slots = n_slots;
   return result;
 }
 
-PageId* HeapPage::GetId() {
-  return (PageId*)&pid;
+PageId HeapPage::GetId() {
+  return pid;
 }
 
 TransactionId* HeapPage::IsDirty() {
@@ -82,8 +105,7 @@ absl::StatusOr<std::vector<uint8_t>> HeapPage::GetPageData() {
   for (int i = 0; i < n_tuples; i++) {
     ASSIGN_OR_RETURN(bool tuple_present, TuplePresent(i));
     if (!tuple_present) {
-      for (int j = 0; j < td.GetSize(); j++)
-        result.push_back('\0');
+      result.insert(result.end(), td.GetSize(), '\0');
       continue;
     }
     Tuple tuple = tuples[i];
@@ -91,31 +113,20 @@ absl::StatusOr<std::vector<uint8_t>> HeapPage::GetPageData() {
       ASSIGN_OR_RETURN(Type field_type, td.GetFieldType(j));
       ASSIGN_OR_RETURN(Field * field, tuple.GetField(j));
 
-      if (field_type.GetValue() == Type::STRING) {
-        std::string data;
-        field->GetValue(data);
-        int padding = Type::STR_LEN - data.size();
-        for (char character : data)
-          result.push_back((uint8_t)character);
-        for (int i = 0; i < padding; i++)
-          result.push_back('\0');
-      } else if (field_type.GetValue() == Type::INT) {
-        int data;
-        field->GetValue(data);
-        for (int byte = 0; byte < sizeof(data); byte++)
-          result.push_back(*((uint8_t*)&data + byte));
-      }
+      if (field_type.GetValue() == Type::STRING)
+        DumpString(field, result);
+      else if (field_type.GetValue() == Type::INT)
+        DumpInt(field, result);
     }
   }
-  for (int i = 0; i < CONFIG_PAGE_SIZE - result.size(); i++)
-    result.push_back('\0');
+  result.insert(result.end(), CONFIG_PAGE_SIZE - result.size(), '\0');
   return result;
 }
 
-std::unique_ptr<Page> HeapPage::GetBeforeImage() {
+absl::StatusOr<std::unique_ptr<Page>> HeapPage::GetBeforeImage() {
   absl::MutexLock l(&old_data_lock);
   ASSIGN_OR_RETURN(std::unique_ptr<HeapPage> result,
-                   Create(pid, td, old_data));  // strange error here
+                   Create(pid, &td, old_data));
   return result;
 }
 
