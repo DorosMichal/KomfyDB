@@ -1,3 +1,4 @@
 .ccls-cache/
 bazel-*
 compile_commands.json
+.vscode
