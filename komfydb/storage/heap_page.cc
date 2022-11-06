@@ -124,6 +124,7 @@ absl::StatusOr<std::unique_ptr<Page>> HeapPage::GetBeforeImage() {
 absl::Status HeapPage::SetBeforeImage(){
   absl::MutexLock l(&old_data_lock);
   ASSIGN_OR_RETURN(old_data, GetPageData());
+  return absl::OkStatus();
 }
 
 };  // namespace komfydb::storage
