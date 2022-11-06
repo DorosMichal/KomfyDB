@@ -10,8 +10,7 @@ int Type::GetLen() {
   if (value == Value::INT) {
     return INT_LEN;
   } else {
-    // TODO check why this +4 is necessary?
-    return STR_LEN + 4;
+    return STR_LEN;
   }
 }
 
