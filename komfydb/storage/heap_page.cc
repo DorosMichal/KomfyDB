@@ -41,14 +41,15 @@ namespace komfydb::storage {
 
 absl::StatusOr<std::unique_ptr<HeapPage>> HeapPage::Create(
     PageId id, TupleDesc* td, std::vector<uint8_t>& data) {
-  std::unique_ptr<HeapPage> result = std::make_unique<HeapPage>();
   int n_slots = (CONFIG_PAGE_SIZE * 8) / (td->GetSize() * 8 + 1);
   int header_len = (n_slots + 7) / 8;
   int n_fields = td->Length();
   int data_idx = header_len;
+  std::vector<uint8_t> header;
+  std::vector<Tuple> tuples;
 
-  result->header.insert(result->header.end(), data.begin(),
-                        data.begin() + header_len);
+  header.insert(header.end(), data.begin(),
+                data.begin() + header_len);
   for (int i = 0; i < n_slots; i++) {
     Tuple tuple = Tuple(td);
 
@@ -61,26 +62,21 @@ absl::StatusOr<std::unique_ptr<HeapPage>> HeapPage::Create(
         RETURN_IF_ERROR(tuple.SetField(j, ParseString(data, data_idx)));
       }
     }
-    result->tuples.push_back(tuple);
+    tuples.push_back(tuple);
   }
 
-  result->pid = id;
-  result->td = *td;
-  result->num_slots = n_slots;
-  return result;
+  return std::unique_ptr<HeapPage>(new HeapPage(id, *td, header, tuples, n_slots));
 }
 
 PageId HeapPage::GetId() {
   return pid;
 }
 
-std::optional<TransactionId> HeapPage::DirtiedBy() {
-  // TODO
-}
+// std::optional<TransactionId> HeapPage::DirtiedBy() {
+// }
 
-void HeapPage::MarkDirty(bool dirty, TransactionId tid) {
-  // TODO
-}
+// void HeapPage::MarkDirty(bool dirty, TransactionId tid) {
+// }
 
 absl::StatusOr<bool> HeapPage::TuplePresent(int i) {
   if (i / 8 >= header.size() || i < 0)
