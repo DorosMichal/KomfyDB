@@ -28,7 +28,7 @@ class HeapPage : public Page {
 
  private:
   PageId pid;
-  TupleDesc td;
+  TupleDesc* td;
   std::vector<uint8_t> header;
   std::vector<Tuple> tuples;
   int num_slots;  // TODO I don't like this name ; do we even need this?
@@ -36,7 +36,7 @@ class HeapPage : public Page {
   // Take a look on absl::MutexLock to see how to acquire it
   absl::Mutex old_data_lock;
 
-  HeapPage(PageId pid, TupleDesc td, std::vector<uint8_t> header,
+  HeapPage(PageId pid, TupleDesc* td, std::vector<uint8_t> header,
            std::vector<Tuple> tuples, int num_slots)
       : pid(pid),
         td(td),

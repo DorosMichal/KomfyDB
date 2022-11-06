@@ -71,7 +71,7 @@ absl::StatusOr<std::unique_ptr<HeapPage>> HeapPage::Create(
   }
 
   return std::unique_ptr<HeapPage>(
-      new HeapPage(id, *td, header, tuples, n_slots));
+      new HeapPage(id, td, header, tuples, n_slots));
 }
 
 PageId HeapPage::GetId() {
@@ -91,17 +91,17 @@ absl::StatusOr<std::vector<uint8_t>> HeapPage::GetPageData() {
 
   std::vector<uint8_t> result = header;
   int n_tuples = tuples.size();
-  int tuple_len = td.Length();
+  int tuple_len = td->Length();
 
   for (int i = 0; i < n_tuples; i++) {
     ASSIGN_OR_RETURN(bool tuple_present, TuplePresent(header, i));
     if (!tuple_present) {
-      result.insert(result.end(), td.GetSize(), '\0');
+      result.insert(result.end(), td->GetSize(), '\0');
       continue;
     }
     Tuple tuple = tuples[i];
     for (int j = 0; j < tuple_len; j++) {
-      ASSIGN_OR_RETURN(Type field_type, td.GetFieldType(j));
+      ASSIGN_OR_RETURN(Type field_type, td->GetFieldType(j));
       ASSIGN_OR_RETURN(Field * field, tuple.GetField(j));
 
       if (field_type.GetValue() == Type::STRING)
@@ -116,8 +116,7 @@ absl::StatusOr<std::vector<uint8_t>> HeapPage::GetPageData() {
 
 absl::StatusOr<std::unique_ptr<Page>> HeapPage::GetBeforeImage() {
   absl::MutexLock l(&old_data_lock);
-  ASSIGN_OR_RETURN(std::unique_ptr<HeapPage> result,
-                   Create(pid, &td, old_data));
+  ASSIGN_OR_RETURN(std::unique_ptr<HeapPage> result, Create(pid, td, old_data));
   return result;
 }
 
