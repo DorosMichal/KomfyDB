@@ -5,7 +5,6 @@
 
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
-
 #include "komfydb/common/tuple.h"
 #include "komfydb/common/tuple_desc.h"
 #include "komfydb/storage/db_file_iterator.h"
@@ -27,21 +26,23 @@ class DbFile {
  public:
   virtual ~DbFile() = 0;
 
-  // TODO Shouldn't this return StatusOr?
-  virtual std::unique_ptr<Page> ReadPage(PageId id);
+  virtual absl::StatusOr<std::unique_ptr<Page>> ReadPage(PageId id);
 
-  virtual absl::Status WritePage(Page p);
+  // Not necessary for Lab 1
+  // virtual absl::Status WritePage(Page* p?);
 
-  virtual absl::StatusOr<std::list<Page>> InsertTuple(TransactionId tid,
-                                                      Tuple t);
+  // virtual absl::StatusOr<std::vector<Page*>> InsertTuple(TransactionId tid,
+  //                                                     Tuple t);
 
-  virtual absl::StatusOr<std::list<Page>> DeleteTuple(TransactionId tid,
-                                                      Tuple t);
+  // virtual absl::StatusOr<std::vector<Page*>> DeleteTuple(TransactionId tid,
+  //                                                     Tuple t);
 
-  virtual DbFileIterator Iterator(TransactionId tid);
+  // TODO This method shouldn't be here for sure..
+  // virtual std::unique_ptr<DbFileIterator> Iterator(TransactionId tid);
 
-  virtual int GetId();
+  virtual unsigned int GetId();
 
+  // TODO Shouldn't this return a const pointer?
   virtual TupleDesc* GetTupleDesc();
 };
 

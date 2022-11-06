@@ -8,7 +8,9 @@
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
 
+#include "komfydb/common/tuple.h"
 #include "komfydb/common/tuple_desc.h"
+#include "komfydb/common/permissions.h"
 #include "komfydb/storage/db_file.h"
 #include "komfydb/storage/db_file_iterator.h"
 #include "komfydb/storage/page.h"
@@ -19,6 +21,7 @@ namespace {
 
 using komfydb::common::Tuple;
 using komfydb::common::TupleDesc;
+using komfydb::common::Permissions;
 using komfydb::transaction::TransactionId;
 
 };  // namespace
@@ -27,28 +30,39 @@ namespace komfydb::storage {
 
 class HeapFile : DbFile {
  private:
-  std::fstream file;
+  std::fstream& file;
+  TupleDesc td;
+  unsigned int table_id;
+  Permissions permissions;
 
+  // TODO This is probably a very bad way to create table_id's, it's not
+  // thread safe. Probably it would be better to get some file's hash code.
+  static unsigned int table_cnt = 0;
+
+  HeapFile(std::fstream& file, TupleDesc td, unsigned int table_id, Permissions permissions);
  public:
-  HeapFile(std::fstream& file, TupleDesc td);
+  ~HeapFile();
+
+  static absl::StatusOr<std::unique_ptr<HeapFile>> 
+      Create(const std::string& file_name, TupleDesc td, Permissions permissions);
 
   std::fstream& GetFile();
 
-  Page ReadPage(PageId id) override;
+  absl::StatusOr<std::unique_ptr<Page>> ReadPage(PageId id) override;
 
-  absl::Status WritePage(Page p) override;
+  // absl::Status WritePage(Page* p) override;
 
-  absl::StatusOr<std::list<Page>> InsertTuple(TransactionId tid,
-                                              Tuple t) override;
+  // absl::StatusOr<std::vector<Page*>> InsertTuple(TransactionId tid,
+  //                                   Tuple t) override;
 
-  absl::StatusOr<std::list<Page>> DeleteTuple(TransactionId tid,
-                                              Tuple t) override;
+  // absl::StatusOr<std::vector<Page*>> DeleteTuple(TransactionId tid,
+  //                                   Tuple t) override;
 
-  DbFileIterator Iterator(TransactionId tid) override;
+  // std::unique_ptr<DbFileIterator> Iterator(TransactionId tid) override;
 
-  int GetId() override;
+  unsigned int GetId() override;
 
-  TupleDesc GetTupleDesc() override;
+  TupleDesc* GetTupleDesc() override;
 };
 
 };  // namespace komfydb::storage
