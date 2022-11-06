@@ -12,7 +12,7 @@ absl::StatusOr<Page*> BufferPool::GetPage(TransactionId tid, PageId pid,
       return absl::InvalidArgumentError("Cannot read another file to the pool");
     }
     ASSIGN_OR_RETURN(DbFile * file, catalog->GetDatabaseFile(pid.GetTableId()));
-    page_pool[pid] = file->ReadPage(pid);
+    ASSIGN_OR_RETURN(page_pool[pid], file->ReadPage(pid));
   }
 
   return page_pool.at(pid).get();
