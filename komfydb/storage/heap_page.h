@@ -37,9 +37,12 @@ class HeapPage : public Page {
   absl::Mutex old_data_lock;
 
   HeapPage(PageId pid, TupleDesc td, std::vector<uint8_t> header,
-           std::vector<Tuple> tuples, int num_slots) :
-           pid(pid), td(td), header(header), tuples(tuples),
-           num_slots(num_slots) {};
+           std::vector<Tuple> tuples, int num_slots)
+      : pid(pid),
+        td(td),
+        header(header),
+        tuples(tuples),
+        num_slots(num_slots){};
 
  public:
   ~HeapPage() override {}

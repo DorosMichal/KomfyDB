@@ -54,8 +54,7 @@ absl::StatusOr<std::unique_ptr<HeapPage>> HeapPage::Create(
   std::vector<uint8_t> header;
   std::vector<Tuple> tuples;
 
-  header.insert(header.end(), data.begin(),
-                data.begin() + header_len);
+  header.insert(header.end(), data.begin(), data.begin() + header_len);
   for (int i = 0; i < n_slots; i++) {
     Tuple tuple = Tuple(td);
 
@@ -71,7 +70,8 @@ absl::StatusOr<std::unique_ptr<HeapPage>> HeapPage::Create(
     tuples.push_back(tuple);
   }
 
-  return std::unique_ptr<HeapPage>(new HeapPage(id, *td, header, tuples, n_slots));
+  return std::unique_ptr<HeapPage>(
+      new HeapPage(id, *td, header, tuples, n_slots));
 }
 
 PageId HeapPage::GetId() {
@@ -86,7 +86,7 @@ PageId HeapPage::GetId() {
 
 absl::StatusOr<std::vector<uint8_t>> HeapPage::GetPageData() {
   // TODO: uncomment when DirtiedBy is implemented
-  // if (!DirtiedBy()) 
+  // if (!DirtiedBy())
   //   return old_data;
 
   std::vector<uint8_t> result = header;
@@ -121,7 +121,7 @@ absl::StatusOr<std::unique_ptr<Page>> HeapPage::GetBeforeImage() {
   return result;
 }
 
-absl::Status HeapPage::SetBeforeImage(){
+absl::Status HeapPage::SetBeforeImage() {
   absl::MutexLock l(&old_data_lock);
   ASSIGN_OR_RETURN(old_data, GetPageData());
   return absl::OkStatus();
