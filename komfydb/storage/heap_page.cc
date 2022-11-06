@@ -46,7 +46,6 @@ absl::StatusOr<std::unique_ptr<HeapPage>> HeapPage::Create(
   int header_len = (n_slots + 7) / 8;
   int n_fields = td->Length();
   int data_idx = header_len;
-  std::vector<Tuple> result;
 
   result->header.insert(result->header.end(), data.begin(),
                         data.begin() + header_len);
@@ -57,9 +56,9 @@ absl::StatusOr<std::unique_ptr<HeapPage>> HeapPage::Create(
       ASSIGN_OR_RETURN(Type field_type, td->GetFieldType(j));
 
       if (field_type.GetValue() == Type::INT) {
-        tuple.SetField(j, ParseInt(data, data_idx));
+        RETURN_IF_ERROR(tuple.SetField(j, ParseInt(data, data_idx)));
       } else if (field_type.GetValue() == Type::STRING) {
-        tuple.SetField(j, ParseString(data, data_idx));
+        RETURN_IF_ERROR(tuple.SetField(j, ParseString(data, data_idx)));
       }
     }
     result->tuples.push_back(tuple);
@@ -90,8 +89,9 @@ absl::StatusOr<bool> HeapPage::TuplePresent(int i) {
 }
 
 absl::StatusOr<std::vector<uint8_t>> HeapPage::GetPageData() {
-  if (!DirtiedBy())
-    return old_data;
+  // TODO: uncomment when DirtiedBy is implemented
+  // if (!DirtiedBy()) 
+  //   return old_data;
 
   std::vector<uint8_t> result = header;
   int n_tuples = tuples.size();
