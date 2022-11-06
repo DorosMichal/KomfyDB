@@ -16,7 +16,7 @@ namespace komfydb::storage {
 
 class Page {
  public:
-  virtual ~Page() {};
+  virtual ~Page(){};
 
   virtual PageId GetId() = 0;
 
