@@ -8,35 +8,16 @@ namespace {
 
 using namespace komfydb::common;
 
-absl::StatusOr<std::vector<Tuple>> ParseTuples(std::vector<uint8_t>& data,
-                                               TupleDesc* td, int n_slots,
-                                               int n_fields, int data_idx) {
-  std::vector<Tuple> result;
-  for (int i = 0; i < n_slots; i++) {
-    Tuple tuple = Tuple(td);
+IntField* ParseInt(std::vector<uint8_t>& data, int& data_idx) {
+  IntField* field = new IntField(*((int*)&data[data_idx]));
+  data_idx += Type::INT_LEN;
+  return field;
+}
 
-    for (int j = 0; j < n_fields; j++) {
-      ASSIGN_OR_RETURN(Type field_type, td->GetFieldType(j));
-
-      if (field_type.GetValue() == Type::INT) {
-        uint8_t bytes[Type::INT_LEN];
-        for (int byte = 0; byte < Type::INT_LEN; byte++)
-          bytes[byte] = data[data_idx + byte];
-        data_idx += Type::INT_LEN;
-        IntField* field = new IntField(*((int*)bytes));
-        tuple.SetField(j, field);
-      } else if (field_type.GetValue() == Type::STRING) {
-        std::string value = "";
-        for (int byte = 0; byte < Type::STR_LEN; byte++)
-          value.push_back((char)data[data_idx + byte]);
-        data_idx += Type::STR_LEN;
-        StringField* field = new StringField(value);
-        tuple.SetField(j, field);
-      }
-    }
-    result.push_back(tuple);
-  }
-  return result;
+StringField* ParseString(std::vector<uint8_t>& data, int& data_idx) {
+  char* value = (char*)&data[data_idx];
+  data_idx += Type::STR_LEN;
+  return new StringField(value);
 }
 
 void DumpString(Field* field, std::vector<uint8_t>& result) {
@@ -64,11 +45,25 @@ absl::StatusOr<std::unique_ptr<HeapPage>> HeapPage::Create(
   int n_slots = (CONFIG_PAGE_SIZE * 8) / (td->GetSize() * 8 + 1);
   int header_len = (n_slots + 7) / 8;
   int n_fields = td->Length();
+  int data_idx = header_len;
+  std::vector<Tuple> result;
 
   result->header.insert(result->header.end(), data.begin(),
                         data.begin() + header_len);
-  ASSIGN_OR_RETURN(result->tuples,
-                   ParseTuples(data, td, n_slots, n_fields, header_len));
+  for (int i = 0; i < n_slots; i++) {
+    Tuple tuple = Tuple(td);
+
+    for (int j = 0; j < n_fields; j++) {
+      ASSIGN_OR_RETURN(Type field_type, td->GetFieldType(j));
+
+      if (field_type.GetValue() == Type::INT) {
+        tuple.SetField(j, ParseInt(data, data_idx));
+      } else if (field_type.GetValue() == Type::STRING) {
+        tuple.SetField(j, ParseString(data, data_idx));
+      }
+    }
+    result->tuples.push_back(tuple);
+  }
 
   result->pid = id;
   result->td = *td;
@@ -80,7 +75,7 @@ PageId HeapPage::GetId() {
   return pid;
 }
 
-TransactionId* HeapPage::IsDirty() {
+std::optional<TransactionId> HeapPage::DirtiedBy() {
   // TODO
 }
 
@@ -95,7 +90,7 @@ absl::StatusOr<bool> HeapPage::TuplePresent(int i) {
 }
 
 absl::StatusOr<std::vector<uint8_t>> HeapPage::GetPageData() {
-  if (!IsDirty())
+  if (!DirtiedBy())
     return old_data;
 
   std::vector<uint8_t> result = header;
