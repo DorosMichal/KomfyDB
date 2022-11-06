@@ -16,20 +16,20 @@ namespace komfydb::storage {
 
 class Page {
  public:
-  virtual ~Page() = 0;
+  virtual ~Page() {};
 
-  virtual PageId GetId();
+  virtual PageId GetId() = 0;
 
   // not nessecary for lab1
-  // virtual std::optional<TransactionId> DirtiedBy();
+  // virtual std::optional<TransactionId> DirtiedBy() = 0;
 
-  // virtual void MarkDirty(bool dirty, TransactionId tid);
+  // virtual void MarkDirty(bool dirty, TransactionId tid) = 0;
 
-  virtual absl::StatusOr<std::vector<uint8_t>> GetPageData();
+  virtual absl::StatusOr<std::vector<uint8_t>> GetPageData() = 0;
 
-  virtual absl::StatusOr<std::unique_ptr<Page>> GetBeforeImage();
+  virtual absl::StatusOr<std::unique_ptr<Page>> GetBeforeImage() = 0;
 
-  virtual absl::Status SetBeforeImage();
+  virtual absl::Status SetBeforeImage() = 0;
 };
 
 };  // namespace komfydb::storage
