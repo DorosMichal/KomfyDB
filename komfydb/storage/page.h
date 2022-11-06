@@ -20,7 +20,7 @@ class Page {
 
   virtual PageId GetId();
 
-  virtual TransactionId* IsDirty();
+  virtual std::optional<TransactionId> DirtiedBy();
 
   virtual void MarkDirty(bool dirty, TransactionId tid);
 

@@ -45,7 +45,7 @@ class HeapPage : public Page {
 
   PageId GetId() override;
 
-  TransactionId* IsDirty() override;
+  std::optional<TransactionId> DirtiedBy() override;
 
   void MarkDirty(bool dirty, TransactionId tid) override;
 
