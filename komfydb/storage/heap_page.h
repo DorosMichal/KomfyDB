@@ -36,27 +36,29 @@ class HeapPage : public Page {
   // Take a look on absl::MutexLock to see how to acquire it
   absl::Mutex old_data_lock;
 
-  absl::StatusOr<bool> TuplePresent(int i);
   HeapPage(PageId pid, TupleDesc td, std::vector<uint8_t> header,
            std::vector<Tuple> tuples, int num_slots) :
            pid(pid), td(td), header(header), tuples(tuples),
            num_slots(num_slots) {};
 
  public:
+  ~HeapPage() override {}
+
   static absl::StatusOr<std::unique_ptr<HeapPage>> Create(
       PageId id, TupleDesc* td, std::vector<uint8_t>& data);
 
   PageId GetId() override;
 
-  std::optional<TransactionId> DirtiedBy() override;
+  // not nessecary for lab1
+  // std::optional<TransactionId> DirtiedBy() override;
 
-  void MarkDirty(bool dirty, TransactionId tid) override;
+  // void MarkDirty(bool dirty, TransactionId tid) override;
 
-  absl::StatusOr<std::vector<uint8_t>> GetPageData() override;
+  absl::Status SetBeforeImage() override;
 
   absl::StatusOr<std::unique_ptr<Page>> GetBeforeImage() override;
 
-  void SetBeforeImage() override;
+  absl::StatusOr<std::vector<uint8_t>> GetPageData() override;
 };
 
 };  // namespace komfydb::storage
