@@ -11,17 +11,19 @@ namespace komfydb::storage {
 
 class PageId {
  private:
-  unsigned int table_id;
-  unsigned int page_no;
+  uint32_t table_id;
+  uint32_t page_no;
 
  public:
-  PageId(int table_id, int page_no);
+  PageId() = default;
+
+  PageId(uint32_t table_id, uint32_t page_no);
 
   std::vector<uint8_t> Serialize();
 
-  unsigned int GetTableId() const;
+  uint32_t GetTableId() const;
 
-  unsigned int GetPageNumber() const;
+  uint32_t GetPageNumber() const;
 
   bool operator==(const PageId& p) const;
 

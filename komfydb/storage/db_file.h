@@ -40,7 +40,7 @@ class DbFile {
   // TODO This method shouldn't be here for sure..
   // virtual std::unique_ptr<DbFileIterator> Iterator(TransactionId tid);
 
-  virtual unsigned int GetId();
+  virtual uint32_t GetId();
 
   // TODO Shouldn't this return a const pointer?
   virtual TupleDesc* GetTupleDesc();
