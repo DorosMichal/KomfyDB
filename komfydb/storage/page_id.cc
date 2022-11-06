@@ -6,21 +6,21 @@
 
 namespace komfydb::storage {
 
-PageId::PageId(int table_id, int page_no)
+PageId::PageId(uint32_t table_id, uint32_t page_no)
     : table_id(table_id), page_no(page_no) {}
 
 std::vector<uint8_t> PageId::Serialize() {
   std::vector<uint8_t> data(sizeof(table_id) + sizeof(page_no));
-  ((int*)&data)[0] = table_id;
-  ((int*)&data)[1] = page_no;
+  ((uint32_t*)&data)[0] = table_id;
+  ((uint32_t*)&data)[1] = page_no;
   return data;
 }
 
-int PageId::GetTableId() const {
+uint32_t PageId::GetTableId() const {
   return table_id;
 }
 
-int PageId::GetPageNumber() const {
+uint32_t PageId::GetPageNumber() const {
   return page_no;
 }
 
