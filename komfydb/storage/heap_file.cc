@@ -41,7 +41,8 @@ absl::StatusOr<std::unique_ptr<HeapFile>> HeapFile::Create(
     return absl::InvalidArgumentError("File size not divisble by page size.");
   }
 
-  return std::make_unique<HeapFile>(file, td, ++table_cnt, permissions);
+  return std::unique_ptr<HeapFile>(
+      new HeapFile(file, td, ++table_cnt, permissions));
 }
 
 std::fstream& HeapFile::GetFile() {

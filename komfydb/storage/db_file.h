@@ -24,9 +24,9 @@ namespace komfydb::storage {
 
 class DbFile {
  public:
-  virtual ~DbFile() = 0;
+  virtual ~DbFile(){};
 
-  virtual absl::StatusOr<std::unique_ptr<Page>> ReadPage(PageId id);
+  virtual absl::StatusOr<std::unique_ptr<Page>> ReadPage(PageId id) = 0;
 
   // Not necessary for Lab 1
   // virtual absl::Status WritePage(Page* p?);
@@ -40,10 +40,10 @@ class DbFile {
   // TODO This method shouldn't be here for sure..
   // virtual std::unique_ptr<DbFileIterator> Iterator(TransactionId tid);
 
-  virtual uint32_t GetId();
+  virtual uint32_t GetId() = 0;
 
   // TODO Shouldn't this return a const pointer?
-  virtual TupleDesc* GetTupleDesc();
+  virtual TupleDesc* GetTupleDesc() = 0;
 };
 
 };  // namespace komfydb::storage
