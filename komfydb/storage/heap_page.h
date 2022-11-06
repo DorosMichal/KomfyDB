@@ -37,7 +37,10 @@ class HeapPage : public Page {
   absl::Mutex old_data_lock;
 
   absl::StatusOr<bool> TuplePresent(int i);
-  HeapPage() = default;
+  HeapPage(PageId pid, TupleDesc td, std::vector<uint8_t> header,
+           std::vector<Tuple> tuples, int num_slots) :
+           pid(pid), td(td), header(header), tuples(tuples),
+           num_slots(num_slots) {};
 
  public:
   static absl::StatusOr<std::unique_ptr<HeapPage>> Create(

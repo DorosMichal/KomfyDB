@@ -15,8 +15,6 @@ class PageId {
   int page_no;
 
  public:
-  PageId() = default;
-
   PageId(int table_id, int page_no);
 
   std::vector<uint8_t> Serialize();
