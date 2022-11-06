@@ -8,6 +8,12 @@ namespace {
 
 using namespace komfydb::common;
 
+absl::StatusOr<bool> TuplePresent(std::vector<uint8_t>& header, int i) {
+  if (i / 8 >= header.size() || i < 0)
+    return absl::InvalidArgumentError("Index out of range");
+  return header[i / 8] & (1 << (i % 8));
+}
+
 IntField* ParseInt(std::vector<uint8_t>& data, int& data_idx) {
   IntField* field = new IntField(*((int*)&data[data_idx]));
   data_idx += Type::INT_LEN;
@@ -78,12 +84,6 @@ PageId HeapPage::GetId() {
 // void HeapPage::MarkDirty(bool dirty, TransactionId tid) {
 // }
 
-absl::StatusOr<bool> HeapPage::TuplePresent(int i) {
-  if (i / 8 >= header.size() || i < 0)
-    return absl::InvalidArgumentError("Index out of range");
-  return header[i / 8] & (1 << (i % 8));
-}
-
 absl::StatusOr<std::vector<uint8_t>> HeapPage::GetPageData() {
   // TODO: uncomment when DirtiedBy is implemented
   // if (!DirtiedBy()) 
@@ -94,7 +94,7 @@ absl::StatusOr<std::vector<uint8_t>> HeapPage::GetPageData() {
   int tuple_len = td.Length();
 
   for (int i = 0; i < n_tuples; i++) {
-    ASSIGN_OR_RETURN(bool tuple_present, TuplePresent(i));
+    ASSIGN_OR_RETURN(bool tuple_present, TuplePresent(header, i));
     if (!tuple_present) {
       result.insert(result.end(), td.GetSize(), '\0');
       continue;
@@ -119,6 +119,11 @@ absl::StatusOr<std::unique_ptr<Page>> HeapPage::GetBeforeImage() {
   ASSIGN_OR_RETURN(std::unique_ptr<HeapPage> result,
                    Create(pid, &td, old_data));
   return result;
+}
+
+absl::Status HeapPage::SetBeforeImage(){
+  absl::MutexLock l(&old_data_lock);
+  ASSIGN_OR_RETURN(old_data, GetPageData());
 }
 
 };  // namespace komfydb::storage
