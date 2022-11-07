@@ -2,13 +2,20 @@
 
 Simple database C++ implemenatation based on MIT SimpleDB.
 
+## Cloning
+
+Run:
+```
+git clone --recursive https://github.com/DorosMichal/KomfyDB
+```
+
 ## Requierments
 
 - clang-13
 - bazel
 - openjdk-11-jdk
 
-On debian-based:
+On Debian Bullseye:
 
 ```
 sudo apt update && sudo apt install clang-13 bazel openjdk-11-jdk
@@ -37,11 +44,10 @@ bazel clean --expunge
 ```
 
 ## Set up pre-commit
-```
-pip3 install pre-commit
-pre-commit install
-```
-If the first one throws an FileNotFoundError try running 
+
+Pre-commit needs to be installed manually: 
 ```
 pip3 install --upgrade pip
+pip3 install pre-commit
+pre-commit install
 ```
