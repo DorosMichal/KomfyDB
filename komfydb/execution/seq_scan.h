@@ -21,7 +21,7 @@ namespace komfydb::execution {
 
 class SeqScan : OpIterator {
  public:
-  SeqScan(TransactionId tid, int table_id, std::string table_alias);
+  SeqScan(TransactionId tid, int table_id, absl::string_view table_alias);
 
   SeqScan(TransactionId tid, int table_id);
 
@@ -39,7 +39,14 @@ class SeqScan : OpIterator {
 
   absl::StatusOr<Tuple> Next() override;
 
-  TupleDesc GetTupleDesc() override;
+  absl::StatusOr<TupleDesc*> GetTupleDesc() override;
+
+ private:
+  int table_id;
+  std::string table_alias;
+  TransactionId tid;
+  TableIterator iterator;
+  static std::shared_ptr<Catalog> catalog;
 };
 
 };  // namespace komfydb::execution
