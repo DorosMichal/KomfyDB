@@ -18,18 +18,16 @@ class Tuple {
  protected:
   const TupleDesc* td;
 
-  std::vector<Field*> fields;
+  std::vector<std::unique_ptr<Field>> fields;
 
  public:
-  Tuple(const TupleDesc* td);
-
-  ~Tuple();
+  Tuple(const TupleDesc* td = nullptr);
 
   const TupleDesc* GetTupleDesc();
 
   absl::StatusOr<Field*> GetField(int i);
 
-  absl::Status SetField(int i, Field* f);
+  absl::Status SetField(int i, std::unique_ptr<Field> f);
 
   operator std::string() const;
 

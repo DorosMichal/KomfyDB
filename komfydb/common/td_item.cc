@@ -6,7 +6,7 @@
 
 namespace komfydb::common {
 
-TDItem::TDItem(const Type& t, absl::string_view name)
+TDItem::TDItem(const Type t, absl::string_view name)
     : field_type(t), field_name(name) {}
 
 TDItem::operator std::string() const {

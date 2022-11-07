@@ -1,0 +1,7 @@
+build --cxxopt='-std=c++17' --cxxopt='-march=native'
+
+build:asan --strip=never
+build:asan --copt -fsanitize=address
+build:asan --copt -g
+build:asan --linkopt -fsanitize=address
+

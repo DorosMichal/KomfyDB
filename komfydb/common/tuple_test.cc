@@ -18,7 +18,7 @@ TEST(Tuple, StringConversion) {
   TupleDesc td(tv, nv);
   Tuple tuple(&td);
 
-  EXPECT_TRUE(tuple.SetField(0, new IntField(1)).ok());
+  EXPECT_TRUE(tuple.SetField(0, std::make_unique<IntField>(1)).ok());
 
   auto f1 = tuple.GetField(0);
   ASSERT_TRUE(f1.ok());

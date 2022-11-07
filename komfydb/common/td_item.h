@@ -11,7 +11,7 @@ namespace komfydb::common {
 
 class TDItem {
  public:
-  TDItem(const Type& t, absl::string_view name);
+  TDItem(const Type t, absl::string_view name);
 
   Type field_type;
 
