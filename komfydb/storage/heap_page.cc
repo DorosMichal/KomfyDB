@@ -49,32 +49,32 @@ void DumpInt(Field* field, std::vector<uint8_t>& result) {
 namespace komfydb::storage {
 
 absl::StatusOr<std::unique_ptr<HeapPage>> HeapPage::Create(
-    PageId id, TupleDesc* td, std::vector<uint8_t>& data) {
+    PageId pid, TupleDesc* td, std::vector<uint8_t>& data) {
   int n_slots = (CONFIG_PAGE_SIZE * 8) / (td->GetSize() * 8 + 1);
   int header_len = (n_slots + 7) / 8;
   int n_fields = td->Length();
   int data_idx = header_len;
   std::vector<uint8_t> header;
-  std::vector<Tuple> tuples;
+  std::vector<Record> records;
 
   header.insert(header.end(), data.begin(), data.begin() + header_len);
   for (int i = 0; i < n_slots; i++) {
-    Tuple tuple(td);
+    Record record(td, pid, i);
 
     for (int j = 0; j < n_fields; j++) {
       ASSIGN_OR_RETURN(Type field_type, td->GetFieldType(j));
 
       if (field_type.GetValue() == Type::INT) {
-        RETURN_IF_ERROR(tuple.SetField(j, ParseInt(data, data_idx)));
+        RETURN_IF_ERROR(record.SetField(j, ParseInt(data, data_idx)));
       } else if (field_type.GetValue() == Type::STRING) {
-        RETURN_IF_ERROR(tuple.SetField(j, ParseString(data, data_idx)));
+        RETURN_IF_ERROR(record.SetField(j, ParseString(data, data_idx)));
       }
     }
-    tuples.push_back(std::move(tuple));
+    records.push_back(std::move(record));
   }
 
   return std::unique_ptr<HeapPage>(
-      new HeapPage(id, td, header, std::move(tuples), n_slots));
+      new HeapPage(pid, td, header, std::move(records), n_slots));
 }
 
 PageId HeapPage::GetId() {
@@ -93,19 +93,20 @@ absl::StatusOr<std::vector<uint8_t>> HeapPage::GetPageData() {
   //   return old_data;
 
   std::vector<uint8_t> result = header;
-  int n_tuples = tuples.size();
   int tuple_len = td->Length();
+  int record_idx = 0;
 
-  for (int i = 0; i < n_tuples; i++) {
+  for (int i = 0; i < num_slots; i++) {
     ASSIGN_OR_RETURN(bool tuple_present, TuplePresent(header, i));
     if (!tuple_present) {
       result.insert(result.end(), td->GetSize(), '\0');
       continue;
     }
-    Tuple& tuple = tuples[i];
+    Record& record = records[record_idx];
+    record_idx++;
     for (int j = 0; j < tuple_len; j++) {
       ASSIGN_OR_RETURN(Type field_type, td->GetFieldType(j));
-      ASSIGN_OR_RETURN(Field * field, tuple.GetField(j));
+      ASSIGN_OR_RETURN(Field * field, record.GetField(j));
 
       if (field_type.GetValue() == Type::STRING)
         DumpString(field, result);
@@ -129,8 +130,8 @@ absl::Status HeapPage::SetBeforeImage() {
   return absl::OkStatus();
 }
 
-std::vector<Tuple>& HeapPage::GetTuples() {
-  return tuples;
+std::vector<Record>& HeapPage::GetRecords() {
+  return records;
 }
 
 };  // namespace komfydb::storage

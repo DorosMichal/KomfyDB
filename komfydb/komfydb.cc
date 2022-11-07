@@ -36,8 +36,8 @@ int main(int argc, char* argv[]) {
         file->ReadPage(storage::PageId(table_id, 0)).value();
     storage::HeapPage* hp = static_cast<storage::HeapPage*>(page.get());
 
-    for (auto& tuple : hp->GetTuples()) {
-      LOG(INFO) << static_cast<std::string>(tuple);
+    for (auto& record : hp->GetRecords()) {
+      LOG(INFO) << static_cast<std::string>(record);
     }
   }
 }

@@ -11,6 +11,7 @@
 #include "komfydb/common/tuple_desc.h"
 #include "komfydb/storage/page.h"
 #include "komfydb/storage/page_id.h"
+#include "komfydb/storage/record.h"
 #include "komfydb/transaction/transaction_id.h"
 
 namespace {
@@ -30,18 +31,18 @@ class HeapPage : public Page {
   PageId pid;
   TupleDesc* td;
   std::vector<uint8_t> header;
-  std::vector<Tuple> tuples;
+  std::vector<Record> records;
   int num_slots;  // TODO I don't like this name ; do we even need this?
   std::vector<uint8_t> old_data;
   // Take a look on absl::MutexLock to see how to acquire it
   absl::Mutex old_data_lock;
 
   HeapPage(PageId pid, TupleDesc* td, std::vector<uint8_t> header,
-           std::vector<Tuple> tuples, int num_slots)
+           std::vector<Record> records, int num_slots)
       : pid(pid),
         td(td),
         header(header),
-        tuples(std::move(tuples)),
+        records(std::move(records)),
         num_slots(num_slots) {}
 
  public:
@@ -63,7 +64,7 @@ class HeapPage : public Page {
 
   absl::StatusOr<std::vector<uint8_t>> GetPageData() override;
 
-  std::vector<Tuple>& GetTuples();
+  std::vector<Record>& GetRecords();
 };
 
 };  // namespace komfydb::storage
