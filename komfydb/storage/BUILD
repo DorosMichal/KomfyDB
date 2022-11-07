@@ -28,6 +28,7 @@ cc_library(
     "//komfydb/utils:utility",
     "//komfydb/common:common",
     "//komfydb:config",
+    "@com_github_google_glog//:glog",
     "@com_google_absl//absl/status",
     "@com_google_absl//absl/container:flat_hash_map",
   ],
@@ -37,7 +38,7 @@ cc_library(
 cc_test(
   name = "heap_file_test",
   srcs = ["heap_file_test.cc"],
-  data = ["heap_file_test.dat"],
+  data = ["testdata/heap_file_test.dat"],
   deps = [
     ":storage",
     "@com_google_googletest//:gtest_main",

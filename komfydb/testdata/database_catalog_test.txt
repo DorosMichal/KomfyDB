@@ -1,0 +1,2 @@
+first_table (name1 int, name2 string, name3 int pk, name4 string)
+second_table (name1 int, name2 string, name3 int pk, name4 string)

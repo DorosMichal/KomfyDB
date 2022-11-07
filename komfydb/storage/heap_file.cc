@@ -35,7 +35,8 @@ absl::StatusOr<std::unique_ptr<HeapFile>> HeapFile::Create(
   std::fstream file;
   file.open(std::string(file_path), mode);
   if (!file.good()) {
-    return absl::InvalidArgumentError("Could not open specified db file.");
+    return absl::InvalidArgumentError(
+        absl::StrCat("Could not open db file: ", file_path));
   }
 
   file.seekg(0, file.end);
@@ -63,14 +64,17 @@ TupleDesc* HeapFile::GetTupleDesc() {
 
 absl::StatusOr<std::unique_ptr<Page>> HeapFile::ReadPage(PageId id) {
   if (id.GetTableId() != table_id) {
-    return absl::InvalidArgumentError("Table ID does not match.");
+    return absl::InvalidArgumentError(absl::StrCat(
+        "Table ID does not match: ", table_id, "!=", id.GetTableId()));
   }
 
   file.seekg(0, file.end);
   uint32_t file_length = file.tellg();
   uint64_t page_pos = (uint64_t)CONFIG_PAGE_SIZE * (uint64_t)id.GetPageNumber();
   if (page_pos >= file_length) {
-    return absl::InvalidArgumentError("Page number out of range.");
+    return absl::InvalidArgumentError(
+        absl::StrCat("Page number out of range: ", id.GetPageNumber(), " (",
+                     file_length / CONFIG_PAGE_SIZE, ")"));
   }
 
   std::vector<uint8_t> data(CONFIG_PAGE_SIZE);

@@ -61,12 +61,10 @@ cc_test(
 cc_library(
   name = "common",
   hdrs = [
-    "database.h",
     "debug.h",
     "permissions.h",
   ],
   srcs = [
-    "database.cc",
     "debug.cc",
   ],
   deps = [
