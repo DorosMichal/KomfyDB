@@ -33,3 +33,13 @@ cc_library(
   ],
   visibility = ["//visibility:public"],
 )
+
+cc_test(
+  name = "heap_file_test",
+  srcs = ["heap_file_test.cc"],
+  data = ["heap_file_test.dat"],
+  deps = [
+    ":storage",
+    "@com_google_googletest//:gtest_main",
+  ],
+)

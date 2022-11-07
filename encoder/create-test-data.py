@@ -3,7 +3,9 @@ import sys
 
 f_name = sys.argv[1]
 n_tuples = int(sys.argv[2])
+seed = sys.argv[3] if len(sys.argv) > 3 else 2137
 
+random.seed(seed)
 alphabet = 'abcdefghjijklmnopqrstuvwxyz0123456789'
 
 

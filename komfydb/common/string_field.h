@@ -15,7 +15,7 @@ class StringField : public Field {
   std::string value;
 
  public:
-  StringField(const absl::string_view& s);
+  StringField(const absl::string_view& s = "");
 
   ~StringField() override {}
 

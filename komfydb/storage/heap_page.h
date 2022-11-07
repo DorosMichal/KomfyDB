@@ -41,8 +41,8 @@ class HeapPage : public Page {
       : pid(pid),
         td(td),
         header(header),
-        tuples(tuples),
-        num_slots(num_slots){};
+        tuples(std::move(tuples)),
+        num_slots(num_slots) {}
 
  public:
   ~HeapPage() override {}

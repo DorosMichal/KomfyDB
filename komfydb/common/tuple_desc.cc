@@ -9,8 +9,8 @@
 
 namespace komfydb::common {
 
-TupleDesc::TupleDesc(std::vector<Type>& types,
-                     std::vector<std::string>& fields) {
+TupleDesc::TupleDesc(const std::vector<Type>& types,
+                     const std::vector<std::string>& fields) {
   int sz = types.size();
   items.reserve(sz);
 
@@ -22,7 +22,7 @@ TupleDesc::TupleDesc(std::vector<Type>& types,
   }
 }
 
-TupleDesc::TupleDesc(std::vector<Type>& types) {
+TupleDesc::TupleDesc(const std::vector<Type>& types) {
   int sz = types.size();
   items.reserve(sz);
 

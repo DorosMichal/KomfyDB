@@ -14,16 +14,19 @@ absl::StatusOr<bool> TuplePresent(std::vector<uint8_t>& header, int i) {
   return header[i / 8] & (1 << (i % 8));
 }
 
-IntField* ParseInt(std::vector<uint8_t>& data, int& data_idx) {
-  IntField* field = new IntField(*((int*)&data[data_idx]));
+std::unique_ptr<IntField> ParseInt(std::vector<uint8_t>& data, int& data_idx) {
+  std::unique_ptr<IntField> field =
+      std::make_unique<IntField>(*((int*)&data[data_idx]));
   data_idx += Type::INT_LEN;
   return field;
 }
 
-StringField* ParseString(std::vector<uint8_t>& data, int& data_idx) {
-  char* value = (char*)&data[data_idx];
+std::unique_ptr<StringField> ParseString(std::vector<uint8_t>& data,
+                                         int& data_idx) {
+  std::unique_ptr<StringField> value =
+      std::make_unique<StringField>((char*)&data[data_idx]);
   data_idx += Type::STR_LEN;
-  return new StringField(value);
+  return value;
 }
 
 void DumpString(Field* field, std::vector<uint8_t>& result) {
@@ -56,7 +59,7 @@ absl::StatusOr<std::unique_ptr<HeapPage>> HeapPage::Create(
 
   header.insert(header.end(), data.begin(), data.begin() + header_len);
   for (int i = 0; i < n_slots; i++) {
-    Tuple tuple = Tuple(td);
+    Tuple tuple(td);
 
     for (int j = 0; j < n_fields; j++) {
       ASSIGN_OR_RETURN(Type field_type, td->GetFieldType(j));
@@ -67,11 +70,11 @@ absl::StatusOr<std::unique_ptr<HeapPage>> HeapPage::Create(
         RETURN_IF_ERROR(tuple.SetField(j, ParseString(data, data_idx)));
       }
     }
-    tuples.push_back(tuple);
+    tuples.push_back(std::move(tuple));
   }
 
   return std::unique_ptr<HeapPage>(
-      new HeapPage(id, td, header, tuples, n_slots));
+      new HeapPage(id, td, header, std::move(tuples), n_slots));
 }
 
 PageId HeapPage::GetId() {
@@ -99,7 +102,7 @@ absl::StatusOr<std::vector<uint8_t>> HeapPage::GetPageData() {
       result.insert(result.end(), td->GetSize(), '\0');
       continue;
     }
-    Tuple tuple = tuples[i];
+    Tuple& tuple = tuples[i];
     for (int j = 0; j < tuple_len; j++) {
       ASSIGN_OR_RETURN(Type field_type, td->GetFieldType(j));
       ASSIGN_OR_RETURN(Field * field, tuple.GetField(j));

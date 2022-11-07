@@ -4,6 +4,7 @@
 #include <fstream>
 #include <iostream>
 #include <list>
+#include <memory>
 
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
@@ -20,9 +21,7 @@
 namespace {
 
 using komfydb::common::Permissions;
-using komfydb::common::Tuple;
 using komfydb::common::TupleDesc;
-using komfydb::transaction::TransactionId;
 
 };  // namespace
 
@@ -30,7 +29,7 @@ namespace komfydb::storage {
 
 class HeapFile : DbFile {
  private:
-  std::fstream& file;
+  std::fstream file;
   TupleDesc td;
   uint32_t table_id;
   Permissions permissions;
@@ -39,16 +38,16 @@ class HeapFile : DbFile {
   // thread safe. Probably it would be better to get some file's hash code.
   static uint32_t table_cnt;
 
-  HeapFile(std::fstream& file, TupleDesc td, uint32_t table_id,
+  HeapFile(std::fstream file, TupleDesc td, uint32_t table_id,
            Permissions permissions);
 
  public:
   ~HeapFile();
 
   static absl::StatusOr<std::unique_ptr<HeapFile>> Create(
-      const std::string& file_name, TupleDesc td, Permissions permissions);
+      const absl::string_view file_name, TupleDesc td, Permissions permissions);
 
-  std::fstream& GetFile();
+  std::fstream* GetFile();
 
   absl::StatusOr<std::unique_ptr<Page>> ReadPage(PageId id) override;
 

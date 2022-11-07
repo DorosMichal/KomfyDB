@@ -13,9 +13,10 @@ namespace komfydb::common {
 
 class TupleDesc {
  public:
-  TupleDesc(std::vector<Type>& types, std::vector<std::string>& fields);
+  TupleDesc(const std::vector<Type>& types,
+            const std::vector<std::string>& fields);
 
-  TupleDesc(std::vector<Type>& types);
+  TupleDesc(const std::vector<Type>& types);
 
   TupleDesc(const TupleDesc& td1, const TupleDesc& td2);
 

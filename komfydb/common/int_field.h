@@ -10,7 +10,7 @@ class IntField : public Field {
   int value;
 
  public:
-  IntField(int value);
+  IntField(int value = 0);
 
   ~IntField() override {}
 
