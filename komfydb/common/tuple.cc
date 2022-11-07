@@ -42,10 +42,10 @@ absl::Status Tuple::SetField(int i, std::unique_ptr<Field> f) {
 Tuple::operator std::string() const {
   std::string res = "";
   for (int i = 0; i < fields.size() - 1; i++) {
-    res += (std::string)*fields[i];
+    res += static_cast<std::string>(*fields[i]);
     res += " ";
   }
-  res += (std::string)*fields.back();
+  res += static_cast<std::string>(*fields.back());
   return res;
 }
 

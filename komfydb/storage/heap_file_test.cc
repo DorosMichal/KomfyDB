@@ -15,7 +15,7 @@ using komfydb::common::Type;
 
 class HeapFileTest : public ::testing::Test {
  protected:
-  const char* kTestDataFilePath = "komfydb/storage/heap_file_test.dat";
+  const char* kTestDataFilePath = "komfydb/storage/testdata/heap_file_test.dat";
   const int tuples = 1000;
   int tuple_sz;
   int pages_cnt;
@@ -49,11 +49,11 @@ TEST_F(HeapFileTest, ReadPageErrors) {
 
   page = hp->ReadPage(PageId(table_id, pages_cnt + 1));
   ASSERT_FALSE(page.ok());
-  EXPECT_EQ(page.status().message(), "Page number out of range.");
+  EXPECT_EQ(page.status().message(), "Page number out of range: 67 (67)");
 
   page = hp->ReadPage(PageId(table_id + 1, 0));
   ASSERT_FALSE(page.ok());
-  EXPECT_EQ(page.status().message(), "Table ID does not match.");
+  EXPECT_EQ(page.status().message(), "Table ID does not match: 1!=2");
 }
 
 TEST_F(HeapFileTest, ReadPage) {

@@ -27,7 +27,7 @@ using komfydb::common::TupleDesc;
 
 namespace komfydb::storage {
 
-class HeapFile : DbFile {
+class HeapFile : public DbFile {
  private:
   std::fstream file;
   TupleDesc td;

@@ -129,4 +129,8 @@ absl::Status HeapPage::SetBeforeImage() {
   return absl::OkStatus();
 }
 
+std::vector<Tuple>& HeapPage::GetTuples() {
+  return tuples;
+}
+
 };  // namespace komfydb::storage

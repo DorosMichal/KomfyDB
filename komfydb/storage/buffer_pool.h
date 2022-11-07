@@ -31,7 +31,7 @@ class BufferPool {
 
  public:
   BufferPool(std::shared_ptr<Catalog> catalog, int pages_cnt = PAGES_CNT)
-      : pages_cnt(pages_cnt), catalog(catalog) {}
+      : pages_cnt(pages_cnt), catalog(std::move(catalog)) {}
 
   int GetPageSize() const { return pages_cnt; }
 

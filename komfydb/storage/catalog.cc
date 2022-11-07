@@ -1,7 +1,9 @@
+#include "komfydb/storage/catalog.h"
+
 #include "absl/container/flat_hash_map.h"
 #include "absl/status/statusor.h"
+#include "glog/logging.h"
 
-#include "komfydb/storage/catalog.h"
 #include "komfydb/utils/status_macros.h"
 #include "komfydb/utils/utility.h"
 
@@ -11,7 +13,8 @@ template <typename K, typename V>
 absl::StatusOr<V> StatusOrMapElement(const absl::flat_hash_map<K, V>& map,
                                      const K& key) {
   if (!map.contains(key)) {
-    return absl::InvalidArgumentError("No element for given key.");
+    return absl::InvalidArgumentError(
+        absl::StrCat("No element for given key=", key));
   }
   return map.at(key);
 }
@@ -22,6 +25,8 @@ namespace komfydb::storage {
 
 void Catalog::AddTable(std::unique_ptr<DbFile> file, std::string name,
                        std::string primary_key) {
+  LOG(INFO) << "Adding table: tid=" << file->GetId() << " name=" << name
+            << " pk=" << primary_key;
   int id = file->GetId();
 
   db_files[id] = std::move(file);
@@ -49,7 +54,8 @@ absl::StatusOr<std::string> Catalog::GetTableName(int table_id) const {
 absl::StatusOr<DbFile*> Catalog::GetDatabaseFile(int table_id) const {
   auto it = db_files.find(table_id);
   if (it == db_files.end()) {
-    return absl::InvalidArgumentError("No table with given name");
+    return absl::InvalidArgumentError(
+        absl::StrCat("No table with id=", table_id));
   }
   return it->second.get();
 }

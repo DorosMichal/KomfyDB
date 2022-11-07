@@ -62,6 +62,8 @@ class HeapPage : public Page {
   absl::StatusOr<std::unique_ptr<Page>> GetBeforeImage() override;
 
   absl::StatusOr<std::vector<uint8_t>> GetPageData() override;
+
+  std::vector<Tuple>& GetTuples();
 };
 
 };  // namespace komfydb::storage
