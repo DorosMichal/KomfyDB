@@ -64,6 +64,8 @@ class HeapFile : public DbFile {
   uint32_t GetId() override;
 
   TupleDesc* GetTupleDesc() override;
+
+  int GetNumPages() override;
 };
 
 };  // namespace komfydb::storage

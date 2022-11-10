@@ -44,6 +44,8 @@ class DbFile {
 
   // TODO Shouldn't this return a const pointer?
   virtual TupleDesc* GetTupleDesc() = 0;
+
+  virtual int GetNumPages() = 0;
 };
 
 };  // namespace komfydb::storage
