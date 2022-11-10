@@ -37,9 +37,6 @@ class DbFile {
   // virtual absl::StatusOr<std::vector<Page*>> DeleteTuple(TransactionId tid,
   //                                                     Tuple t);
 
-  // TODO This method shouldn't be here for sure..
-  // virtual std::unique_ptr<DbFileIterator> Iterator(TransactionId tid);
-
   virtual uint32_t GetId() = 0;
 
   // TODO Shouldn't this return a const pointer?

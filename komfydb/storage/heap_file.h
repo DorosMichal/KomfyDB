@@ -59,8 +59,6 @@ class HeapFile : public DbFile {
   // absl::StatusOr<std::vector<Page*>> DeleteTuple(TransactionId tid,
   //                                   Tuple t) override;
 
-  // std::unique_ptr<DbFileIterator> Iterator(TransactionId tid) override;
-
   uint32_t GetId() override;
 
   TupleDesc* GetTupleDesc() override;
