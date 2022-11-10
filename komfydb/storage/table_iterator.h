@@ -14,7 +14,17 @@ using komfydb::common::Tuple;
 
 namespace komfydb::storage {
 
-class DbFileIterator {
+class TableIterator {
+ private:
+  int page_ctr;
+  int table_id;
+  int num_pages;
+  TransactionId tid;
+  std::vector<Tuple>& tuples;
+  std::vector<Tuple>::iterator current_tuple;
+  static std::shared_ptr<BufferPool> bufferpool;
+  static std::shared_ptr<Catalog> catalog;
+
  public:
   virtual absl::Status Open();
 
