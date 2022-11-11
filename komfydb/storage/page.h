@@ -31,7 +31,7 @@ class Page {
 
   virtual absl::Status SetBeforeImage() = 0;
 
-  virtual std::vector<Tuple>* GetTuples() = 0;
+  virtual std::vector<Record>* GetRecords() = 0;
 };
 
 };  // namespace komfydb::storage
