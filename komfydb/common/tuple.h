@@ -23,6 +23,10 @@ class Tuple {
  public:
   Tuple(const TupleDesc* td = nullptr);
 
+  Tuple(const Tuple& t);
+
+  Tuple(Tuple&& tuple) = default;
+
   const TupleDesc* GetTupleDesc();
 
   absl::StatusOr<Field*> GetField(int i);
@@ -30,6 +34,10 @@ class Tuple {
   absl::Status SetField(int i, std::unique_ptr<Field> f);
 
   operator std::string() const;
+
+  bool operator==(const Tuple& t) const;
+
+  bool operator!=(const Tuple& t) const;
 
   // TODO(Iterator)
   // std::vector<Field> GetFields();

@@ -61,19 +61,34 @@ TEST_F(HeapPageTest, Records) {
       HeapPage::Create(pid, td.get(), test_data);
 
   ASSERT_TRUE(hpage.ok());
-  // std::vector<Record> records = (*hpage)->GetRecords();
-  // EXPECT_EQ(records.size(), tuples_on_page);
+  std::vector<Record> records = (*hpage)->GetRecords();
 
-  // for (int i = 0; i < records.size(); i++) {
-  // Record& record = records[i];
-  // EXPECT_EQ(record.GetTupleDesc(), td.get());
-  // Record comp_record(record.GetTupleDesc(), pid, i);
-  // ASSERT_TRUE(comp_record.SetField(0, std::make_unique<IntField>(i)).ok());
-  // ASSERT_TRUE(comp_record.SetField(1, std::make_unique<StringField>(std::string(i+1, 'a'))).ok());
-  // ASSERT_TRUE(comp_record.SetField(2, std::make_unique<IntField>(i)).ok());
-  // ASSERT_TRUE(comp_record.SetField(3, std::make_unique<StringField>(std::string(i+1,'b'))).ok());
-  // EXPECT_EQ(record, comp_record);
-  // }
+  // Test data has one record missing.
+  EXPECT_EQ(records.size(), tuples_on_page - 1);
+
+  for (int i = 0, rid = 0; i < records.size(); i++) {
+    if (i == 1) {
+      continue;
+    }
+    Record& record = records[rid++];
+    EXPECT_EQ(record.GetTupleDesc(), td.get());
+    EXPECT_EQ(record.GetId(), RecordId(pid, i));
+
+    Record comp_record(record.GetTupleDesc(), pid, i);
+    ASSERT_TRUE(
+        comp_record.SetField(0, std::make_unique<IntField>(i + 1)).ok());
+    ASSERT_TRUE(
+        comp_record
+            .SetField(1, std::make_unique<StringField>(std::string(i + 1, 'a')))
+            .ok());
+    ASSERT_TRUE(
+        comp_record.SetField(2, std::make_unique<IntField>(i + 1)).ok());
+    ASSERT_TRUE(
+        comp_record
+            .SetField(3, std::make_unique<StringField>(std::string(i + 1, 'b')))
+            .ok());
+    EXPECT_EQ(record, comp_record);
+  }
 }
 
 TEST_F(HeapPageTest, GetPageData) {

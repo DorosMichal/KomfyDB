@@ -17,6 +17,10 @@ class StringField : public Field {
  public:
   StringField(const absl::string_view& s = "");
 
+  StringField(const StringField& field);
+
+  StringField(StringField&& field) = default;
+
   ~StringField() override {}
 
   void GetValue(int& i) const override{};
