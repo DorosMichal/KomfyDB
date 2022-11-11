@@ -34,6 +34,8 @@ class TupleDesc {
 
   bool operator==(const TupleDesc& td) const;
 
+  bool operator!=(const TupleDesc& td) const;
+
   // TODO(HashCode)
   // int HashCode();
 

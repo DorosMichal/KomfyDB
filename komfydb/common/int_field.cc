@@ -6,6 +6,8 @@ namespace komfydb::common {
 
 IntField::IntField(int value) : value(value) {}
 
+IntField::IntField(const IntField& f) : value(f.value) {}
+
 void IntField::GetValue(int& i) const {
   i = value;
 }

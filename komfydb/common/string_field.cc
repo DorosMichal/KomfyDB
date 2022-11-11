@@ -9,6 +9,8 @@ namespace komfydb::common {
 
 StringField::StringField(const absl::string_view& s) : value(s) {}
 
+StringField::StringField(const StringField& s) : value(s.value) {}
+
 void StringField::GetValue(std::string& s) const {
   s = value;
 }

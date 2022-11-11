@@ -12,6 +12,10 @@ class IntField : public Field {
  public:
   IntField(int value = 0);
 
+  IntField(const IntField& f);
+
+  IntField(IntField&& f) = default;
+
   ~IntField() override {}
 
   absl::StatusOr<bool> Compare(const Op& op, const Field& f) const override;

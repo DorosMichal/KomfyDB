@@ -95,6 +95,10 @@ bool TupleDesc::operator==(const TupleDesc& td) const {
   return true;
 }
 
+bool TupleDesc::operator!=(const TupleDesc& td) const {
+  return !(*this == td);
+}
+
 TupleDesc::operator std::string() const {
   std::string res = "";
   for (int i = 0; i < items.size() - 1; i++) {

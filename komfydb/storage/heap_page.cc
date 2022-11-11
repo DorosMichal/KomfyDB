@@ -154,15 +154,15 @@ absl::Status HeapPage::SetBeforeImage() {
   return absl::OkStatus();
 }
 
-// std::vector<Record> HeapPage::GetRecords() {
-//   std::vector<Record> result;
-//   for (int i = 0; i < records.size(); i++) {
-//     if (TuplePresent(header, i).value()) {
-//       result.push_back(std::move(Record(records[i])));
-//     }
-//   }
-//
-//   return result;
-// }
+std::vector<Record> HeapPage::GetRecords() {
+  std::vector<Record> result;
+  for (int i = 0; i < records.size(); i++) {
+    if (TuplePresent(header, i).value()) {
+      result.push_back(Record(records[i]));
+    }
+  }
+
+  return result;
+}
 
 };  // namespace komfydb::storage

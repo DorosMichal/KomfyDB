@@ -19,16 +19,25 @@ namespace komfydb::storage {
 // and shouldn't have any code regarding I/O operations (i.e. storage)
 // That's why we need Record, which is a tuple residing on the disk and have
 // it's own RecordId.
-class Record : public Tuple, public RecordId {
+class Record : public Tuple {
+ private:
+  RecordId rid;
+
  public:
+  Record(const Record& r);
+
+  Record(Record&& r) = default;
+
   Record(const TupleDesc* td, PageId pid, int tuple_no)
-      : Tuple(td), RecordId(pid, tuple_no) {}
+      : Tuple(td), rid(pid, tuple_no) {}
 
   RecordId GetId();
 
   void SetId(PageId pid, int tuple_no);
 
   void SetId(RecordId rid);
+
+  bool operator==(const Record& r) const;
 };
 
 };  // namespace komfydb::storage

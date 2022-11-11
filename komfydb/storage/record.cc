@@ -2,17 +2,22 @@
 
 namespace komfydb::storage {
 
+Record::Record(const Record& r) : Tuple(r), rid(r.rid) {}
+
 RecordId Record::GetId() {
-  return *this;
+  return rid;
 }
 
 void Record::SetId(PageId pid, int tuple_no) {
-  this->pid = pid;
-  this->tuple_no = tuple_no;
+  rid = RecordId(pid, tuple_no);
 }
 
 void Record::SetId(RecordId rid) {
   SetId(rid.GetPageId(), rid.GetTupleNumber());
+}
+
+bool Record::operator==(const Record& r) const {
+  return Tuple::operator==(r) && r.rid == rid;
 }
 
 };  // namespace komfydb::storage
