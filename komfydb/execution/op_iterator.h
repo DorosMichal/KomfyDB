@@ -4,13 +4,13 @@
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
 
-#include "komfydb/common/tuple.h"
 #include "komfydb/common/tuple_desc.h"
+#include "komfydb/storage/record.h"
 
 namespace {
 
-using komfydb::common::Tuple;
 using komfydb::common::TupleDesc;
+using komfydb::storage::Record;
 
 };  // namespace
 
@@ -24,9 +24,9 @@ class OpIterator {
 
   virtual absl::StatusOr<bool> HasNext();
 
-  virtual absl::StatusOr<Tuple> Next();
+  virtual absl::StatusOr<Record> Next();
 
-  virtual TupleDesc GetTupleDesc();
+  virtual absl::StatusOr<TupleDesc*> GetTupleDesc();
 };
 
 };  // namespace komfydb::execution
