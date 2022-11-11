@@ -1,4 +1,7 @@
 #include "komfydb/storage/heap_page.h"
+
+#include <arpa/inet.h>
+
 #include "komfydb/common/int_field.h"
 #include "komfydb/common/string_field.h"
 #include "komfydb/config.h"
@@ -14,25 +17,49 @@ absl::StatusOr<bool> TuplePresent(std::vector<uint8_t>& header, int i) {
   return header[i / 8] & (1 << (i % 8));
 }
 
+int ParseInt(uint8_t* data) {
+  int result = *reinterpret_cast<int*>(data);
+  std::cout << "Parsing " << ntohl(result) << "\n";
+  return ntohl(result);
+}
+
 std::unique_ptr<IntField> ParseInt(std::vector<uint8_t>& data, int& data_idx) {
-  std::unique_ptr<IntField> field =
-      std::make_unique<IntField>(*((int*)&data[data_idx]));
+  // std::unique_ptr<IntField> field =
+  //     std::unique_ptr<IntField>(new IntField(ParseInt(data.data() + data_idx)));
+  std::unique_ptr<IntField> field = std::unique_ptr<IntField>(new IntField(1));
+  // int xd;
+  // field->GetValue(xd);
+  // std::cout << "But parsed: " << xd << "\n";
   data_idx += Type::INT_LEN;
   return field;
 }
 
 std::unique_ptr<StringField> ParseString(std::vector<uint8_t>& data,
                                          int& data_idx) {
+  // TODO This function does not care about the length of string encoded
+  // in the data file and we parse the string until the first null byte.
+  // Should we leave it like this or read the amount of data specified by
+  // the integer before the string?
+  data_idx += 4;
   std::unique_ptr<StringField> value =
       std::make_unique<StringField>((char*)&data[data_idx]);
   data_idx += Type::STR_LEN;
   return value;
 }
 
+void DumpInt(int data, std::vector<uint8_t>& result) {
+  // We want data to be stored in big-endian.
+  std::cout << "Dumping " << data << "\n";
+  data = htonl(data);
+  uint8_t* bytes = reinterpret_cast<uint8_t*>(&data);
+  result.insert(result.end(), bytes, bytes + sizeof(data));
+}
+
 void DumpString(Field* field, std::vector<uint8_t>& result) {
   std::string data;
   field->GetValue(data);
   int padding = Type::STR_LEN - data.size();
+  DumpInt(data.size(), result);
   result.insert(result.end(), data.begin(), data.end());
   result.insert(result.end(), padding, '\0');
 }
@@ -40,8 +67,8 @@ void DumpString(Field* field, std::vector<uint8_t>& result) {
 void DumpInt(Field* field, std::vector<uint8_t>& result) {
   int data;
   field->GetValue(data);
-  uint8_t* bytes = reinterpret_cast<uint8_t*>(&data);
-  result.insert(result.end(), bytes, bytes + sizeof(data));
+  std::cout << "Dumping " << data << "\n";
+  DumpInt(data, result);
 }
 
 }  // namespace
@@ -61,15 +88,20 @@ absl::StatusOr<std::unique_ptr<HeapPage>> HeapPage::Create(
   for (int i = 0; i < n_slots; i++) {
     Record record(td, pid, i);
 
+    if (!TuplePresent(header, i).value()) {
+      data_idx += td->GetSize();
+    }
     for (int j = 0; j < n_fields; j++) {
       ASSIGN_OR_RETURN(Type field_type, td->GetFieldType(j));
 
       if (field_type.GetValue() == Type::INT) {
         RETURN_IF_ERROR(record.SetField(j, ParseInt(data, data_idx)));
+        // data_idx += 4;
       } else if (field_type.GetValue() == Type::STRING) {
         RETURN_IF_ERROR(record.SetField(j, ParseString(data, data_idx)));
       }
     }
+
     records.push_back(std::move(record));
   }
 
@@ -94,7 +126,6 @@ absl::StatusOr<std::vector<uint8_t>> HeapPage::GetPageData() {
 
   std::vector<uint8_t> result = header;
   int tuple_len = td->Length();
-  int record_idx = 0;
 
   for (int i = 0; i < num_slots; i++) {
     ASSIGN_OR_RETURN(bool tuple_present, TuplePresent(header, i));
@@ -102,16 +133,23 @@ absl::StatusOr<std::vector<uint8_t>> HeapPage::GetPageData() {
       result.insert(result.end(), td->GetSize(), '\0');
       continue;
     }
-    Record& record = records[record_idx];
-    record_idx++;
+    Record& record = records[i];
     for (int j = 0; j < tuple_len; j++) {
       ASSIGN_OR_RETURN(Type field_type, td->GetFieldType(j));
       ASSIGN_OR_RETURN(Field * field, record.GetField(j));
+      std::cout << "Dumping " << j << ": ";
 
-      if (field_type.GetValue() == Type::STRING)
+      if (field_type.GetValue() == Type::STRING) {
+        std::string val;
+        field->GetValue(val);
         DumpString(field, result);
-      else if (field_type.GetValue() == Type::INT)
+        std::cout << val << "\n";
+      } else if (field_type.GetValue() == Type::INT) {
         DumpInt(field, result);
+        int val;
+        field->GetValue(val);
+        std::cout << val << "\n";
+      }
     }
   }
   result.insert(result.end(), CONFIG_PAGE_SIZE - result.size(), '\0');
@@ -130,8 +168,15 @@ absl::Status HeapPage::SetBeforeImage() {
   return absl::OkStatus();
 }
 
-std::vector<Record>& HeapPage::GetRecords() {
-  return records;
+std::vector<Record> HeapPage::GetRecords() {
+  std::vector<Record> result;
+  for (int i = 0; i < records.size(); i++) {
+    if (TuplePresent(header, i).value()) {
+      result.push_back(Record(records[i]));
+    }
+  }
+
+  return result;
 }
 
 };  // namespace komfydb::storage

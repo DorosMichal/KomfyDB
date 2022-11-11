@@ -44,3 +44,13 @@ cc_test(
     "@com_google_googletest//:gtest_main",
   ],
 )
+
+cc_test(
+  name = "heap_page_test",
+  srcs = ["heap_page_test.cc"],
+  data = ["testdata/heap_page_test.dat"],
+  deps = [
+    ":storage",
+    "@com_google_googletest//:gtest_main",
+  ],
+)
