@@ -9,14 +9,11 @@
 #include "komfydb/common/tuple_desc.h"
 #include "komfydb/storage/page.h"
 #include "komfydb/storage/page_id.h"
-#include "komfydb/storage/table_iterator.h"
 #include "komfydb/transaction/transaction_id.h"
 
 namespace {
 
-using komfydb::common::Tuple;
 using komfydb::common::TupleDesc;
-using komfydb::transaction::TransactionId;
 
 };  // namespace
 

@@ -15,9 +15,8 @@
 
 namespace {
 
-using komfydb::common::Record;
 using komfydb::common::TupleDesc;
-using komfydb::transaction::TransactionId;
+using komfydb::storage::Record;
 
 };  //namespace
 
@@ -63,7 +62,7 @@ class HeapPage : public Page {
 
   absl::StatusOr<std::vector<uint8_t>> GetPageData() override;
 
-  std::vector<Record> GetRecords();
+  std::vector<Record> GetRecords() override;
 };
 
 };  // namespace komfydb::storage

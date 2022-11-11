@@ -52,6 +52,7 @@ absl::StatusOr<std::string> Catalog::GetTableName(int table_id) const {
 }
 
 absl::StatusOr<DbFile*> Catalog::GetDatabaseFile(int table_id) const {
+  LOG(INFO) << "Getting DbFile with tid " << table_id << "\n";
   auto it = db_files.find(table_id);
   if (it == db_files.end()) {
     return absl::InvalidArgumentError(

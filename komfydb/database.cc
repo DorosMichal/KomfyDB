@@ -75,7 +75,7 @@ absl::StatusOr<Type> GetType(std::string& type_str) {
 namespace komfydb {
 
 Database::Database(std::shared_ptr<Catalog> catalog)
-    : catalog(std::move(catalog)), buffer_pool(catalog) {}
+    : catalog(catalog), buffer_pool(std::make_shared<BufferPool>(catalog)) {}
 
 absl::StatusOr<Database> Database::LoadSchema(
     absl::string_view catalog_file_path) {
@@ -136,6 +136,10 @@ absl::StatusOr<Database> Database::LoadSchema(
 
 std::shared_ptr<Catalog> Database::GetCatalog() {
   return catalog;
+}
+
+std::shared_ptr<BufferPool> Database::GetBufferPool() {
+  return buffer_pool;
 }
 
 };  // namespace komfydb

@@ -28,4 +28,8 @@ bool PageId::operator==(const PageId& p) const {
   return table_id == p.GetTableId() && page_no == p.GetPageNumber();
 }
 
+PageId::operator std::string() const {
+  return std::to_string(table_id) + ", " + std::to_string(page_no);
+}
+
 };  // namespace komfydb::storage

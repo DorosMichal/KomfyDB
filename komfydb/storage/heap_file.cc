@@ -72,7 +72,7 @@ absl::StatusOr<std::unique_ptr<Page>> HeapFile::ReadPage(PageId id) {
   uint32_t file_length = file.tellg();
   uint64_t page_pos = (uint64_t)CONFIG_PAGE_SIZE * (uint64_t)id.GetPageNumber();
   if (page_pos >= file_length) {
-    return absl::InvalidArgumentError(
+    return absl::OutOfRangeError(
         absl::StrCat("Page number out of range: ", id.GetPageNumber(), " (",
                      file_length / CONFIG_PAGE_SIZE, ")"));
   }

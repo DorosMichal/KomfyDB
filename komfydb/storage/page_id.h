@@ -27,6 +27,8 @@ class PageId {
 
   bool operator==(const PageId& p) const;
 
+  operator std::string() const;
+
   template <typename H>
   friend H AbslHashValue(H h, const PageId& pid) {
     return H::combine(std::move(h), pid.table_id, pid.page_no);

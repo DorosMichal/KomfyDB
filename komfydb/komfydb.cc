@@ -2,14 +2,16 @@
 #include <string>
 
 #include "absl/status/statusor.h"
+#include "common/permissions.h"
 #include "glog/logging.h"
 
-#include "common/type.h"
 #include "komfydb/common/td_item.h"
 #include "komfydb/common/type.h"
 #include "komfydb/database.h"
+#include "komfydb/execution/seq_scan.h"
 #include "komfydb/storage/heap_page.h"
-#include "utils/status_macros.h"
+#include "komfydb/storage/table_iterator.h"
+#include "komfydb/utils/status_macros.h"
 
 using namespace komfydb;
 
@@ -26,18 +28,24 @@ int main(int argc, char* argv[]) {
   }
 
   std::shared_ptr<Catalog> catalog = db->GetCatalog();
+  std::shared_ptr<BufferPool> buffer_pool = db->GetBufferPool();
+
+  TransactionId tid;
   std::vector<int> table_ids = catalog->GetTableIds();
+  int table_id = table_ids[0];
 
-  LOG(INFO) << "Tables:";
-  for (auto table_id : table_ids) {
-    LOG(INFO) << table_id << "->" << catalog->GetTableName(table_id).value();
-    auto file = catalog->GetDatabaseFile(table_id).value();
-    std::unique_ptr<storage::Page> page =
-        file->ReadPage(storage::PageId(table_id, 0)).value();
-    storage::HeapPage* hp = static_cast<storage::HeapPage*>(page.get());
+  storage::TableIterator table_iterator(tid, table_id, catalog, buffer_pool);
+  execution::SeqScan seq_scan(table_iterator, tid, "test_table", table_id);
 
-    for (auto& record : hp->GetRecords()) {
-      LOG(INFO) << static_cast<std::string>(record);
-    }
+  if (!seq_scan.Open().ok()) {
+    LOG(ERROR) << "seq_scan open error? lol";
+  }
+
+  LOG(INFO) << "Opened seq_scan on table "
+            << catalog->GetTableName(table_id).value();
+
+  while (seq_scan.HasNext()) {
+    Record record = std::move(seq_scan.Next().value());
+    std::cout << static_cast<std::string>(record) << "\n";
   }
 }

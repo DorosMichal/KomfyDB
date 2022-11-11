@@ -18,7 +18,7 @@ namespace komfydb {
 class Database {
  private:
   std::shared_ptr<Catalog> catalog;
-  BufferPool buffer_pool;
+  std::shared_ptr<BufferPool> buffer_pool;
 
   Database(std::shared_ptr<Catalog> catalog);
 
@@ -26,6 +26,8 @@ class Database {
   static absl::StatusOr<Database> LoadSchema(absl::string_view catalog_file);
 
   std::shared_ptr<Catalog> GetCatalog();
+
+  std::shared_ptr<BufferPool> GetBufferPool();
 };
 
 };  // namespace komfydb
