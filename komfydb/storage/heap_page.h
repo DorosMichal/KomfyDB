@@ -7,7 +7,6 @@
 
 #include "absl/synchronization/mutex.h"
 
-#include "komfydb/common/tuple.h"
 #include "komfydb/common/tuple_desc.h"
 #include "komfydb/storage/page.h"
 #include "komfydb/storage/page_id.h"
@@ -16,7 +15,7 @@
 
 namespace {
 
-using komfydb::common::Tuple;
+using komfydb::common::Record;
 using komfydb::common::TupleDesc;
 using komfydb::transaction::TransactionId;
 
@@ -64,7 +63,7 @@ class HeapPage : public Page {
 
   absl::StatusOr<std::vector<uint8_t>> GetPageData() override;
 
-  std::vector<Record>& GetRecords();
+  std::vector<Record>* GetRecords() override;
 };
 
 };  // namespace komfydb::storage

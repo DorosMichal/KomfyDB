@@ -130,8 +130,8 @@ absl::Status HeapPage::SetBeforeImage() {
   return absl::OkStatus();
 }
 
-std::vector<Record>& HeapPage::GetRecords() {
-  return records;
+std::vector<Record>* HeapPage::GetRecords() {
+  return &records;
 }
 
 };  // namespace komfydb::storage

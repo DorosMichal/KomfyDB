@@ -87,6 +87,7 @@ absl::StatusOr<std::unique_ptr<Page>> HeapFile::ReadPage(PageId id) {
 }
 
 int HeapFile::GetNumPages() {
+  file.seekg(0, file.end);
   uint32_t file_length = file.tellg();
   return (file_length + CONFIG_PAGE_SIZE - 1) / CONFIG_PAGE_SIZE;
 }

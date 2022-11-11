@@ -3,18 +3,24 @@
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
 
-#include "komfydb/common/tuple.h"
-#include "komfydb/common/tuple_desc.h"
-#include "komfydb/execution/op_iterator.h"
-#include "komfydb/transaction/transaction_id.h"
+#include "komfydb/execution/seq_scan.h"
 
 namespace komfydb::execution {
 
-SeqScan::SeqScan(TransactionId tid, int table_id, absl::string_view table_alias)
-    : tid(tid), table_id(table_id), table_alias(table_alias) {}
+SeqScan::SeqScan(TransactionId tid, int table_id,
+                 std::shared_ptr<Catalog> catalog,
+                 std::shared_ptr<BufferPool> bufferpool,
+                 absl::string_view table_alias)
+    : tid(tid),
+      table_id(table_id),
+      catalog(catalog),
+      bufferpool(bufferpool),
+      table_alias(table_alias) {}
 
-SeqScan::SeqScan(TransactionId tid, int table_id) {
-  SeqScan(tid, table_id, common::GenerateUuidV4());
+SeqScan::SeqScan(TransactionId tid, int table_id,
+                 std::shared_ptr<Catalog> catalog,
+                 std::shared_ptr<BufferPool> bufferpool) {
+  SeqScan(tid, table_id, catalog, bufferpool, common::GenerateUuidV4());
 }
 
 std::string SeqScan::GetTableName() {
@@ -27,26 +33,25 @@ std::string SeqScan::GetAlias() {
 }
 
 absl::Status SeqScan::Open() {
-  TableIterator iterator(table_id);
-  iterator.open();
+  TableIterator iterator(tid, table_id, );
+  iterator.Open();
   return absl::OkStatus();
 }
 
 void SeqScan::Close() {
-  iterator.close();
+  iterator.Close();
 }
 
 absl::StatusOr<bool> SeqScan::HasNext() {
-  return iterator.has_next();
+  return iterator.HasNext();
 }
 
-absl::StatusOr<Tuple> SeqScan::Next() {
-  return iterator.next();
+absl::StatusOr<Record> SeqScan::Next() {
+  return iterator.Next();
 }
 
 absl::StatusOr<TupleDesc*> SeqScan::GetTupleDesc() {
   return catalog->GetTupleDesc(table_id);
 }
-};
-}
-;  // namespace komfydb::execution
+
+};  // namespace komfydb::execution

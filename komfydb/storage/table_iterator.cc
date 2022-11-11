@@ -1,19 +1,21 @@
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
 
-#include "komfydb/common/tuple.h"
+#include "komfydb/storage/table_iterator.h"
 
 namespace komfydb::storage {
 
-TableIterator::TableIterator(TransactionId tid, int table_id)
-    : tid(tid), table_id(table_id) {}
+TableIterator::TableIterator(TransactionId tid, int table_id,
+                             std::shared_ptr<Catalog> catalog,
+                             std::shared_ptr<BufferPool> bufferpool)
+    : tid(tid), table_id(table_id), catalog(catalog), bufferpool(bufferpool) {}
 
 absl::StatusOr<bool> TableIterator::LoadNextPage() {
   if (++page_ctr >= num_pages)
     return false;
     ASSIGN_OR_RETURN(Page* page, bufferpool->GetPage(PageId(table_id, page_ctr));
-    tuples = page->GetTuples();
-    current_tuple = tuples.begin();
+    records = page->GetRecords();
+    current_tuple = records->begin();
     return true;
 }
 
@@ -36,7 +38,7 @@ absl::Status TableIterator::Open() {
 void TableIterator::Close() {}
 
 absl::StatusOr<bool> TableIterator::HasNext() {
-  if (current_tuple != tuples.end())
+  if (current_tuple != records->end())
     return true;
 
   ASSIGN_OR_RETURN(bool good, LoadNextPage());
@@ -45,12 +47,11 @@ absl::StatusOr<bool> TableIterator::HasNext() {
   return HasNext();
 }
 
-absl::StatusOr<Tuple> TableIterator::Next() {
+absl::StatusOr<Record> TableIterator::Next() {
   ASSIGN_OR_RETURN(bool good, HasNext());
   if (!good)
-    return absl::OutOfRangeError("No more tuples in this table");
+    return absl::OutOfRangeError("No more records in this table");
   return *current_tuple++;
 }
-};
-}
-;  // namespace komfydb::storage
+
+};  // namespace komfydb::storage

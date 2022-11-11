@@ -9,11 +9,12 @@ cc_library(
     "heap_file.cc",
     "heap_page.cc",
     "record.cc",
+    "table_iterator.cc"
   ],
   hdrs = [
     "catalog.h",
     "page_id.h",
-    "db_file_iterator.h",
+    "table_iterator.h",
     "log_file.h",
     "db_file.h",
     "record_id.h",
