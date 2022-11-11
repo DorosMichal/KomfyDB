@@ -19,17 +19,12 @@ absl::StatusOr<bool> TuplePresent(std::vector<uint8_t>& header, int i) {
 
 int ParseInt(uint8_t* data) {
   int result = *reinterpret_cast<int*>(data);
-  std::cout << "Parsing " << ntohl(result) << "\n";
   return ntohl(result);
 }
 
 std::unique_ptr<IntField> ParseInt(std::vector<uint8_t>& data, int& data_idx) {
-  // std::unique_ptr<IntField> field =
-  //     std::unique_ptr<IntField>(new IntField(ParseInt(data.data() + data_idx)));
-  std::unique_ptr<IntField> field = std::unique_ptr<IntField>(new IntField(1));
-  // int xd;
-  // field->GetValue(xd);
-  // std::cout << "But parsed: " << xd << "\n";
+  std::unique_ptr<IntField> field =
+      std::unique_ptr<IntField>(new IntField(ParseInt(data.data() + data_idx)));
   data_idx += Type::INT_LEN;
   return field;
 }
@@ -49,7 +44,6 @@ std::unique_ptr<StringField> ParseString(std::vector<uint8_t>& data,
 
 void DumpInt(int data, std::vector<uint8_t>& result) {
   // We want data to be stored in big-endian.
-  std::cout << "Dumping " << data << "\n";
   data = htonl(data);
   uint8_t* bytes = reinterpret_cast<uint8_t*>(&data);
   result.insert(result.end(), bytes, bytes + sizeof(data));
@@ -67,7 +61,6 @@ void DumpString(Field* field, std::vector<uint8_t>& result) {
 void DumpInt(Field* field, std::vector<uint8_t>& result) {
   int data;
   field->GetValue(data);
-  std::cout << "Dumping " << data << "\n";
   DumpInt(data, result);
 }
 
@@ -90,15 +83,15 @@ absl::StatusOr<std::unique_ptr<HeapPage>> HeapPage::Create(
 
     if (!TuplePresent(header, i).value()) {
       data_idx += td->GetSize();
-    }
-    for (int j = 0; j < n_fields; j++) {
-      ASSIGN_OR_RETURN(Type field_type, td->GetFieldType(j));
+    } else {
+      for (int j = 0; j < n_fields; j++) {
+        ASSIGN_OR_RETURN(Type field_type, td->GetFieldType(j));
 
-      if (field_type.GetValue() == Type::INT) {
-        RETURN_IF_ERROR(record.SetField(j, ParseInt(data, data_idx)));
-        // data_idx += 4;
-      } else if (field_type.GetValue() == Type::STRING) {
-        RETURN_IF_ERROR(record.SetField(j, ParseString(data, data_idx)));
+        if (field_type.GetValue() == Type::INT) {
+          RETURN_IF_ERROR(record.SetField(j, ParseInt(data, data_idx)));
+        } else if (field_type.GetValue() == Type::STRING) {
+          RETURN_IF_ERROR(record.SetField(j, ParseString(data, data_idx)));
+        }
       }
     }
 
@@ -113,12 +106,12 @@ PageId HeapPage::GetId() {
   return pid;
 }
 
-// std::optional<TransactionId> HeapPage::DirtiedBy() {
-// }
-
-// void HeapPage::MarkDirty(bool dirty, TransactionId tid) {
-// }
-
+// // std::optional<TransactionId> HeapPage::DirtiedBy() {
+// // }
+//
+// // void HeapPage::MarkDirty(bool dirty, TransactionId tid) {
+// // }
+//
 absl::StatusOr<std::vector<uint8_t>> HeapPage::GetPageData() {
   // TODO: uncomment when DirtiedBy is implemented
   // if (!DirtiedBy())
@@ -137,18 +130,11 @@ absl::StatusOr<std::vector<uint8_t>> HeapPage::GetPageData() {
     for (int j = 0; j < tuple_len; j++) {
       ASSIGN_OR_RETURN(Type field_type, td->GetFieldType(j));
       ASSIGN_OR_RETURN(Field * field, record.GetField(j));
-      std::cout << "Dumping " << j << ": ";
 
       if (field_type.GetValue() == Type::STRING) {
-        std::string val;
-        field->GetValue(val);
         DumpString(field, result);
-        std::cout << val << "\n";
       } else if (field_type.GetValue() == Type::INT) {
         DumpInt(field, result);
-        int val;
-        field->GetValue(val);
-        std::cout << val << "\n";
       }
     }
   }
@@ -168,15 +154,15 @@ absl::Status HeapPage::SetBeforeImage() {
   return absl::OkStatus();
 }
 
-std::vector<Record> HeapPage::GetRecords() {
-  std::vector<Record> result;
-  for (int i = 0; i < records.size(); i++) {
-    if (TuplePresent(header, i).value()) {
-      result.push_back(Record(records[i]));
-    }
-  }
-
-  return result;
-}
+// std::vector<Record> HeapPage::GetRecords() {
+//   std::vector<Record> result;
+//   for (int i = 0; i < records.size(); i++) {
+//     if (TuplePresent(header, i).value()) {
+//       result.push_back(std::move(Record(records[i])));
+//     }
+//   }
+//
+//   return result;
+// }
 
 };  // namespace komfydb::storage
