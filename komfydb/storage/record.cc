@@ -20,4 +20,8 @@ bool Record::operator==(const Record& r) const {
   return Tuple::operator==(r) && r.rid == rid;
 }
 
+Record::operator std::string() const {
+  return Tuple::operator std::string();
+}
+
 };  // namespace komfydb::storage

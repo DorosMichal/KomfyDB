@@ -38,6 +38,8 @@ class Record : public Tuple {
   void SetId(RecordId rid);
 
   bool operator==(const Record& r) const;
+
+  operator std::string() const;
 };
 
 };  // namespace komfydb::storage

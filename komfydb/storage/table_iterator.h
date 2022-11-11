@@ -23,12 +23,11 @@ class TableIterator {
   int page_ctr;
   int table_id;
   int num_pages;
-  std::vector<Record>* records;
+  std::vector<Record> records;
   std::vector<Record>::iterator current_tuple;
   std::shared_ptr<Catalog> catalog;
   std::shared_ptr<BufferPool> bufferpool;
-  absl::StatusOr<bool> LoadNextPage();
-  absl::Status LoadFirstPage();
+  absl::Status LoadNextPage();
 
  public:
   TableIterator(TransactionId tid, int table_id,
@@ -39,9 +38,13 @@ class TableIterator {
 
   void Close();
 
-  absl::StatusOr<bool> HasNext();
+  bool HasNext();
 
   absl::StatusOr<Record> Next();
+
+  absl::StatusOr<TupleDesc*> GetTupleDesc();
+
+  std::string GetTableName();
 };
 
 };  // namespace komfydb::storage

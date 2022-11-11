@@ -16,8 +16,6 @@
 
 namespace {
 
-using komfydb::storage::BufferPool;
-using komfydb::storage::Catalog;
 using komfydb::storage::Record;
 using komfydb::storage::TableIterator;
 using komfydb::transaction::TransactionId;
@@ -26,38 +24,30 @@ using komfydb::transaction::TransactionId;
 
 namespace komfydb::execution {
 
-class SeqScan : OpIterator {
+class SeqScan : public OpIterator {
  public:
-  SeqScan(TransactionId tid, int table_id, std::shared_ptr<Catalog> catalog,
-          std::shared_ptr<BufferPool> bufferpool,
-          absl::string_view table_alias);
+  SeqScan(TableIterator iterator, TransactionId tid,
+          absl::string_view table_alias, int table_id);
 
-  SeqScan(TransactionId tid, int table_id, std::shared_ptr<Catalog> catalog,
-          std::shared_ptr<BufferPool> bufferpool);
-
-  std::string GetTableName();
-
-  std::string GetAlias();
-
-  void Reset(int table_id, std::string table_alias);
+  SeqScan(TableIterator iterator, TransactionId tid, int table_id);
 
   absl::Status Open() override;
 
   void Close() override;
 
-  absl::StatusOr<bool> HasNext() override;
+  std::string GetAlias();
+
+  bool HasNext() override;
 
   absl::StatusOr<Record> Next() override;
 
   absl::StatusOr<TupleDesc*> GetTupleDesc() override;
 
  private:
-  int table_id;
-  std::string table_alias;
-  TransactionId tid;
   TableIterator iterator;
-  std::shared_ptr<Catalog> catalog;
-  std::shared_ptr<BufferPool> bufferpool;
+  TransactionId tid;
+  std::string table_alias;
+  int table_id;
 };
 
 };  // namespace komfydb::execution

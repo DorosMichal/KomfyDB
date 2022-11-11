@@ -3,7 +3,11 @@
 
 #include <vector>
 
+#include "absl/status/status.h"
+#include "absl/status/statusor.h"
+
 #include "komfydb/storage/page_id.h"
+#include "komfydb/storage/record.h"
 #include "komfydb/transaction/transaction_id.h"
 
 namespace {
@@ -31,7 +35,7 @@ class Page {
 
   virtual absl::Status SetBeforeImage() = 0;
 
-  virtual std::vector<Record>* GetRecords() = 0;
+  virtual std::vector<Record> GetRecords() = 0;
 };
 
 };  // namespace komfydb::storage

@@ -18,15 +18,17 @@ namespace komfydb::execution {
 
 class OpIterator {
  public:
-  virtual absl::Status Open();
+  virtual ~OpIterator() {}
 
-  virtual void Close();
+  virtual absl::Status Open() = 0;
 
-  virtual absl::StatusOr<bool> HasNext();
+  virtual void Close() = 0;
 
-  virtual absl::StatusOr<Record> Next();
+  virtual bool HasNext() = 0;
 
-  virtual absl::StatusOr<TupleDesc*> GetTupleDesc();
+  virtual absl::StatusOr<Record> Next() = 0;
+
+  virtual absl::StatusOr<TupleDesc*> GetTupleDesc() = 0;
 };
 
 };  // namespace komfydb::execution
