@@ -64,7 +64,7 @@ class HeapPage : public Page {
 
   absl::StatusOr<std::vector<uint8_t>> GetPageData() override;
 
-  std::vector<Record>& GetRecords();
+  std::vector<Record> GetRecords();
 };
 
 };  // namespace komfydb::storage

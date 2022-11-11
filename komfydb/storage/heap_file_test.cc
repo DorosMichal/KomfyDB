@@ -16,42 +16,46 @@ using komfydb::common::Type;
 class HeapFileTest : public ::testing::Test {
  protected:
   const char* kTestDataFilePath = "komfydb/storage/testdata/heap_file_test.dat";
+  const int tuple_sz = 272;
   const int tuples = 1000;
-  int tuple_sz;
   int pages_cnt;
   int tuples_per_page;
   int table_id;
   const std::vector<Type> types = {Type::INT, Type::STRING, Type::INT,
                                    Type::STRING};
   std::unique_ptr<TupleDesc> td;
-  std::unique_ptr<HeapFile> hp;
+  std::unique_ptr<HeapFile> hfile;
 
   void SetUp() override {
     td = std::make_unique<TupleDesc>(types);
-    tuple_sz = td->GetSize();
-    tuples_per_page = (CONFIG_PAGE_SIZE * 8) / (tuple_sz * 8 + td->Length());
-    pages_cnt = tuples / tuples_per_page;
-
-    absl::StatusOr<std::unique_ptr<HeapFile>> status_or_hp =
-        HeapFile::Create(kTestDataFilePath, *td, Permissions::READ_ONLY);
-
-    if (!status_or_hp.ok()) {
-      FAIL() << "HeapFile::Create failed: " << status_or_hp.status();
+    if (tuple_sz != td->GetSize()) {
+      FAIL() << "This test assumes that tuple's size on disk is " << tuple_sz
+             << ", but it's " << td->GetSize() << " in code.\n";
     }
 
-    hp = std::move(status_or_hp.value());
-    table_id = hp->GetId();
+    tuples_per_page = (CONFIG_PAGE_SIZE * 8) / (tuple_sz * 8 + td->Length());
+    pages_cnt = (tuples + tuples_per_page - 1) / tuples_per_page;
+
+    absl::StatusOr<std::unique_ptr<HeapFile>> status_or_hfile =
+        HeapFile::Create(kTestDataFilePath, *td, Permissions::READ_ONLY);
+
+    if (!status_or_hfile.ok()) {
+      FAIL() << "HeapFile::Create failed: " << status_or_hfile.status();
+    }
+
+    hfile = std::move(status_or_hfile.value());
+    table_id = hfile->GetId();
   }
 };
 
 TEST_F(HeapFileTest, ReadPageErrors) {
   absl::StatusOr<std::unique_ptr<Page>> page;
 
-  page = hp->ReadPage(PageId(table_id, pages_cnt + 1));
+  page = hfile->ReadPage(PageId(table_id, pages_cnt + 1));
   ASSERT_FALSE(page.ok());
-  EXPECT_EQ(page.status().message(), "Page number out of range: 67 (67)");
+  EXPECT_EQ(page.status().message(), "Page number out of range: 68 (67)");
 
-  page = hp->ReadPage(PageId(table_id + 1, 0));
+  page = hfile->ReadPage(PageId(table_id + 1, 0));
   ASSERT_FALSE(page.ok());
   EXPECT_EQ(page.status().message(), "Table ID does not match: 1!=2");
 }
@@ -59,8 +63,9 @@ TEST_F(HeapFileTest, ReadPageErrors) {
 TEST_F(HeapFileTest, ReadPage) {
   absl::StatusOr<std::unique_ptr<Page>> page;
   for (int i = 0; i < pages_cnt; i++) {
-    ASSERT_TRUE(hp->ReadPage(PageId(table_id, i)).ok());
+    ASSERT_TRUE(hfile->ReadPage(PageId(table_id, i)).ok());
   }
+  ASSERT_FALSE(hfile->ReadPage(PageId(table_id, pages_cnt)).ok());
 }
 
 };  // namespace
