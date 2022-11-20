@@ -1,0 +1,26 @@
+diff --git a/Makefile b/Makefile
+index 14efbd1..a90f0f2 100644
+--- a/Makefile
++++ b/Makefile
+@@ -56,7 +56,7 @@ else
+ 	LIB_CFLAGS += -fPIC
+ 	LIB_LFLAGS  = -shared -o
+ endif
+-LIB_CPP = $(sort $(shell find $(SRC) -name '*.cpp' -not -path "$(SRCPARSER)/*") $(PARSER_CPP))
++LIB_CPP = $(sort $(shell find -L $(SRC) -name '*.cpp' -not -path "$(SRCPARSER)/*") $(PARSER_CPP))
+ LIB_H   = $(shell find $(SRC) -name '*.h' -not -path "$(SRCPARSER)/*") $(PARSER_H)
+ LIB_ALL = $(shell find $(SRC) -name '*.cpp' -not -path "$(SRCPARSER)/*") $(shell find $(SRC) -name '*.h' -not -path "$(SRCPARSER)/*")
+ LIB_OBJ = $(LIB_CPP:%.cpp=%.o)
+@@ -91,10 +91,10 @@ cleanparser:
+ 
+ cleanall: clean cleanparser
+ 
+-install:
++install: library
+ 	cp $(LIB_BUILD) $(INSTALL)/lib/$(LIB_BUILD)
+ 	rm -rf $(INSTALL)/include/hsql
+-	cp -r src $(INSTALL)/include/hsql
++	cp -Lr src $(INSTALL)/include/hsql
+ 	find $(INSTALL)/include/hsql -not -name '*.h' -type f | xargs rm
+ 
+ 

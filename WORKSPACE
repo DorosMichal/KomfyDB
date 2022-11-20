@@ -26,10 +26,37 @@ http_archive(
   urls = ["https://github.com/bazelbuild/bazel-skylib/releases/download/1.2.1/bazel-skylib-1.2.1.tar.gz"],
   sha256 = "f7be3474d42aae265405a592bb7da8e171919d74c16f082a5457840f06054728",
 )
-http_archive(
 
+http_archive(
   name = "com_google_googletest",
   urls = ["https://github.com/google/googletest/archive/refs/tags/release-1.12.1.zip"],
   strip_prefix = "googletest-release-1.12.1",
   sha256 = "24564e3b712d3eb30ac9a85d92f7d720f60cc0173730ac166f27dda7fed76cb2"
+)
+
+http_archive(
+    name = "rules_foreign_cc",
+    sha256 = "076b8217296ca25d5b2167a832c8703cc51cbf8d980f00d6c71e9691876f6b08",
+    strip_prefix = "rules_foreign_cc-2c6262f8f487cd3481db27e2c509d9e6d30bfe53",
+    url = "https://github.com/bazelbuild/rules_foreign_cc/archive/2c6262f8f487cd3481db27e2c509d9e6d30bfe53.tar.gz",
+)
+load("@rules_foreign_cc//foreign_cc:repositories.bzl", "rules_foreign_cc_dependencies")
+rules_foreign_cc_dependencies()
+
+_ALL_CONTENT = """\
+filegroup(
+    name = "all_srcs",
+    srcs = glob(["**"]),
+    visibility = ["//visibility:public"],
+)
+"""
+
+http_archive(
+  name = "sql_parser",
+  build_file_content = _ALL_CONTENT,
+  urls = ["https://github.com/hyrise/sql-parser/archive/refs/heads/master.zip"],
+  strip_prefix = "sql-parser-master",
+  sha256 = "6917c6a78dbb01cd55743ddcf1436fef6ae190ef51bcc6cf2e9ba67c9bbff39a",
+  patches = ["patches/sql_parser/makefile.patch"],
+  patch_args = ["-p1"],
 )
