@@ -65,3 +65,12 @@ cc_binary(
     "@com_github_google_glog//:glog",
   ],
 )
+
+cc_binary(
+  name = "sql_parser_test",
+  srcs = ["sql_parser_test.cc",],
+  deps = [
+    "//:sql_parser",
+  ],
+  linkopts = ["-lreadline",],
+)

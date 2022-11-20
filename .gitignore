@@ -5,3 +5,4 @@ compile_commands.json
 encoder/*.class
 encoder/*.txt
 encoder/*.dat
+.cache
