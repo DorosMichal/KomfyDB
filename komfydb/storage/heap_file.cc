@@ -43,7 +43,9 @@ absl::StatusOr<std::unique_ptr<HeapFile>> HeapFile::Create(
   uint32_t file_length = file.tellg();
   if (file_length % CONFIG_PAGE_SIZE) {
     file.close();
-    return absl::InvalidArgumentError("File size not divisble by page size.");
+    return absl::InvalidArgumentError(
+        absl::StrCat("File size ", std::to_string(file_length),
+                     " not divisble by page size."));
   }
 
   return std::unique_ptr<HeapFile>(
@@ -86,10 +88,10 @@ absl::StatusOr<std::unique_ptr<Page>> HeapFile::ReadPage(PageId id) {
   return page;
 }
 
-int HeapFile::GetNumPages() {
+int HeapFile::PageCount() {
   file.seekg(0, file.end);
   uint32_t file_length = file.tellg();
-  return (file_length + CONFIG_PAGE_SIZE - 1) / CONFIG_PAGE_SIZE;
+  return file_length / CONFIG_PAGE_SIZE;
 }
 
 };  // namespace komfydb::storage
