@@ -2,6 +2,17 @@
 
 namespace komfydb::storage {
 
+void Record::swap(Record& r) {
+  Tuple::swap(r);
+  rid = r.rid;
+}
+
+Record& Record::operator=(const Record& r) {
+  Record tmp(r);
+  swap(tmp);
+  return *this;
+}
+
 Record::Record(const Record& r) : Tuple(r), rid(r.rid) {}
 
 RecordId Record::GetId() {

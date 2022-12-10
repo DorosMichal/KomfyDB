@@ -20,12 +20,16 @@ class Tuple {
 
   std::vector<std::unique_ptr<Field>> fields;
 
+  void swap(Tuple& t);
+
  public:
   Tuple(const TupleDesc* td = nullptr);
 
   Tuple(const Tuple& t);
 
   Tuple(Tuple&& tuple) = default;
+
+  Tuple& operator=(const Tuple& t);
 
   const TupleDesc* GetTupleDesc();
 

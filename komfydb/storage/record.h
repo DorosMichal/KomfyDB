@@ -23,10 +23,14 @@ class Record : public Tuple {
  private:
   RecordId rid;
 
+  void swap(Record& r);
+
  public:
   Record(const Record& r);
 
   Record(Record&& r) = default;
+
+  Record& operator=(const Record& r);
 
   Record(const TupleDesc* td, PageId pid, int tuple_no)
       : Tuple(td), rid(pid, tuple_no) {}
