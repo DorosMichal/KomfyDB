@@ -28,8 +28,21 @@ bool compare_fields(const Field* f1, const Field* f2) {
 
 namespace komfydb::common {
 
+void Tuple::swap(Tuple& t) {
+  td = t.td;
+  fields = std::move(t.fields);
+}
+
+Tuple& Tuple::operator=(const Tuple& t) {
+  Tuple tmp(t);
+  swap(tmp);
+  return *this;
+}
+
 Tuple::Tuple(const TupleDesc* td) : td(td) {
-  fields.resize(td->Length());
+  if (td) {
+    fields.resize(td->Length());
+  }
 }
 
 Tuple::Tuple(const Tuple& t) {
