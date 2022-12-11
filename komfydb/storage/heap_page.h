@@ -30,7 +30,7 @@ class HeapPage : public Page {
   TupleDesc* td;
   std::vector<uint8_t> header;
   std::vector<Record> records;
-  int num_slots;  // TODO I don't like this name ; do we even need this?
+  int num_slots;  // TODO I don't like this name
   std::vector<uint8_t> old_data;
   // Take a look on absl::MutexLock to see how to acquire it
   absl::Mutex old_data_lock;
@@ -63,6 +63,10 @@ class HeapPage : public Page {
   absl::StatusOr<std::vector<uint8_t>> GetPageData() override;
 
   std::vector<Record> GetRecords() override;
+
+  absl::Status AddTuple(Tuple& t) override;
+
+  absl::Status RemoveRecord(RecordId& id) override;
 };
 
 };  // namespace komfydb::storage

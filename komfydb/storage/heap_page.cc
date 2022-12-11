@@ -7,6 +7,8 @@
 #include "komfydb/config.h"
 #include "komfydb/utils/status_macros.h"
 
+#include "absl/strings/str_cat.h"
+
 namespace {
 
 using namespace komfydb::common;
@@ -15,6 +17,20 @@ absl::StatusOr<bool> TuplePresent(std::vector<uint8_t>& header, int i) {
   if (i / 8 >= header.size() || i < 0)
     return absl::InvalidArgumentError("Index out of range");
   return header[i / 8] & (1 << (i % 8));
+}
+
+absl::Status MarkOccupied(std::vector<uint8_t>& header, int i) {
+  if (i / 8 >= header.size() || i < 0)
+    return absl::InvalidArgumentError("Index out of range");
+  header[i / 8] |= (1 << (i % 8));
+  return absl::OkStatus();
+}
+
+absl::Status MarkFree(std::vector<uint8_t>& header, int i) {
+  if (i / 8 >= header.size() || i < 0)
+    return absl::InvalidArgumentError("Index out of range");
+  header[i / 8] &= ~(1 << (i % 8));
+  return absl::OkStatus();
 }
 
 int ParseInt(uint8_t* data) {
@@ -31,13 +47,11 @@ std::unique_ptr<IntField> ParseInt(std::vector<uint8_t>& data, int& data_idx) {
 
 std::unique_ptr<StringField> ParseString(std::vector<uint8_t>& data,
                                          int& data_idx) {
-  // TODO This function does not care about the length of string encoded
-  // in the data file and we parse the string until the first null byte.
-  // Should we leave it like this or read the amount of data specified by
-  // the integer before the string?
+  int string_len = ParseInt(&data[data_idx]);
   data_idx += 4;
-  std::unique_ptr<StringField> value =
-      std::make_unique<StringField>((char*)&data[data_idx]);
+  std::string s((char*)&data[data_idx]);
+  s = s.substr(0, string_len);
+  std::unique_ptr<StringField> value = std::make_unique<StringField>(s);
   data_idx += Type::STR_LEN;
   return value;
 }
@@ -126,7 +140,9 @@ absl::StatusOr<std::vector<uint8_t>> HeapPage::GetPageData() {
       result.insert(result.end(), td->GetSize(), '\0');
       continue;
     }
+
     Record& record = records[i];
+
     for (int j = 0; j < tuple_len; j++) {
       ASSIGN_OR_RETURN(Type field_type, td->GetFieldType(j));
       ASSIGN_OR_RETURN(Field * field, record.GetField(j));
@@ -163,6 +179,36 @@ std::vector<Record> HeapPage::GetRecords() {
   }
 
   return result;
+}
+
+absl::Status HeapPage::AddTuple(Tuple& t) {
+  for (int i = 0; i < num_slots; i++) {
+    // TODO: find first 0 bit faster
+    ASSIGN_OR_RETURN(bool occupied, TuplePresent(header, i));
+    if (!occupied) {
+      RETURN_IF_ERROR(MarkOccupied(header, i));
+      records[i] = Record(t, RecordId(pid, i));
+      return absl::OkStatus();
+    }
+  }
+  return absl::FailedPreconditionError(
+      absl::StrCat(std::string(pid), " has no space to add a new record."));
+}
+
+absl::Status HeapPage::RemoveRecord(RecordId& rid) {
+  if (rid.GetTupleNumber() < 0 || rid.GetTupleNumber() >= num_slots) {
+    return absl::OutOfRangeError(absl::StrCat(
+        std::string(rid),
+        " out of range [num_slots=", std::to_string(num_slots), "]"));
+  }
+  ASSIGN_OR_RETURN(bool occupied, TuplePresent(header, rid.GetTupleNumber()));
+  if (rid.GetPageId() != pid || !occupied) {
+    return absl::InvalidArgumentError(
+        absl::StrCat(std::string(pid), " does not contain record with rid ",
+                     std::string(rid)));
+  }
+  RETURN_IF_ERROR(MarkFree(header, rid.GetTupleNumber()));
+  return absl::OkStatus();
 }
 
 };  // namespace komfydb::storage

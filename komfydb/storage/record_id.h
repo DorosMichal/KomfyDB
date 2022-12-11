@@ -20,6 +20,8 @@ class RecordId {
 
   bool operator==(const RecordId& rid) const;
 
+  operator std::string() const;
+
   // TODO(HashCode)
   // int HashCode();
 };

@@ -15,6 +15,8 @@ Record& Record::operator=(const Record& r) {
 
 Record::Record(const Record& r) : Tuple(r), rid(r.rid) {}
 
+Record::Record(const Tuple& t, RecordId rid) : Tuple(t), rid(rid) {}
+
 RecordId Record::GetId() {
   return rid;
 }
