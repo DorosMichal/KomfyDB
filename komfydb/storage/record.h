@@ -1,11 +1,16 @@
 #ifndef __RECORD_H__
 #define __RECORD_H__
 
+#include "komfydb/common/int_field.h"
+#include "komfydb/common/string_field.h"
 #include "komfydb/common/tuple.h"
+#include "komfydb/common/type.h"
 #include "komfydb/storage/record_id.h"
 
 namespace {
 
+using komfydb::common::IntField;
+using komfydb::common::StringField;
 using komfydb::common::Tuple;
 using komfydb::common::TupleDesc;
 
@@ -13,12 +18,6 @@ using komfydb::common::TupleDesc;
 
 namespace komfydb::storage {
 
-// TODO Actually I have no idea how double inheritance is implemented in C++,
-// so we need to investigate it. However I feel like this is exactly what
-// we want to do here: Tuple is a representation of a tuple (duh)
-// and shouldn't have any code regarding I/O operations (i.e. storage)
-// That's why we need Record, which is a tuple residing on the disk and have
-// it's own RecordId.
 class Record : public Tuple {
  private:
   RecordId rid;
@@ -27,6 +26,8 @@ class Record : public Tuple {
 
  public:
   Record(const Record& r);
+
+  Record(const Tuple& t, RecordId rid);
 
   Record(Record&& r) = default;
 

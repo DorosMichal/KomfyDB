@@ -23,7 +23,7 @@ class Tuple {
   void swap(Tuple& t);
 
  public:
-  Tuple(const TupleDesc* td = nullptr);
+  Tuple(const TupleDesc* td);
 
   Tuple(const Tuple& t);
 

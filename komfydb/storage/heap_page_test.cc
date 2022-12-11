@@ -25,7 +25,7 @@ class HeapPageTest : public ::testing::Test {
   const std::vector<Type> types = {Type::INT, Type::STRING, Type::INT,
                                    Type::STRING};
   PageId pid;
-  std::vector<uint8_t> test_data;
+  std::vector<uint8_t> test_data, empty_data;
   std::fstream file;
   std::unique_ptr<TupleDesc> td;
   int tuple_sz;
@@ -34,7 +34,7 @@ class HeapPageTest : public ::testing::Test {
   void SetUp() override {
     td = std::make_unique<TupleDesc>(types);
     tuple_sz = td->GetSize();
-    tuples_on_page = (CONFIG_PAGE_SIZE * 8) / (tuple_sz * 8 + td->Length());
+    tuples_on_page = (CONFIG_PAGE_SIZE * 8) / (tuple_sz * 8 + 1);
 
     file.open(std::string(kTestDataFilePath), std::ios::in | std::ios::binary);
     if (!file.good()) {
@@ -49,6 +49,8 @@ class HeapPageTest : public ::testing::Test {
     file.seekg(0, file.beg);
     test_data.resize(CONFIG_PAGE_SIZE);
     file.read((char*)test_data.data(), CONFIG_PAGE_SIZE);
+
+    empty_data.insert(empty_data.begin(), CONFIG_PAGE_SIZE, 0);
 
     pid = PageId(69, 420);
   }
@@ -99,6 +101,60 @@ TEST_F(HeapPageTest, GetPageData) {
   absl::StatusOr<std::vector<uint8_t>> page_data = (*hpage)->GetPageData();
   ASSERT_TRUE(page_data.ok());
   EXPECT_EQ(page_data.value(), test_data);
+}
+
+TEST_F(HeapPageTest, AddAndRemoveTuples) {
+  absl::StatusOr<std::unique_ptr<HeapPage>> hpage =
+      HeapPage::Create(pid, td.get(), empty_data);
+  ASSERT_TRUE(hpage.ok());
+
+  Tuple t[3] = {Tuple(td.get()), Tuple(td.get()), Tuple(td.get())};
+  ASSERT_TRUE(t[0].SetField(0, std::make_unique<IntField>(0)).ok());
+  ASSERT_TRUE(t[0].SetField(1, std::make_unique<StringField>("a")).ok());
+  ASSERT_TRUE(t[0].SetField(2, std::make_unique<IntField>(1)).ok());
+  ASSERT_TRUE(t[0].SetField(3, std::make_unique<StringField>("b")).ok());
+  t[1] = t[0];
+  t[2] = t[0];
+  ASSERT_TRUE(t[1].SetField(0, std::make_unique<IntField>(2)).ok());
+  ASSERT_TRUE(t[2].SetField(1, std::make_unique<StringField>("c")).ok());
+
+  for (int i = 0; i < 3; i++) {
+    ASSERT_TRUE((*hpage)->AddTuple(t[i]).ok());
+  }
+
+  bool have_tuple[3] = {false, false, false};
+  RecordId ids[3] = {RecordId(pid, 0), RecordId(pid, 0), RecordId(pid, 0)};
+  for (Record rec : (*hpage)->GetRecords()) {
+    for (int i = 0; i < 3; i++) {
+      if (t[i] == rec) {
+        have_tuple[i] = true;
+        ids[i] = rec.GetId();
+      }
+    }
+  }
+  for (int i = 0; i < 3; i++) {
+    ASSERT_TRUE(have_tuple[i]);
+    have_tuple[i] = false;
+  }
+
+  ASSERT_TRUE((*hpage)->RemoveRecord(ids[0]).ok());
+  ASSERT_TRUE((*hpage)->RemoveRecord(ids[2]).ok());
+  for (Record rec : (*hpage)->GetRecords()) {
+    for (int i = 0; i < 3; i++) {
+      if (t[i] == rec) {
+        have_tuple[i] = true;
+      }
+    }
+  }
+  ASSERT_FALSE(have_tuple[0]);
+  ASSERT_TRUE(have_tuple[1]);
+  ASSERT_FALSE(have_tuple[2]);
+
+  for (int i = 0; i < tuples_on_page - 1; i++) {
+    ASSERT_TRUE((*hpage)->AddTuple(t[0]).ok());
+  }
+  /* No more space */
+  ASSERT_FALSE((*hpage)->AddTuple(t[0]).ok());
 }
 
 };  // namespace

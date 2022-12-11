@@ -27,6 +27,8 @@ class PageId {
 
   bool operator==(const PageId& p) const;
 
+  bool operator!=(const PageId& p) const;
+
   operator std::string() const;
 
   template <typename H>

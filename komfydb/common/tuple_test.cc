@@ -71,7 +71,7 @@ TEST(Tuple, CopyAssignment) {
   ASSERT_TRUE(t1.SetField(2, std::make_unique<IntField>(2)).ok());
   ASSERT_TRUE(t1.SetField(3, std::make_unique<StringField>("b")).ok());
 
-  Tuple t2;
+  Tuple t2(&td);
   t2 = t1;
   Tuple t3(t1);
 
