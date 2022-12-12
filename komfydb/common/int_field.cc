@@ -12,13 +12,13 @@ void IntField::GetValue(int& i) const {
   i = value;
 }
 
-absl::StatusOr<bool> IntField::Compare(const Op& op, const Field& f) const {
-  if (f.GetType() != GetType()) {
+absl::StatusOr<bool> IntField::Compare(const Op& op, const Field* f) const {
+  if (f->GetType() != GetType()) {
     return absl::InvalidArgumentError("Can't compare fields of different type");
   }
 
   int fv;
-  f.GetValue(fv);
+  f->GetValue(fv);
 
   switch (op.value) {
     case Op::EQUALS:

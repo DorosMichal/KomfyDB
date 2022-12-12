@@ -18,6 +18,8 @@ class TupleDesc {
 
   TupleDesc(const std::vector<Type>& types);
 
+  TupleDesc(const TupleDesc& td);
+
   TupleDesc(const TupleDesc& td1, const TupleDesc& td2);
 
   std::vector<TDItem> GetItems();

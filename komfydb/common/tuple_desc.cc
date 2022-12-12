@@ -31,6 +31,10 @@ TupleDesc::TupleDesc(const std::vector<Type>& types) {
   }
 }
 
+TupleDesc::TupleDesc(const TupleDesc& td) {
+  items = td.items;
+}
+
 TupleDesc::TupleDesc(const TupleDesc& td1, const TupleDesc& td2) {
   JoinVectors(td1.items, td2.items, items);
 }
