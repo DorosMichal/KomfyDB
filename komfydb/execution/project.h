@@ -10,10 +10,25 @@ namespace komfydb::execution {
 
 class Project : public OpIterator {
  private:
-  OpIterator* child;
+  std::unique_ptr<OpIterator> child;
+  std::vector<int>& out_field_idxs;
+
+  Project(std::unique_ptr<OpIterator> child, std::vector<int>& out_field_idxs,
+          TupleDesc tuple_desc);
+
+  absl::Status FetchNext() override;
 
  public:
-  Project(std::vector<int> out_field_idxs, OpIterator* child);
+  static absl::StatusOr<std::unique_ptr<Project>> Create(
+      std::unique_ptr<OpIterator> child, std::vector<int>& out_field_idxs);
+
+  absl::Status Open() override;
+
+  void Close() override;
+
+  absl::Status Rewind() override;
+
+  std::string GetAlias();
 };
 
 }  // namespace komfydb::execution

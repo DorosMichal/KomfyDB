@@ -20,6 +20,7 @@ cc_library(
     "aggregate.h",
     "predicate.h",
     "filter.h",
+    "project.h",
   ],
   srcs = [
     "op_iterator.cc",
@@ -29,11 +30,13 @@ cc_library(
     "join.cc",
     "predicate.cc",
     "filter.cc",
+    "project.cc",
   ],
   deps = [
     ":op",
     "//komfydb/storage:storage",
     "//komfydb/utils:utility",
+    "//komfydb/common:common",
     "@com_google_absl//absl/status",
   ],
   visibility = ["//visibility:public"],

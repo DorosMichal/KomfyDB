@@ -13,6 +13,7 @@
 #include "komfydb/execution/join_predicate.h"
 #include "komfydb/execution/order_by.h"
 #include "komfydb/execution/predicate.h"
+#include "komfydb/execution/project.h"
 #include "komfydb/execution/seq_scan.h"
 
 #include "komfydb/storage/heap_page.h"
@@ -102,26 +103,34 @@ int main(int argc, char* argv[]) {
   }
   std::unique_ptr<execution::Join> join = std::move(status_or_join.value());
 
+  // order by
+
   auto status_or_order_by = execution::OrderBy::Create(
       std::move(join), 0, execution::OrderBy::Order::ASCENDING);
   std::unique_ptr<execution::OrderBy> order_by =
       std::move(status_or_order_by.value());
 
-  if (!order_by->Open().ok()) {
-    LOG(ERROR) << "order_by open error";
+  std::vector<int> out_field_idxs = {0, 2, 3, 4};
+  auto status_or_project =
+      execution::Project::Create(std::move(order_by), out_field_idxs);
+  std::unique_ptr<execution::Project> project =
+      std::move(status_or_project.value());
+
+  if (!project->Open().ok()) {
+    LOG(ERROR) << "project open error";
   }
 
-  LOG(INFO) << "Opened order_by\n";
-  LOG(ERROR) << "udalo sie\n";
+  LOG(INFO) << "Opened project\n";
 
-  ITERATE_RECORDS(order_by, record) {
+  ITERATE_RECORDS(project, record) {
+    std::cout << static_cast<std::string>(*(record.value())) << "\n";
     int filtered_field;
     record.value()->GetField(0).value()->GetValue(filtered_field);
     assert(filtered_field >= 2000000000);
-    std::cout << static_cast<std::string>(*(record.value())) << "\n";
   }
   if (!absl::IsOutOfRange(record.status())) {
     LOG(ERROR) << record.status().message();
   }
-  order_by->Close();
+
+  project->Close();
 }
