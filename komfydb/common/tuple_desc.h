@@ -24,7 +24,11 @@ class TupleDesc {
 
   TupleDesc(const TupleDesc& td1, const TupleDesc& td2);
 
+  TupleDesc(const std::vector<TDItem>& items);
+
   std::vector<TDItem> GetItems();
+
+  absl::StatusOr<TDItem> GetItem(int idx);
 
   int Length() const;
 
