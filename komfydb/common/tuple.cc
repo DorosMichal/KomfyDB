@@ -69,7 +69,7 @@ const TupleDesc* Tuple::GetTupleDesc() {
   return td;
 }
 
-absl::StatusOr<Field*> Tuple::GetField(int i) {
+absl::StatusOr<Field*> Tuple::GetField(int i) const {
   if (fields.size() <= i || i < 0) {
     return absl::InvalidArgumentError("Index out of range");
   }

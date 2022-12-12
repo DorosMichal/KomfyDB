@@ -33,7 +33,7 @@ class Tuple {
 
   const TupleDesc* GetTupleDesc();
 
-  absl::StatusOr<Field*> GetField(int i);
+  absl::StatusOr<Field*> GetField(int i) const;
 
   absl::Status SetField(int i, std::unique_ptr<Field> f);
 

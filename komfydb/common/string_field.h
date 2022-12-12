@@ -27,7 +27,7 @@ class StringField : public Field {
 
   void GetValue(std::string& s) const override;
 
-  absl::StatusOr<bool> Compare(const Op& op, const Field& f) const override;
+  absl::StatusOr<bool> Compare(const Op& op, const Field* f) const override;
 
   Type GetType() const override;
 

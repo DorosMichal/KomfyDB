@@ -15,13 +15,13 @@ void StringField::GetValue(std::string& s) const {
   s = value;
 }
 
-absl::StatusOr<bool> StringField::Compare(const Op& op, const Field& f) const {
-  if (f.GetType() != GetType()) {
+absl::StatusOr<bool> StringField::Compare(const Op& op, const Field* f) const {
+  if (f->GetType() != GetType()) {
     return absl::InvalidArgumentError("Can't compare fields of different type");
   }
 
   std::string fs;
-  f.GetValue(fs);
+  f->GetValue(fs);
   int cmp_val = value.compare(fs);
 
   switch (op.value) {

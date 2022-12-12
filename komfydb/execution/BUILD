@@ -10,9 +10,11 @@ cc_library(
   hdrs = [
     "op_iterator.h",
     "seq_scan.h",
+    "order_by.h",
   ],
   srcs = [
     "seq_scan.cc",
+    "order_by.cc",
   ],
   deps = [
     ":op",

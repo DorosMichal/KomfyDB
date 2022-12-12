@@ -8,6 +8,7 @@
 #include "komfydb/common/td_item.h"
 #include "komfydb/common/type.h"
 #include "komfydb/database.h"
+#include "komfydb/execution/order_by.h"
 #include "komfydb/execution/seq_scan.h"
 #include "komfydb/storage/heap_page.h"
 #include "komfydb/storage/table_iterator.h"
@@ -19,7 +20,7 @@ int main(int argc, char* argv[]) {
   google::InitGoogleLogging(argv[0]);
   gflags::ParseCommandLineFlags(&argc, &argv, true);
 
-  LOG(INFO) << "Welcome to KonfyDB!";
+  LOG(INFO) << "Welcome to KomfyDB!";
 
   absl::StatusOr<Database> db =
       Database::LoadSchema("komfydb/testdata/database_catalog_test.txt");
@@ -48,15 +49,21 @@ int main(int argc, char* argv[]) {
   std::unique_ptr<execution::SeqScan> seq_scan =
       std::move(status_or_seq_scan.value());
 
-  if (!seq_scan->Open().ok()) {
-    LOG(ERROR) << "seq_scan open error? lol";
+  auto status_or_order_by = execution::OrderBy::Create(
+      std::move(seq_scan), 0, execution::OrderBy::Order::ASCENDING);
+  std::unique_ptr<execution::OrderBy> order_by =
+      std::move(status_or_order_by.value());
+
+  if (!order_by->Open().ok()) {
+    LOG(ERROR) << "order_by open error";
   }
 
-  LOG(INFO) << "Opened seq_scan on table "
+  LOG(INFO) << "Opened order_by on table "
             << catalog->GetTableName(table_id).value();
 
-  while (seq_scan->HasNext()) {
-    Record record = std::move(seq_scan->Next().value());
+  while (order_by->HasNext()) {
+    Record record = std::move(order_by->Next().value());
     std::cout << static_cast<std::string>(record) << "\n";
   }
+  order_by->Close();
 }
