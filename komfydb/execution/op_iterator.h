@@ -28,7 +28,7 @@ class OpIterator {
 
   virtual absl::StatusOr<Record> Next() = 0;
 
-  virtual absl::StatusOr<TupleDesc*> GetTupleDesc() = 0;
+  virtual TupleDesc* GetTupleDesc() = 0;
 };
 
 };  // namespace komfydb::execution

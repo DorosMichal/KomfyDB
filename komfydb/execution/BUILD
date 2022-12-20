@@ -17,6 +17,7 @@ cc_library(
   deps = [
     ":op",
     "//komfydb/storage:storage",
+    "//komfydb/utils:utility",
     "@com_google_absl//absl/status",
   ],
   visibility = ["//visibility:public"],
