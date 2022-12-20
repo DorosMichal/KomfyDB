@@ -4,6 +4,8 @@
 #include <stdint.h>
 #include <string>
 
+#include "absl/status/statusor.h"
+
 namespace komfydb::execution {
 
 class Op {
@@ -21,7 +23,12 @@ class Op {
 
   Op(Value value) : value(value) {}
 
+  // Change '<' to '>', '<=' to '>=' and so on.
+  void Flip();
+
   operator std::string() const;
+
+  static absl::StatusOr<Op> StrToOp(std::string_view op);
 };
 
 };  // namespace komfydb::execution

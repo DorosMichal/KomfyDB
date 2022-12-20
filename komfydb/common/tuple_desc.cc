@@ -71,7 +71,7 @@ absl::StatusOr<int> TupleDesc::IndexForFieldName(
     }
   }
 
-  return absl::InvalidArgumentError("No field with given name");
+  return absl::InvalidArgumentError(absl::StrCat("No field with name ", name));
 }
 
 int TupleDesc::GetSize() const {

@@ -23,8 +23,8 @@ absl::StatusOr<V> StatusOrMapElement(const absl::flat_hash_map<K, V>& map,
 
 namespace komfydb::storage {
 
-void Catalog::AddTable(std::unique_ptr<DbFile> file, std::string name,
-                       std::string primary_key) {
+void Catalog::AddTable(std::unique_ptr<DbFile> file, std::string_view name,
+                       std::string_view primary_key) {
   LOG(INFO) << "Adding table: tid=" << file->GetId() << " name=" << name
             << " pk=" << primary_key;
   int id = file->GetId();
@@ -35,7 +35,7 @@ void Catalog::AddTable(std::unique_ptr<DbFile> file, std::string name,
   table_name_to_id[name] = id;
 }
 
-void Catalog::AddTable(std::unique_ptr<DbFile> file, std::string name) {
+void Catalog::AddTable(std::unique_ptr<DbFile> file, std::string_view name) {
   AddTable(std::move(file), name, "");
 }
 
@@ -43,8 +43,8 @@ void Catalog::AddTable(std::unique_ptr<DbFile> file) {
   AddTable(std::move(file), common::GenerateUuidV4());
 }
 
-absl::StatusOr<int> Catalog::GetTableId(std::string name) const {
-  return StatusOrMapElement(table_name_to_id, name);
+absl::StatusOr<int> Catalog::GetTableId(std::string_view name) const {
+  return StatusOrMapElement(table_name_to_id, std::string(name));
 }
 
 absl::StatusOr<std::string> Catalog::GetTableName(int table_id) const {

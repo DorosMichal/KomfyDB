@@ -1,4 +1,10 @@
 cc_library(
+  name = "column_ref",
+  hdrs = ["column_ref.h"],
+  visibility = ["//visibility:public"],
+)
+
+cc_library(
   name = "fields",
   srcs = [
     "string_field.cc",
@@ -68,6 +74,7 @@ cc_library(
     "debug.cc",
   ],
   deps = [
+    ":column_ref",
     ":fields",
     ":tuple",
     "//komfydb/utils:utility",

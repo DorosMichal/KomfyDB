@@ -48,6 +48,55 @@ cc_test(
   ],
 )
 
+cc_library(
+  name = "parser",
+  srcs = ["parser.cc"],
+  hdrs = ["parser.h"],
+  deps = [
+    "//komfydb/execution/logical_plan:logical_plan",
+    "//:hsql",
+    "@com_google_absl//absl/status:statusor",
+    "@com_github_google_glog//:glog",
+  ],
+)
+
+cc_test(
+  name = "parser_test",
+  srcs = ["parser_test.cc",],
+  data = [
+    "testdata/database_catalog_test.txt",
+    "testdata/first_table.dat",
+    "testdata/second_table.dat",
+  ],
+  deps = [
+    ":parser",
+    ":database",
+    "@com_google_googletest//:gtest_main",
+  ],
+)
+
+cc_binary(
+  name = "parser_repl",
+  srcs = ["parser_repl.cc",],
+  data = [
+    "testdata/database_catalog_test.txt",
+    "testdata/first_table.dat",
+    "testdata/second_table.dat",
+  ],
+  deps = [
+    ":parser",
+    "//komfydb/execution/logical_plan",
+    "//komfydb:database",
+    "//komfydb/storage:storage",
+    "//komfydb/common:common",
+    "//komfydb/transaction:transaction",
+    "//komfydb/execution:execution",
+    "@com_github_google_glog//:glog",
+    "//:hsql",
+  ],
+  linkopts = ["-lreadline",],
+)
+
 cc_binary(
   name = "komfydb",
   srcs = ["komfydb.cc"],
@@ -70,7 +119,7 @@ cc_binary(
   name = "sql_parser_test",
   srcs = ["sql_parser_test.cc",],
   deps = [
-    "//:sql_parser",
+    "//:hsql",
   ],
   linkopts = ["-lreadline",],
 )

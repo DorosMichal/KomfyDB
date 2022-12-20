@@ -3,6 +3,10 @@ cc_library(
   srcs = ["op.cc"],
   hdrs = ["op.h"],
   visibility = ["//visibility:public"],
+  deps = [
+    "@com_google_absl//absl/status:statusor",
+    "@com_google_absl//absl/container:flat_hash_map",
+  ],
 )
 
 cc_library(
@@ -11,6 +15,7 @@ cc_library(
     "op_iterator.h",
     "seq_scan.h",
     "order_by.h",
+    "aggregate.h",
   ],
   srcs = [
     "seq_scan.cc",
