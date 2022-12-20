@@ -24,14 +24,14 @@ class Catalog {
 
   // Add table to catalog. If table with given name exists, then remove it
   // and add this one. If file with given id exists, also replace it.
-  void AddTable(std::unique_ptr<DbFile> file, std::string name,
-                std::string primary_key);
+  void AddTable(std::unique_ptr<DbFile> file, std::string_view name,
+                std::string_view primary_key);
 
-  void AddTable(std::unique_ptr<DbFile> file, std::string name);
+  void AddTable(std::unique_ptr<DbFile> file, std::string_view name);
 
   void AddTable(std::unique_ptr<DbFile> file);
 
-  absl::StatusOr<int> GetTableId(std::string name) const;
+  absl::StatusOr<int> GetTableId(std::string_view name) const;
 
   absl::StatusOr<std::string> GetTableName(int table_id) const;
 

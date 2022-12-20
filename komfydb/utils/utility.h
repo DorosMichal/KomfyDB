@@ -6,6 +6,9 @@
 #include <vector>
 
 #include "absl/random/random.h"
+#include "absl/status/statusor.h"
+
+#include "komfydb/common/column_ref.h"
 
 namespace komfydb::common {
 
