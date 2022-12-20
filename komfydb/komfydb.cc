@@ -34,18 +34,29 @@ int main(int argc, char* argv[]) {
   std::vector<int> table_ids = catalog->GetTableIds();
   int table_id = table_ids[0];
 
-  storage::TableIterator table_iterator(tid, table_id, catalog, buffer_pool);
-  execution::SeqScan seq_scan(table_iterator, tid, "test_table", table_id);
+  std::unique_ptr<storage::TableIterator> table_iterator =
+      std::make_unique<storage::TableIterator>(tid, table_id, catalog,
+                                               buffer_pool);
+  auto status_or_seq_scan = execution::SeqScan::Create(
+      std::move(table_iterator), tid, "test_table", table_id);
+  if (!status_or_seq_scan.ok()) {
+    LOG(ERROR) << "Couldn't create seq_scan: "
+               << status_or_seq_scan.status().message();
+    return 1;
+  }
 
-  if (!seq_scan.Open().ok()) {
+  std::unique_ptr<execution::SeqScan> seq_scan =
+      std::move(status_or_seq_scan.value());
+
+  if (!seq_scan->Open().ok()) {
     LOG(ERROR) << "seq_scan open error? lol";
   }
 
   LOG(INFO) << "Opened seq_scan on table "
             << catalog->GetTableName(table_id).value();
 
-  while (seq_scan.HasNext()) {
-    Record record = std::move(seq_scan.Next().value());
+  while (seq_scan->HasNext()) {
+    Record record = std::move(seq_scan->Next().value());
     std::cout << static_cast<std::string>(record) << "\n";
   }
 }
