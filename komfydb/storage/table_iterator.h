@@ -38,7 +38,9 @@ class TableIterator {
 
   void Close();
 
-  bool HasNext();
+  absl::Status Rewind();
+
+  absl::Status HasNext();
 
   absl::StatusOr<Record> Next();
 

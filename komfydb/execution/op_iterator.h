@@ -33,7 +33,7 @@ namespace komfydb::execution {
 
 class OpIterator {
  public:
-  OpIterator(TupleDesc& td);
+  OpIterator(TupleDesc& tuple_desc);
 
   virtual ~OpIterator() {}
 

@@ -15,12 +15,16 @@ cc_library(
     "op_iterator.h",
     "seq_scan.h",
     "order_by.h",
+    "join_predicate.h",
+    "join.h",
     "aggregate.h",
   ],
   srcs = [
     "op_iterator.cc",
     "seq_scan.cc",
     "order_by.cc",
+    "join_predicate.cc",
+    "join.cc",
   ],
   deps = [
     ":op",
