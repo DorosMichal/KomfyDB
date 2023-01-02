@@ -8,9 +8,11 @@
 #include "komfydb/common/td_item.h"
 #include "komfydb/common/type.h"
 #include "komfydb/database.h"
+#include "komfydb/execution/filter.h"
 #include "komfydb/execution/join.h"
 #include "komfydb/execution/join_predicate.h"
 #include "komfydb/execution/order_by.h"
+#include "komfydb/execution/predicate.h"
 #include "komfydb/execution/seq_scan.h"
 
 #include "komfydb/storage/heap_page.h"
@@ -52,6 +54,16 @@ int main(int argc, char* argv[]) {
   std::unique_ptr<execution::SeqScan> seq_scan1 =
       std::move(status_or_seq_scan1.value());
 
+  std::unique_ptr<IntField> filter_operand1 =
+      std::make_unique<IntField>(2000000000);
+  Predicate filter_predicate1 =
+      Predicate(0, Op::Value::GREATER_THAN_OR_EQ, std::move(filter_operand1));
+  auto status_or_filter1 = execution::Filter::Create(
+      std::move(seq_scan1), std::move(filter_predicate1));
+
+  std::unique_ptr<execution::Filter> filter1 =
+      std::move(status_or_filter1.value());
+
   // table 2
 
   std::unique_ptr<storage::TableIterator> table_iterator2 =
@@ -68,11 +80,21 @@ int main(int argc, char* argv[]) {
   std::unique_ptr<execution::SeqScan> seq_scan2 =
       std::move(status_or_seq_scan2.value());
 
+  std::unique_ptr<IntField> filter_operand2 =
+      std::make_unique<IntField>(2000000000);
+  Predicate filter_predicate2 =
+      Predicate(0, Op::Value::GREATER_THAN_OR_EQ, std::move(filter_operand2));
+  auto status_or_filter2 = execution::Filter::Create(
+      std::move(seq_scan2), std::move(filter_predicate2));
+
+  std::unique_ptr<execution::Filter> filter2 =
+      std::move(status_or_filter2.value());
+
   // join
 
   execution::JoinPredicate join_predicate(0, execution::Op::EQUALS, 0);
   auto status_or_join = execution::Join::Create(
-      std::move(seq_scan1), join_predicate, std::move(seq_scan2));
+      std::move(filter1), join_predicate, std::move(filter2));
 
   if (!status_or_join.ok()) {
     LOG(ERROR) << "Couldn't create join: " << status_or_join.status().message();
@@ -93,6 +115,9 @@ int main(int argc, char* argv[]) {
   LOG(ERROR) << "udalo sie\n";
 
   ITERATE_RECORDS(order_by, record) {
+    int filtered_field;
+    record.value()->GetField(0).value()->GetValue(filtered_field);
+    assert(filtered_field >= 2000000000);
     std::cout << static_cast<std::string>(*(record.value())) << "\n";
   }
   if (!absl::IsOutOfRange(record.status())) {

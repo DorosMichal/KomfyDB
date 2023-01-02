@@ -1,25 +1,51 @@
+#ifndef __PREDICATE_H__
+#define __PREDICATE_H__
+
 #include "komfydb/common/field.h"
-#include "komfydb/common/tuple.h"
+#include "komfydb/common/int_field.h"
+#include "komfydb/common/string_field.h"
 #include "komfydb/execution/op.h"
+#include "komfydb/storage/record.h"
+
+#include "absl/status/status.h"
+#include "absl/status/statusor.h"
+#include "komfydb/utils/status_macros.h"
 
 namespace {
-using komfydb::common::Field;
-using komfydb::common::Tuple;
-};  // namespace
 
-namespace komfydb::execution {
+using namespace komfydb::common;
+using namespace komfydb::storage;
+
+}  // namespace
+
 class Predicate {
  public:
-  Predicate(int field, Op op, Field operand);
+  enum Type {
+    COL_COL,
+    COL_CONST,
+  };
 
-  int getField();
+  Predicate(int field, Op op, std::unique_ptr<Field> const_field);
 
-  Op getOp();
+  Predicate(int l_field, Op op, int r_field);
 
-  Field getOperand();
+  Op GetOp();
 
-  bool filter(Tuple t);
+  Field* GetConstField();
 
-  operator std::string() const;
+  int GetLField();
+
+  int GetRField();
+
+  Type GetType();
+
+  bool Evaluate(const Record& record);
+
+ private:
+  Op op;
+  int l_field, r_field;
+  std::unique_ptr<Field> const_field;
+  Type type;
 };
-};  // namespace komfydb::execution
+
+#endif  // __PREDICATE_H__
