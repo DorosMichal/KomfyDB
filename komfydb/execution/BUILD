@@ -18,6 +18,8 @@ cc_library(
     "join_predicate.h",
     "join.h",
     "aggregate.h",
+    "predicate.h",
+    "filter.h",
   ],
   srcs = [
     "op_iterator.cc",
@@ -25,6 +27,8 @@ cc_library(
     "order_by.cc",
     "join_predicate.cc",
     "join.cc",
+    "predicate.cc",
+    "filter.cc",
   ],
   deps = [
     ":op",
