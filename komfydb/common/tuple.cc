@@ -65,6 +65,20 @@ Tuple::Tuple(const Tuple& t) {
   }
 }
 
+Tuple::Tuple(Tuple& t1, Tuple&& t2, TupleDesc* joined_td)
+    : tuple_desc(joined_td) {
+  // copies the 1st Tuple, but moves the 2nd, used in nested loop join
+  fields.resize(td->Length());
+  Tuple tmp_t1 = t1;
+  int idx = 0;
+  for (int i = 0; i < tmp_t1.td->Length(); i++, idx++) {
+    fields[idx] = std::move(tmp_t1.fields[i]);
+  }
+  for (int i = 0; i < t2.td->Length(); i++, idx++) {
+    fields[idx] = std::move(t2.fields[i]);
+  }
+}
+
 const TupleDesc* Tuple::GetTupleDesc() {
   return td;
 }

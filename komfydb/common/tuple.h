@@ -29,6 +29,8 @@ class Tuple {
 
   Tuple(Tuple&& tuple) = default;
 
+  Tuple(Tuple& t1, Tuple&& t2, TupleDesc* joined_td);
+
   Tuple& operator=(const Tuple& t);
 
   const TupleDesc* GetTupleDesc();
