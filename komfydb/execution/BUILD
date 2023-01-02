@@ -16,10 +16,14 @@ cc_library(
     "seq_scan.h",
     "order_by.h",
     "aggregate.h",
+    "predicate.h",
+    "filter.h",
   ],
   srcs = [
     "seq_scan.cc",
     "order_by.cc",
+    "predicate.cc",
+    "filter.cc",
   ],
   deps = [
     ":op",
