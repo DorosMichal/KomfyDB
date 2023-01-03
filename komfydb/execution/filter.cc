@@ -48,6 +48,7 @@ absl::Status Filter::Open() {
     ASSIGN_OR_RETURN(bool good_record, filter(record, &predicate));
     if (good_record) {
       next_record = std::make_unique<Record>(record);
+      break;
     }
   }
   return absl::OkStatus();
@@ -65,7 +66,7 @@ absl::StatusOr<Record> Filter::Next() {
   if (!HasNext()) {
     return absl::OutOfRangeError("No more records in this OpIterator.");
   }
-  Record result = *next_record;
+  Record result = std::move(*next_record);
   next_record = nullptr;
 
   while (child->HasNext()) {
@@ -73,6 +74,7 @@ absl::StatusOr<Record> Filter::Next() {
     ASSIGN_OR_RETURN(bool good_record, filter(record, &predicate));
     if (good_record) {
       next_record = std::make_unique<Record>(record);
+      break;
     }
   }
   return result;

@@ -8,7 +8,9 @@
 #include "komfydb/common/td_item.h"
 #include "komfydb/common/type.h"
 #include "komfydb/database.h"
+#include "komfydb/execution/filter.h"
 #include "komfydb/execution/order_by.h"
+#include "komfydb/execution/predicate.h"
 #include "komfydb/execution/seq_scan.h"
 #include "komfydb/storage/heap_page.h"
 #include "komfydb/storage/table_iterator.h"
@@ -49,8 +51,18 @@ int main(int argc, char* argv[]) {
   std::unique_ptr<execution::SeqScan> seq_scan =
       std::move(status_or_seq_scan.value());
 
+  std::unique_ptr<IntField> filter_operand =
+      std::make_unique<IntField>(2000000000);
+  Predicate filter_predicate =
+      Predicate(Op::Value::GREATER_THAN_OR_EQ, 0, std::move(filter_operand));
+  auto status_or_filter = execution::Filter::Create(
+      std::move(seq_scan), std::move(filter_predicate));
+
+  std::unique_ptr<execution::Filter> filter =
+      std::move(status_or_filter.value());
+
   auto status_or_order_by = execution::OrderBy::Create(
-      std::move(seq_scan), 0, execution::OrderBy::Order::ASCENDING);
+      std::move(filter), 0, execution::OrderBy::Order::ASCENDING);
   std::unique_ptr<execution::OrderBy> order_by =
       std::move(status_or_order_by.value());
 
