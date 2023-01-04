@@ -10,12 +10,6 @@ namespace {
 
 using namespace komfydb::common;
 
-absl::StatusOr<bool> filter(Record record, Predicate* predicate) {
-  ASSIGN_OR_RETURN(Field * record_field,
-                   record.GetField(predicate->GetFieldIdx()));
-  return record_field->Compare(predicate->GetOp(), predicate->GetOperand());
-}
-
 }  // namespace
 
 namespace komfydb::execution {
@@ -31,7 +25,10 @@ absl::StatusOr<std::unique_ptr<Filter>> Filter::Create(
     std::unique_ptr<OpIterator> child, Predicate predicate) {
   TupleDesc* td = child->GetTupleDesc();
   /* Check if td has field specified in predicate */
-  RETURN_IF_ERROR(td->GetFieldType(predicate.GetFieldIdx()).status());
+  RETURN_IF_ERROR(td->GetFieldType(predicate.GetField1()).status());
+  if (predicate.GetType() == Predicate::Type::COL_COL) {
+    RETURN_IF_ERROR(td->GetFieldType(predicate.GetField2()).status());
+  }
 
   return std::unique_ptr<Filter>(
       new Filter(std::move(child), std::move(predicate), *td));
@@ -45,9 +42,9 @@ absl::Status Filter::Open() {
   RETURN_IF_ERROR(child->Open());
   while (child->HasNext()) {
     ASSIGN_OR_RETURN(Record record, child->Next());
-    ASSIGN_OR_RETURN(bool good_record, filter(record, &predicate));
+    ASSIGN_OR_RETURN(bool good_record, predicate.Evaluate(record));
     if (good_record) {
-      next_record = std::make_unique<Record>(record);
+      next_record = std::make_unique<Record>(std::move(record));
       break;
     }
   }
@@ -71,9 +68,9 @@ absl::StatusOr<Record> Filter::Next() {
 
   while (child->HasNext()) {
     ASSIGN_OR_RETURN(Record record, child->Next());
-    ASSIGN_OR_RETURN(bool good_record, filter(record, &predicate));
+    ASSIGN_OR_RETURN(bool good_record, predicate.Evaluate(record));
     if (good_record) {
-      next_record = std::make_unique<Record>(record);
+      next_record = std::make_unique<Record>(std::move(record));
       break;
     }
   }
