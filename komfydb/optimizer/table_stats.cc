@@ -9,22 +9,29 @@ absl::StatusOr<TableStats> TableStats::Create(int table_id,
   return absl::UnimplementedError("TODO");
 }
 
-double EstimateScanCost() {
+double TableStats::EstimateScanCost() {
   // TODO
   return 1.0;
 }
 
-int EstimateTableCardinality() {
+int TableStats::EstimateTableCardinality() {
   // TODO
   return 1000;
 }
 
-double AverageSelectivity(int column, execution::Op op) {
+double TableStats::AverageSelectivity(int column, execution::Op op) {
   // TODO
   return 1.0;
 }
 
-double EstimateSelectivity(int column, execution::Op op, Field* constant) {
+double TableStats::EstimateSelectivity(int column, execution::Op op,
+                                       Field* constant) {
+  // TODO
+  return 1.0;
+}
+
+double TableStats::EstimateSelectivity(int lcolumn, execution::Op op,
+                                       int rcolumn) {
   // TODO
   return 1.0;
 }

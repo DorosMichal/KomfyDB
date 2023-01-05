@@ -27,6 +27,8 @@ class Predicate {
     COL_CONST,
   };
 
+  Predicate() = default;
+
   Predicate(int field, Op op, std::unique_ptr<Field> const_field);
 
   Predicate(int l_field, Op op, int r_field);

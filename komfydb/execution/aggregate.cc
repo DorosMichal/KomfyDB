@@ -70,8 +70,9 @@ namespace komfydb::execution {
 Aggregate::Aggregate(std::unique_ptr<OpIterator> child,
                      std::vector<Aggregator::AggregateType>& aggregate_types,
                      std::vector<int>& aggregate_fields,
-                     std::vector<int>& groupby_fields, TupleDesc& tuple_desc)
-    : OpIterator(tuple_desc),
+                     std::vector<int>& groupby_fields, TupleDesc& tuple_desc,
+                     std::vector<std::string> aliases)
+    : OpIterator(tuple_desc, aliases),
       child(std::move(child)),
       aggregate_types(aggregate_types),
       aggregate_fields(aggregate_fields),
@@ -82,31 +83,38 @@ absl::StatusOr<std::unique_ptr<Aggregate>> Aggregate::Create(
     std::vector<Aggregator::AggregateType>& aggregate_types,
     std::vector<int>& aggregate_fields, std::vector<int>& groupby_fields) {
   TupleDesc* child_tuple_desc = child->GetTupleDesc();
+  std::vector<std::string>* child_aliases = child->GetFieldsTableAliases();
   std::vector<Type> types;
   std::vector<std::string> fields;
+  std::vector<std::string> aliases;
   for (int i = 0; i < aggregate_types.size(); i++) {
     AggregateType aggregate_type = aggregate_types[i];
     Type type(Type::INT);
-    std::string name;
+    std::string name, alias;
     if (aggregate_type == AggregateType::NONE) {
       ASSIGN_OR_RETURN(type,
                        child_tuple_desc->GetFieldType(aggregate_fields[i]));
       ASSIGN_OR_RETURN(name,
                        child_tuple_desc->GetFieldName(aggregate_fields[i]));
+      alias = (*child_aliases)[aggregate_fields[i]];
     } else {
       ASSIGN_OR_RETURN(std::string field_name,
                        child_tuple_desc->GetFieldName(aggregate_fields[i]));
       name = absl::StrCat(Aggregator::AggregateTypeToString(aggregate_type),
                           "__", field_name);
+      // This field comes from aggregation, so it does not come from any
+      // table. Let the alias for this be "__aggregate__".
+      alias = "__aggregate__";
     }
     types.push_back(type);
     fields.push_back(name);
+    aliases.push_back(alias);
   }
   TupleDesc tuple_desc(types, fields);
 
   return std::unique_ptr<Aggregate>(
       new Aggregate(std::move(child), aggregate_types, aggregate_fields,
-                    groupby_fields, tuple_desc));
+                    groupby_fields, tuple_desc, aliases));
 }
 
 absl::Status Aggregate::PrepareWithGrouping() {

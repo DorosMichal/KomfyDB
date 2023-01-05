@@ -36,7 +36,8 @@ class Aggregate : public OpIterator {
   Aggregate(std::unique_ptr<OpIterator> child,
             std::vector<Aggregator::AggregateType>& aggregate_types,
             std::vector<int>& aggregate_fields,
-            std::vector<int>& groupby_fields, TupleDesc& tuple_desc);
+            std::vector<int>& groupby_fields, TupleDesc& tuple_desc,
+            std::vector<std::string> aliases);
 
   absl::Status FetchNext() override;
 

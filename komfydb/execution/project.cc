@@ -7,17 +7,19 @@
 #include "komfydb/utils/status_macros.h"
 
 namespace {
+
 using komfydb::common::Field;
 using komfydb::common::TDItem;
 using komfydb::common::TupleDesc;
 using komfydb::common::Type;
-}  // namespace
+
+};  // namespace
 
 namespace komfydb::execution {
 
 Project::Project(std::unique_ptr<OpIterator> child,
                  std::vector<int>& out_field_idxs, TupleDesc tuple_desc)
-    : OpIterator(tuple_desc),
+    : OpIterator(tuple_desc, *child->GetFieldsTableAliases()),
       child(std::move(child)),
       out_field_idxs(out_field_idxs) {}
 
@@ -82,4 +84,4 @@ void Project::Explain(std::ostream& os, int indent) {
   child->Explain(os, indent + child_indent);
 }
 
-}  // namespace komfydb::execution
+};  // namespace komfydb::execution

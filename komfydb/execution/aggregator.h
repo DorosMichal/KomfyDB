@@ -6,6 +6,14 @@
 #include "absl/container/flat_hash_map.h"
 #include "absl/status/statusor.h"
 
+#include "komfydb/common/type.h"
+
+namespace {
+
+using komfydb::common::Type;
+
+};
+
 namespace komfydb::execution {
 
 class Aggregator {
@@ -23,7 +31,7 @@ class Aggregator {
   static absl::StatusOr<AggregateType> GetAggregateType(std::string_view fun) {
     absl::flat_hash_map<std::string, AggregateType> str_to_agg = {
         {"max", MAX}, {"min", MIN},     {"sum", SUM},
-        {"avg", AVG}, {"count", COUNT},
+        {"avg", AVG}, {"count", COUNT}, {"none", NONE},
     };
     std::string lower_fun = std::string(fun);
     for (char& c : lower_fun) {
@@ -51,6 +59,23 @@ class Aggregator {
         return "avg";
       case COUNT:
         return "count";
+    }
+  }
+
+  static bool IsApplicable(AggregateType type, Type field_type) {
+    switch (field_type.GetValue()) {
+      case Type::INT: {
+        return true;
+      }
+      case Type::STRING: {
+        switch (type) {
+          case AVG:
+          case SUM:
+            return false;
+          default:
+            return true;
+        }
+      }
     }
   }
 };

@@ -45,6 +45,8 @@ class Tuple {
 
   operator std::string() const;
 
+  friend std::ostream& operator<<(std::ostream& os, const Tuple& tuple);
+
   bool operator==(const Tuple& t) const;
 
   bool operator!=(const Tuple& t) const;

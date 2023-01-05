@@ -44,17 +44,16 @@ class SeqScan : public OpIterator {
 
  private:
   SeqScan(std::unique_ptr<TableIterator> iterator, TransactionId tid,
-          TupleDesc tuple_desc, absl::string_view table_alias, int table_id);
+          TupleDesc tuple_desc, absl::string_view table_alias);
 
   SeqScan(std::unique_ptr<TableIterator> iterator, TransactionId tid,
-          TupleDesc tuple_desc, int table_id);
+          TupleDesc tuple_desc);
 
   absl::Status FetchNext() override;
 
   std::unique_ptr<TableIterator> iterator;
   TransactionId tid;
   std::string table_alias;
-  int table_id;
 };
 
 };  // namespace komfydb::execution

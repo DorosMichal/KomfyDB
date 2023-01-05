@@ -33,6 +33,7 @@ cc_library(
   hdrs = ["join_optimizer.h",],
   deps = [
     "//komfydb/execution/logical_plan:nodes",
+    "//komfydb/execution",
     "//komfydb/storage",
     "@com_google_absl//absl/status:status",
   ],

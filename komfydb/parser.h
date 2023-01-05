@@ -18,6 +18,7 @@ namespace komfydb {
 class Parser {
  private:
   std::shared_ptr<Catalog> catalog;
+  std::shared_ptr<BufferPool> buffer_pool;
 
   absl::StatusOr<LogicalPlan> ParseSelectStatement(
       const hsql::SelectStatement* stmt);
@@ -38,7 +39,8 @@ class Parser {
                             std::vector<hsql::OrderDescription*>* descr);
 
  public:
-  Parser(std::shared_ptr<Catalog> catalog) : catalog(std::move(catalog)) {}
+  Parser(std::shared_ptr<Catalog> catalog,
+         std::shared_ptr<BufferPool> buffer_pool);
 
   absl::StatusOr<LogicalPlan> ParseQuery(std::string_view query);
 };

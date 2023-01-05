@@ -21,6 +21,10 @@ struct ColumnRef {
   bool IsStar() { return table == "null" && column == "*"; }
 
   operator std::string() const { return table + "." + column; }
+
+  friend std::ostream& operator<<(std::ostream& os, const ColumnRef& ref) {
+    return os << static_cast<std::string>(ref);
+  }
 };
 
 const ColumnRef COLUMN_REF_STAR("null", "*");

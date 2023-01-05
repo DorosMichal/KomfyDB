@@ -21,7 +21,7 @@ class Op {
   };
   Value value;
 
-  Op(Value value) : value(value) {}
+  Op(Value value = EQUALS) : value(value) {}
 
   // Change '<' to '>', '<=' to '>=' and so on.
   void Flip();
