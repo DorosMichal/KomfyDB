@@ -18,17 +18,25 @@ namespace komfydb::execution {
 
 class OpIterator {
  public:
+  OpIterator(TupleDesc& td);
+
   virtual ~OpIterator() {}
 
   virtual absl::Status Open() = 0;
 
   virtual void Close() = 0;
 
-  virtual bool HasNext() = 0;
+  virtual TupleDesc* GetTupleDesc();
 
-  virtual absl::StatusOr<Record> Next() = 0;
+  virtual absl::StatusOr<std::unique_ptr<Record>> Next();
 
-  virtual TupleDesc* GetTupleDesc() = 0;
+  virtual bool HasNext();
+
+ protected:
+  TupleDesc td;
+  std::unique_ptr<Record> next_record;
+
+  virtual absl::StatusOr<std::unique_ptr<Record>> FetchNext() = 0;
 };
 
 };  // namespace komfydb::execution

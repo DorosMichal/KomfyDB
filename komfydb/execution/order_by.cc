@@ -16,8 +16,8 @@ namespace komfydb::execution {
 
 OrderBy::OrderBy(std::unique_ptr<OpIterator> child, int order_by_field,
                  Order order, TupleDesc& td)
-    : child(std::move(child)),
-      td(td),
+    : OpIterator(td),
+      child(std::move(child)),
       order_by_field(order_by_field),
       order(order) {}
 
@@ -42,13 +42,14 @@ int OrderBy::GetOrderByField() {
 absl::Status OrderBy::Open() {
   RETURN_IF_ERROR(child->Open());
   while (child->HasNext()) {
-    ASSIGN_OR_RETURN(Record rec, child->Next());
-    child_records.push_back(rec);
+    ASSIGN_OR_RETURN(std::unique_ptr<Record> rec, child->Next());
+    child_records.push_back(std::move(rec));
   }
   std::sort(child_records.begin(), child_records.end(),
-            [this](const Record& a, const Record& b) {
-              absl::StatusOr<Field*> fa = a.GetField(order_by_field);
-              absl::StatusOr<Field*> fb = b.GetField(order_by_field);
+            [this](const std::unique_ptr<Record>& a,
+                   const std::unique_ptr<Record>& b) {
+              absl::StatusOr<Field*> fa = a->GetField(order_by_field);
+              absl::StatusOr<Field*> fb = b->GetField(order_by_field);
               assert(fa.ok());
               assert(fb.ok());
               Op::Value comp = (order == Order::ASCENDING)
@@ -66,19 +67,11 @@ void OrderBy::Close() {
   child->Close();
 }
 
-bool OrderBy::HasNext() {
-  return it != child_records.end();
-}
-
-absl::StatusOr<Record> OrderBy::Next() {
-  if (!HasNext()) {
-    return absl::OutOfRangeError("No more records in this OpIterator.");
+absl::StatusOr<std::unique_ptr<Record>> OrderBy::FetchNext() {
+  if (it == child_records.end()) {
+    return absl::OutOfRangeError("No more records in this OpIterator");
   }
-  return *it++;
-}
-
-TupleDesc* OrderBy::GetTupleDesc() {
-  return &td;
+  return std::move(*it++);
 }
 
 }  // namespace komfydb::execution

@@ -28,22 +28,17 @@ class OrderBy : public OpIterator {
 
   void Close() override;
 
-  bool HasNext() override;
-
-  absl::StatusOr<Record> Next() override;
-
-  TupleDesc* GetTupleDesc() override;
-
  private:
   std::unique_ptr<OpIterator> child;
-  TupleDesc td;
   int order_by_field;
   Order order;
-  std::vector<Record> child_records;
-  std::vector<Record>::iterator it;
+  std::vector<std::unique_ptr<Record>> child_records;
+  std::vector<std::unique_ptr<Record>>::iterator it;
 
   OrderBy(std::unique_ptr<OpIterator> child, int order_by_field, Order order,
           TupleDesc& td);
+
+  absl::StatusOr<std::unique_ptr<Record>> FetchNext() override;
 };
 
 }  // namespace komfydb::execution
