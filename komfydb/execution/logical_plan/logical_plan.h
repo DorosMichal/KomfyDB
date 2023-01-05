@@ -23,6 +23,7 @@ namespace {
 
 using komfydb::common::ColumnRef;
 using komfydb::storage::Catalog;
+using komfydb::transaction::TransactionId;
 
 };  // namespace
 
@@ -55,6 +56,9 @@ class LogicalPlan {
   absl::StatusOr<common::ColumnRef> GetColumnRef(char* table, char* column);
 
   absl::StatusOr<common::Type> GetColumnType(ColumnRef ref);
+
+  absl::StatusOr<std::unique_ptr<OpIterator>> GeneratePhysicalPlan(
+      TransactionId tid, bool explain);
 
   void Dump();
 

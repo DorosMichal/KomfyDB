@@ -139,6 +139,9 @@ absl::StatusOr<common::Type> LogicalPlan::GetColumnType(ColumnRef ref) {
   return t;
 }
 
+absl::StatusOr<std::unique_ptr<OpIterator>> GeneratePhysicalPlan(
+    TransactionId tid, bool explain) {}
+
 void LogicalPlan::Dump() {
   std::cout << "alias_to_id: (" << alias_to_id.size() << ")\n";
 
