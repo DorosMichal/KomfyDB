@@ -32,6 +32,7 @@ cc_library(
     "//komfydb/storage",
     "//komfydb/common",
     "//komfydb/execution",
+    "//komfydb/optimizer:table_stats",
     "//:hsql",
     "@com_google_absl//absl/container:flat_hash_map",
     "@com_google_absl//absl/status:statusor",

@@ -6,6 +6,8 @@
 
 #include "komfydb/common/tuple_desc.h"
 #include "komfydb/optimizer/join_optimizer.h"
+#include "komfydb/execution/seq_scan.h"
+#include "komfydb/storage/table_iterator.h"
 #include "komfydb/utils/status_macros.h"
 
 namespace {
@@ -13,6 +15,7 @@ namespace {
 using komfydb::common::ColumnRef;
 using komfydb::common::TupleDesc;
 using komfydb::common::Type;
+using komfydb::storage::TableIterator;
 
 };  // namespace
 
@@ -139,8 +142,67 @@ absl::StatusOr<common::Type> LogicalPlan::GetColumnType(ColumnRef ref) {
   return t;
 }
 
-absl::StatusOr<std::unique_ptr<OpIterator>> GeneratePhysicalPlan(
-    TransactionId tid, bool explain) {}
+absl::Status LogicalPlan::ProcessScanNodes(TransactionId tid) {
+  for (auto& scan : scans) {
+    std::unique_ptr<TableIterator> table_iterator =
+        std::make_unique<TableIterator>(tid, scan.id, catalog, buffer_pool);
+    ASSIGN_OR_RETURN(std::unique_ptr<SeqScan> seq_scan,
+                     SeqScan::Create(std::move(table_iterator), tid, scan.id));
+    subplans[scan.alias] = std::move(seq_scan);
+    filter_selectivities[scan.alias] = 1.0;
+  }
+  return absl::OkStatus();
+}
+
+absl::Status LogicalPlan::ProcessFilterNodes(TableStatsMap& table_stats) {
+  // TODO: Filter OpIterator
+  for (auto& filter : filters) {
+    std::string table = filter.lcol.table;
+    std::unique_ptr<OpIterator> subplan = std::move(subplans[table]);
+    int lcol =
+        subplan->GetTupleDesc()->IndexForFieldName(filter.lcol.column).value();
+    double selectivity;
+    switch (filter.type) {
+      case FilterNode::COLUMN_CONSTANT: {
+        selectivity = table_stats[table].EstimateSelectivity(
+            lcol, filter.op, filter.constant.get());
+
+        return absl::UnimplementedError(
+            "Filter OpIterator not implemented yet.");
+        break;
+      }
+      case FilterNode::TWO_COLUMNS: {
+        int rcol = subplan->GetTupleDesc()
+                       ->IndexForFieldName(filter.rcol.column)
+                       .value();
+        selectivity =
+            table_stats[table].EstimateSelectivity(lcol, filter.op, rcol);
+
+        return absl::UnimplementedError(
+            "Filter OpIterator not implemented yet.");
+        break;
+      }
+    }
+    filter_selectivities[table] *= selectivity;
+  }
+  return absl::OkStatus();
+}
+
+absl::Status LogicalPlan::ProcessJoinNodes() {
+
+  return absl::OkStatus();
+}
+
+absl::StatusOr<std::unique_ptr<OpIterator>> LogicalPlan::GeneratePhysicalPlan(
+    TransactionId tid, TableStatsMap& table_stats, bool explain) {
+  equiv.clear();
+  filter_selectivities.clear();
+  subplans.clear();
+
+  RETURN_IF_ERROR(ProcessScanNodes(tid));
+  RETURN_IF_ERROR(ProcessFilterNodes(table_stats));
+  RETURN_IF_ERROR(ProcessJoinNodes());
+}
 
 void LogicalPlan::Dump() {
   std::cout << "alias_to_id: (" << alias_to_id.size() << ")\n";
