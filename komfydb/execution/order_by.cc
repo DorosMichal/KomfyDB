@@ -16,7 +16,7 @@ namespace komfydb::execution {
 
 OrderBy::OrderBy(std::unique_ptr<OpIterator> child, int order_by_field,
                  Order order, TupleDesc& tuple_desc)
-    : OpIterator(tuple_desc),
+    : OpIterator(tuple_desc, *child->GetFieldsTableAliases()),
       child(std::move(child)),
       order_by_field(order_by_field),
       order(order) {}
@@ -89,4 +89,4 @@ void OrderBy::Explain(std::ostream& os, int indent) {
   child->Explain(os, indent + child_indent);
 }
 
-}  // namespace komfydb::execution
+};  // namespace komfydb::execution

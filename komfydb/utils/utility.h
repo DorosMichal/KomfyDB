@@ -21,6 +21,13 @@ void JoinVectors(const std::vector<T>& v1, const std::vector<T>& v2,
   res.insert(res.end(), v2.begin(), v2.end());
 }
 
+template <typename T>
+std::vector<T> JoinVectors(const std::vector<T>& v1, const std::vector<T>& v2) {
+  std::vector<T> result;
+  JoinVectors(v1, v2, result);
+  return result;
+}
+
 std::string GenerateUuidV4();
 
 };  // namespace komfydb::common

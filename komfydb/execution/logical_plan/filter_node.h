@@ -4,6 +4,7 @@
 #include "komfydb/common/column_ref.h"
 #include "komfydb/common/field.h"
 #include "komfydb/execution/op.h"
+#include "komfydb/execution/predicate.h"
 
 namespace {
 
@@ -36,6 +37,20 @@ class FilterNode {
         constant(std::move(constant)),
         op(op),
         type(COLUMN_CONSTANT) {}
+
+  absl::StatusOr<Predicate> GetPredicate(TupleDesc& tuple_desc) {
+    ASSIGN_OR_RETURN(int l_field, tuple_desc.IndexForFieldName(lcol.column));
+    switch (type) {
+      case TWO_COLUMNS: {
+        ASSIGN_OR_RETURN(int r_field,
+                         tuple_desc.IndexForFieldName(rcol.column));
+        return Predicate(l_field, op, r_field);
+      }
+      case COLUMN_CONSTANT: {
+        return Predicate(l_field, op, constant->CreateCopy());
+      }
+    }
+  }
 
   operator std::string() const {
     switch (type) {

@@ -1,6 +1,7 @@
 #ifndef __TABLE_STATS_H__
 #define __TABLE_STATS_H__
 
+#include "absl/container/flat_hash_map.h"
 #include "absl/status/statusor.h"
 
 #include "komfydb/common/field.h"
@@ -10,7 +11,7 @@ namespace {
 
 using komfydb::common::Field;
 
-};
+};  // namespace
 
 namespace komfydb::optimizer {
 
@@ -26,9 +27,13 @@ class TableStats {
 
   double EstimateSelectivity(int column, execution::Op op, Field* constant);
 
+  double EstimateSelectivity(int lcolumn, execution::Op op, int rcolumn);
+
  private:
   TableStats(int table_id, int io_cost_per_page);
 };
+
+using TableStatsMap = absl::flat_hash_map<std::string, TableStats>;
 
 };  // namespace komfydb::optimizer
 

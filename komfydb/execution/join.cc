@@ -9,9 +9,11 @@
 #include "komfydb/execution/join.h"
 #include "komfydb/execution/join_predicate.h"
 #include "komfydb/storage/record.h"
+#include "komfydb/utils/utility.h"
 
 namespace {
 
+using komfydb::common::JoinVectors;
 using komfydb::common::TupleDesc;
 using komfydb::storage::PageId;
 using komfydb::storage::RecordId;
@@ -22,7 +24,8 @@ namespace komfydb::execution {
 
 Join::Join(std::unique_ptr<OpIterator> l_child, JoinPredicate join_predicate,
            std::unique_ptr<OpIterator> r_child, TupleDesc tuple_desc)
-    : OpIterator(tuple_desc),
+    : OpIterator(tuple_desc, JoinVectors(*l_child->GetFieldsTableAliases(),
+                                         *r_child->GetFieldsTableAliases())),
       join_predicate(join_predicate),
       l_child(std::move(l_child)),
       r_child(std::move(r_child)),

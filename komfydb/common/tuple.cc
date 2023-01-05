@@ -134,6 +134,11 @@ Tuple::operator std::string() const {
   return res;
 }
 
+std::ostream& operator<<(std::ostream& os, const Tuple& tuple) {
+  os << static_cast<std::string>(tuple);
+  return os;
+}
+
 bool Tuple::operator==(const Tuple& t) const {
   if (*t.tuple_desc != *tuple_desc) {
     return false;

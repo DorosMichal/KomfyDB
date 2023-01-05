@@ -16,7 +16,7 @@ namespace komfydb::execution {
 
 Filter::Filter(std::unique_ptr<OpIterator> child, Predicate predicate,
                TupleDesc& td)
-    : OpIterator(td),
+    : OpIterator(td, *child->GetFieldsTableAliases()),
       child(std::move(child)),
       predicate(std::move(predicate)) {}
 
@@ -64,4 +64,4 @@ void Filter::Explain(std::ostream& os, int indent) {
   child->Explain(os, indent + child_indent);
 }
 
-}  // namespace komfydb::execution
+};  // namespace komfydb::execution

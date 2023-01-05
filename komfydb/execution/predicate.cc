@@ -58,10 +58,13 @@ bool Predicate::Evaluate(const Record& record) {
 std::ostream& operator<<(std::ostream& os, const Predicate& p) {
   switch (p.type) {
     case Predicate::Type::COL_COL: {
-      os << "[col " << p.l_field << "] " << p.op << "[col " << p.r_field << "]";
+      os << "[col " << p.l_field << "] " << p.op << " [col " << p.r_field
+         << "]";
+      break;
     }
     case Predicate::Type::COL_CONST: {
       os << "[col " << p.l_field << "] " << p.op << " " << p.const_field.get();
+      break;
     }
   }
   return os;

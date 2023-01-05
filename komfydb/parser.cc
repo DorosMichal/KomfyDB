@@ -1,18 +1,19 @@
 #include "komfydb/parser.h"
-#include <hsql/sql/SelectStatement.h>
 
 #include <vector>
 
-#include "common/column_ref.h"
-#include "execution/logical_plan/join_node.h"
-#include "execution/order_by.h"
+#include "glog/logging.h"
+
 #include "hsql/sql/Expr.h"
 #include "hsql/sql/SQLStatement.h"
+#include "hsql/sql/SelectStatement.h"
 #include "hsql/sql/Table.h"
 #include "hsql/util/sqlhelper.h"
 
+#include "common/column_ref.h"
 #include "common/string_field.h"
-#include "glog/logging.h"
+#include "execution/logical_plan/join_node.h"
+#include "execution/order_by.h"
 #include "utils/status_macros.h"
 
 namespace {
@@ -78,6 +79,10 @@ static const std::string unsuported_msg =
 };  // namespace
 
 namespace komfydb {
+
+Parser::Parser(std::shared_ptr<Catalog> catalog,
+               std::shared_ptr<BufferPool> buffer_pool)
+    : catalog(std::move(catalog)), buffer_pool(std::move(buffer_pool)) {}
 
 absl::Status Parser::ParseFromClause(LogicalPlan& lp,
                                      const hsql::TableRef* from) {
@@ -159,7 +164,6 @@ absl::Status Parser::ParseSimpleExpression(LogicalPlan& lp, hsql::Expr* lexpr,
     }
     // Else it's a subquery join.
     ASSIGN_OR_RETURN(LogicalPlan subplan, ParseSelectStatement(rexpr->select));
-    // TODO: Compare types of lref and first field of the subplan.
     RETURN_IF_ERROR(lp.AddSubqueryJoin(lref, op, std::move(subplan)));
     return absl::OkStatus();
   }
@@ -242,19 +246,17 @@ absl::Status Parser::ParseGroupBy(LogicalPlan& lp,
   if (descr->having) {
     return absl::InvalidArgumentError("Having expressions are unsupported.");
   }
-  if (descr->columns->size() != 1) {
-    return absl::InvalidArgumentError(
-        "GroupBy with multiple fields is unsupported.");
-  }
 
-  hsql::Expr* expr = descr->columns->back();
-  if (!expr->isType(hsql::ExprType::kExprColumnRef)) {
-    return absl::InvalidArgumentError(
-        "GroupBy expression must be a column reference.");
+  for (auto expr = descr->columns->begin(); expr != descr->columns->end();
+       expr++) {
+    if (!(*expr)->isType(hsql::ExprType::kExprColumnRef)) {
+      return absl::InvalidArgumentError(
+          "GroupBy expression must be a column reference.");
+    }
+    ASSIGN_OR_RETURN(ColumnRef ref,
+                     lp.GetColumnRef((*expr)->table, (*expr)->name));
+    RETURN_IF_ERROR(lp.AddGroupBy(ref));
   }
-
-  ASSIGN_OR_RETURN(ColumnRef ref, lp.GetColumnRef(expr->table, expr->name));
-  RETURN_IF_ERROR(lp.AddGroupBy(ref));
 
   return absl::OkStatus();
 }
@@ -329,7 +331,7 @@ absl::Status Parser::ParseOrderBy(LogicalPlan& lp,
 
 absl::StatusOr<LogicalPlan> Parser::ParseSelectStatement(
     const hsql::SelectStatement* stmt) {
-  LogicalPlan lp(catalog);
+  LogicalPlan lp(catalog, buffer_pool);
 
   LOG(INFO) << "Parsing From clause";
   RETURN_IF_ERROR(ParseFromClause(lp, stmt->fromTable));

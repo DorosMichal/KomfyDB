@@ -23,7 +23,7 @@ class ParserTest
     db = std::make_unique<Database>(std::move(
         Database::LoadSchema("komfydb/testdata/database_catalog_test.txt")
             .value()));
-    parser = std::make_unique<Parser>(db->GetCatalog());
+    parser = std::make_unique<Parser>(db->GetCatalog(), db->GetBufferPool());
   }
 };
 

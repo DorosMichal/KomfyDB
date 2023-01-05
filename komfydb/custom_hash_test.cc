@@ -65,17 +65,17 @@ TEST(Tuple, SupportsAbslHash) {
   std::unique_ptr<StringField> str4 = std::make_unique<StringField>("");
   Tuple t1(&tuple_desc), t2(&tuple_desc), t3(&tuple_desc2), t4(&tuple_desc2),
       t5(&tuple_desc3);
-  t1.SetField(0, std::move(int1));
-  t1.SetField(1, std::move(str1));
-  t1.SetField(2, std::move(int2));
-  t2.SetField(0, std::move(int3));
-  t2.SetField(1, std::move(str2));
-  t2.SetField(2, std::move(int4));
-  t3.SetField(0, std::move(str3));
-  t3.SetField(1, std::move(int5));
-  t4.SetField(0, std::move(str4));
-  t4.SetField(1, std::move(int6));
-  t5.SetField(0, std::move(int7));
+  ASSERT_TRUE(t1.SetField(0, std::move(int1)).ok());
+  ASSERT_TRUE(t1.SetField(1, std::move(str1)).ok());
+  ASSERT_TRUE(t1.SetField(2, std::move(int2)).ok());
+  ASSERT_TRUE(t2.SetField(0, std::move(int3)).ok());
+  ASSERT_TRUE(t2.SetField(1, std::move(str2)).ok());
+  ASSERT_TRUE(t2.SetField(2, std::move(int4)).ok());
+  ASSERT_TRUE(t3.SetField(0, std::move(str3)).ok());
+  ASSERT_TRUE(t3.SetField(1, std::move(int5)).ok());
+  ASSERT_TRUE(t4.SetField(0, std::move(str4)).ok());
+  ASSERT_TRUE(t4.SetField(1, std::move(int6)).ok());
+  ASSERT_TRUE(t5.SetField(0, std::move(int7)).ok());
 
   EXPECT_TRUE(absl::VerifyTypeImplementsAbslHashCorrectly({
       t1,
