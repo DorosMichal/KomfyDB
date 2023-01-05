@@ -38,22 +38,9 @@ absl::Status TableIterator::Open() {
 
 void TableIterator::Close() {}
 
-bool TableIterator::HasNext() {
-  if (current_tuple != records.end()) {
-    return true;
-  }
-
-  absl::Status status = LoadNextPage();
-  if (absl::IsOutOfRange(status)) {
-    return false;
-  }
-  assert(status.ok());
-  return HasNext();
-}
-
 absl::StatusOr<Record> TableIterator::Next() {
-  if (!HasNext()) {
-    return absl::OutOfRangeError("No more records in this table");
+  if (current_tuple == records.end()) {
+    RETURN_IF_ERROR(LoadNextPage());
   }
   return std::move(*current_tuple++);
 }

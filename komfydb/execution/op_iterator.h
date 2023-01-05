@@ -24,8 +24,6 @@ class OpIterator {
 
   virtual void Close() = 0;
 
-  virtual bool HasNext() = 0;
-
   virtual absl::StatusOr<Record> Next() = 0;
 
   virtual TupleDesc* GetTupleDesc() = 0;

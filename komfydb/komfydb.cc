@@ -61,9 +61,9 @@ int main(int argc, char* argv[]) {
   LOG(INFO) << "Opened order_by on table "
             << catalog->GetTableName(table_id).value();
 
-  while (order_by->HasNext()) {
-    Record record = std::move(order_by->Next().value());
-    std::cout << static_cast<std::string>(record) << "\n";
+  absl::StatusOr<Record> rec;
+  while ((rec = order_by->Next()).ok()) {
+    std::cout << static_cast<std::string>(*rec) << "\n";
   }
   order_by->Close();
 }

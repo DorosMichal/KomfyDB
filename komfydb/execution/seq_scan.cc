@@ -53,10 +53,6 @@ std::string SeqScan::GetAlias() {
   return table_alias;
 }
 
-bool SeqScan::HasNext() {
-  return iterator->HasNext();
-}
-
 absl::StatusOr<Record> SeqScan::Next() {
   return iterator->Next();
 }

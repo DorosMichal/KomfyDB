@@ -39,8 +39,6 @@ class SeqScan : public OpIterator {
 
   std::string GetAlias();
 
-  bool HasNext() override;
-
   absl::StatusOr<Record> Next() override;
 
   TupleDesc* GetTupleDesc() override;

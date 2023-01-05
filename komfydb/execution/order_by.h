@@ -28,8 +28,6 @@ class OrderBy : public OpIterator {
 
   void Close() override;
 
-  bool HasNext() override;
-
   absl::StatusOr<Record> Next() override;
 
   TupleDesc* GetTupleDesc() override;

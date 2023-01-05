@@ -41,9 +41,12 @@ int OrderBy::GetOrderByField() {
 
 absl::Status OrderBy::Open() {
   RETURN_IF_ERROR(child->Open());
-  while (child->HasNext()) {
-    ASSIGN_OR_RETURN(Record rec, child->Next());
-    child_records.push_back(rec);
+  absl::StatusOr<Record> rec;
+  while ((rec = child->Next()).ok()) {
+    child_records.push_back(std::move(*rec));
+  }
+  if (!absl::IsOutOfRange(rec.status())) {
+    return rec.status();
   }
   std::sort(child_records.begin(), child_records.end(),
             [this](const Record& a, const Record& b) {
@@ -66,12 +69,8 @@ void OrderBy::Close() {
   child->Close();
 }
 
-bool OrderBy::HasNext() {
-  return it != child_records.end();
-}
-
 absl::StatusOr<Record> OrderBy::Next() {
-  if (!HasNext()) {
+  if (it == child_records.end()) {
     return absl::OutOfRangeError("No more records in this OpIterator.");
   }
   return *it++;

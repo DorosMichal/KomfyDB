@@ -38,8 +38,6 @@ class TableIterator {
 
   void Close();
 
-  bool HasNext();
-
   absl::StatusOr<Record> Next();
 
   absl::StatusOr<TupleDesc*> GetTupleDesc();
