@@ -18,6 +18,7 @@ cc_library(
     "aggregate.h",
   ],
   srcs = [
+    "op_iterator.cc",
     "seq_scan.cc",
     "order_by.cc",
   ],

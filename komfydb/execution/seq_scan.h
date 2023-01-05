@@ -39,12 +39,6 @@ class SeqScan : public OpIterator {
 
   std::string GetAlias();
 
-  bool HasNext() override;
-
-  absl::StatusOr<Record> Next() override;
-
-  TupleDesc* GetTupleDesc() override;
-
  private:
   SeqScan(std::unique_ptr<TableIterator> iterator, TransactionId tid,
           TupleDesc td, absl::string_view table_alias, int table_id);
@@ -52,8 +46,9 @@ class SeqScan : public OpIterator {
   SeqScan(std::unique_ptr<TableIterator> iterator, TransactionId tid,
           TupleDesc td, int table_id);
 
+  absl::StatusOr<std::unique_ptr<Record>> FetchNext() override;
+
   std::unique_ptr<TableIterator> iterator;
-  TupleDesc td;
   TransactionId tid;
   std::string table_alias;
   int table_id;
