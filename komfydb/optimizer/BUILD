@@ -9,3 +9,20 @@ cc_library(
   ],
   visibility = ["//visibility:public"],
 )
+
+cc_library(
+  name = "histogram",
+  srcs = [
+    "int_histogram.cc",
+    "string_histogram.cc",
+  ],
+  hdrs = [
+    "int_histogram.h",
+    "string_histogram.h",
+  ],
+  deps = [
+    "//komfydb/execution:op",
+    "@com_google_absl//absl/status:statusor",
+  ],
+  visibility = ["//visibility:public"],
+)
