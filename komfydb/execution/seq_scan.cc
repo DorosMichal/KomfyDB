@@ -53,9 +53,10 @@ std::string SeqScan::GetAlias() {
   return table_alias;
 }
 
-absl::StatusOr<std::unique_ptr<Record>> SeqScan::FetchNext() {
+absl::Status SeqScan::FetchNext() {
   ASSIGN_OR_RETURN(Record result, iterator->Next());
-  return std::make_unique<Record>(result);
+  next_record = std::make_unique<Record>(result);
+  return absl::OkStatus();
 }
 
 };  // namespace komfydb::execution

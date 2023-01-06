@@ -38,7 +38,7 @@ class OrderBy : public OpIterator {
   OrderBy(std::unique_ptr<OpIterator> child, int order_by_field, Order order,
           TupleDesc& td);
 
-  absl::StatusOr<std::unique_ptr<Record>> FetchNext() override;
+  absl::Status FetchNext() override;
 };
 
 }  // namespace komfydb::execution

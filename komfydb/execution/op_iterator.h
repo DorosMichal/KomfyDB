@@ -26,17 +26,17 @@ class OpIterator {
 
   virtual void Close() = 0;
 
-  virtual TupleDesc* GetTupleDesc();
+  TupleDesc* GetTupleDesc();
 
-  virtual absl::StatusOr<std::unique_ptr<Record>> Next();
+  absl::StatusOr<std::unique_ptr<Record>> Next();
 
-  virtual bool HasNext();
+  bool HasNext();
 
  protected:
   TupleDesc td;
   std::unique_ptr<Record> next_record;
 
-  virtual absl::StatusOr<std::unique_ptr<Record>> FetchNext() = 0;
+  virtual absl::Status FetchNext() = 0;
 };
 
 };  // namespace komfydb::execution
