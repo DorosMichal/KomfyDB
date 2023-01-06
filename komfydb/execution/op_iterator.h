@@ -41,6 +41,8 @@ class OpIterator {
 
   virtual void Close() = 0;
 
+  virtual absl::Status Rewind() = 0;
+
   TupleDesc* GetTupleDesc();
 
   absl::StatusOr<std::unique_ptr<Record>> Next();

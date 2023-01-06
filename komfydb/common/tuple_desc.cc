@@ -39,8 +39,19 @@ TupleDesc::TupleDesc(const TupleDesc& td1, const TupleDesc& td2) {
   JoinVectors(td1.items, td2.items, items);
 }
 
+TupleDesc::TupleDesc(const std::vector<TDItem>& TDitems) {
+  items = TDitems;
+}
+
 std::vector<TDItem> TupleDesc::GetItems() {
   return std::vector<TDItem>(items);
+}
+
+absl::StatusOr<TDItem> TupleDesc::GetItem(int idx) {
+  if (!(0 <= idx && idx < items.size())) {
+    return absl::InvalidArgumentError("Index out of range");
+  }
+  return items[idx];
 }
 
 int TupleDesc::Length() const {
