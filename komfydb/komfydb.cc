@@ -61,7 +61,7 @@ int main(int argc, char* argv[]) {
   LOG(INFO) << "Opened order_by on table "
             << catalog->GetTableName(table_id).value();
 
-  while (order_by->HasNext()) {
+  while (order_by->HasNext().ok()) {
     std::unique_ptr<Record> record = std::move(order_by->Next().value());
     std::cout << static_cast<std::string>(*record) << "\n";
   }

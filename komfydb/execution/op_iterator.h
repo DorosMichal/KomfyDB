@@ -30,7 +30,7 @@ class OpIterator {
 
   absl::StatusOr<std::unique_ptr<Record>> Next();
 
-  bool HasNext();
+  absl::Status HasNext();
 
  protected:
   TupleDesc td;
