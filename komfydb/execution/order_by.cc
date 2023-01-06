@@ -41,7 +41,7 @@ int OrderBy::GetOrderByField() {
 
 absl::Status OrderBy::Open() {
   RETURN_IF_ERROR(child->Open());
-  while (child->HasNext()) {
+  while (child->HasNext().ok()) {
     ASSIGN_OR_RETURN(std::unique_ptr<Record> rec, child->Next());
     child_records.push_back(std::move(rec));
   }

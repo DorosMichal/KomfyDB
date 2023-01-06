@@ -19,16 +19,11 @@ absl::StatusOr<std::unique_ptr<Record>> OpIterator::Next() {
   return std::move(next_record);
 }
 
-bool OpIterator::HasNext() {
+absl::Status OpIterator::HasNext() {
   if (next_record.get() == nullptr) {
-    absl::Status fetch = FetchNext();
-    if (fetch.ok()) {
-      return true;
-    }
-    assert(absl::IsOutOfRange(fetch));
-    return false;
+    return FetchNext();
   }
-  return true;
+  return absl::OkStatus();
 }
 
 };  // namespace komfydb::execution
