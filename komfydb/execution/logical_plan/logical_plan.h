@@ -72,7 +72,10 @@ class LogicalPlan {
  private:
   absl::Status ProcessScanNodes(TransactionId tid);
   absl::Status ProcessFilterNodes(TableStatsMap& table_stats);
-  absl::Status ProcessJoinNodes();
+  absl::Status ProcessJoinNodes(TransactionId tid, TableStatsMap& table_stats,
+                                bool explain);
+  absl::StatusOr<std::unique_ptr<OpIterator>> ProcessSelectNodes(
+      std::unique_ptr<OpIterator> plan);
 
   // Returns InvalidArgumentError if this reference is invalid.
   absl::Status CheckColumnRef(ColumnRef ref);
