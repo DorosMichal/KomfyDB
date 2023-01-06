@@ -33,6 +33,8 @@ namespace komfydb::execution {
 
 class OpIterator {
  public:
+  OpIterator() = default;
+
   OpIterator(TupleDesc& tuple_desc);
 
   virtual ~OpIterator() {}
@@ -40,6 +42,8 @@ class OpIterator {
   virtual absl::Status Open() = 0;
 
   virtual void Close() = 0;
+
+  virtual absl::Status Rewind() = 0;
 
   TupleDesc* GetTupleDesc();
 

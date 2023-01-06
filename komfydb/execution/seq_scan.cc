@@ -50,6 +50,10 @@ void SeqScan::Close() {
   iterator->Close();
 }
 
+absl::Status SeqScan::Rewind() {
+  return iterator->Rewind();
+}
+
 std::string SeqScan::GetAlias() {
   return table_alias;
 }
