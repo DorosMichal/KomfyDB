@@ -171,9 +171,7 @@ absl::Status Parser::ParseSimpleExpression(LogicalPlan& lp, hsql::Expr* lexpr,
   }
   // For convenience, make left always a column ref.
   if (lexpr->isLiteral()) {
-    hsql::Expr* tmp = lexpr;
-    lexpr = rexpr;
-    rexpr = tmp;
+    std::swap(lexpr, rexpr);
     op.Flip();
   }
   ASSIGN_OR_RETURN(ColumnRef lref, lp.GetColumnRef(lexpr->table, lexpr->name));

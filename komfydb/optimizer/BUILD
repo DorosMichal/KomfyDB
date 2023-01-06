@@ -26,3 +26,15 @@ cc_library(
   ],
   visibility = ["//visibility:public"],
 )
+
+cc_library(
+  name = "join_optimizer",
+  srcs = ["join_optimizer.cc",],
+  hdrs = ["join_optimizer.h",],
+  deps = [
+    "//komfydb/execution/logical_plan:nodes",
+    "//komfydb/storage",
+    "@com_google_absl//absl/status:status",
+  ],
+  visibility = ["//visibility:public"],
+)
