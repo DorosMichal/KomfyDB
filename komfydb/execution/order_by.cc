@@ -41,10 +41,10 @@ int OrderBy::GetOrderByField() {
 
 absl::Status OrderBy::Open() {
   RETURN_IF_ERROR(child->Open());
-  while (child->HasNext().ok()) {
-    ASSIGN_OR_RETURN(std::unique_ptr<Record> rec, child->Next());
-    child_records.push_back(std::move(rec));
+  ITERATE_RECORDS(child, rec) {
+    child_records.push_back(std::move(rec.value()));
   }
+  RETURN_IF_NOT_OOR(rec.status());
   std::sort(child_records.begin(), child_records.end(),
             [this](const std::unique_ptr<Record>& a,
                    const std::unique_ptr<Record>& b) {

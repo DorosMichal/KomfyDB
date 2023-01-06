@@ -16,6 +16,21 @@ using komfydb::storage::Record;
 
 namespace komfydb::execution {
 
+#define WHILE_HAS_NEXT(child, status) \
+  absl::Status status;                \
+  while ((status = (child)->HasNext()).ok())
+
+#define ITERATE_RECORDS(child, record)            \
+  absl::StatusOr<std::unique_ptr<Record>> record; \
+  while ((record = std::move((child)->Next())).ok())
+
+#define RETURN_IF_NOT_OOR(status)      \
+  do {                                 \
+    if (!absl::IsOutOfRange(status)) { \
+      return status;                   \
+    }                                  \
+  } while (0);
+
 class OpIterator {
  public:
   OpIterator(TupleDesc& td);
