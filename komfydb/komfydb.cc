@@ -61,9 +61,11 @@ int main(int argc, char* argv[]) {
   LOG(INFO) << "Opened order_by on table "
             << catalog->GetTableName(table_id).value();
 
-  while (order_by->HasNext().ok()) {
-    std::unique_ptr<Record> record = std::move(order_by->Next().value());
-    std::cout << static_cast<std::string>(*record) << "\n";
+  ITERATE_RECORDS(order_by, record) {
+    std::cout << static_cast<std::string>(*(record.value())) << "\n";
+  }
+  if (!absl::IsOutOfRange(record.status())) {
+    LOG(ERROR) << record.status().message();
   }
   order_by->Close();
 }
