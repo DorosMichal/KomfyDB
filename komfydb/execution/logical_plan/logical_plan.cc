@@ -5,6 +5,7 @@
 #include <string_view>
 
 #include "komfydb/common/tuple_desc.h"
+#include "komfydb/optimizer/join_optimizer.h"
 #include "komfydb/utils/status_macros.h"
 
 namespace {

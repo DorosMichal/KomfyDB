@@ -1,6 +1,8 @@
 #ifndef __JOIN_NODE_H__
 #define __JOIN_NODE_H__
 
+#include <memory>
+
 #include "komfydb/common/column_ref.h"
 #include "komfydb/execution/op.h"
 
@@ -27,11 +29,9 @@ class JoinNode {
   Op op;
   Type type;
 
-  JoinNode(ColumnRef lref, Op op, ColumnRef rref)
-      : lref(lref), rref(rref), op(op), type(COL_COL) {}
+  JoinNode(ColumnRef lref, Op op, ColumnRef rref);
 
-  JoinNode(ColumnRef lref, Op op, std::unique_ptr<LogicalPlan> subplan)
-      : lref(lref), subplan(std::move(subplan)), op(op), type(COL_SUB) {}
+  JoinNode(ColumnRef lref, Op op, std::unique_ptr<LogicalPlan> subplan);
 };
 
 };  // namespace komfydb::execution::logical_plan

@@ -22,7 +22,7 @@ namespace komfydb::execution {
 
 #define ITERATE_RECORDS(child, record)            \
   absl::StatusOr<std::unique_ptr<Record>> record; \
-  while ((record = std::move((child)->Next())).ok())
+  while ((record = (child)->Next()).ok())
 
 #define RETURN_IF_NOT_OOR(status)      \
   do {                                 \
