@@ -28,6 +28,8 @@ class OrderBy : public OpIterator {
 
   void Close() override;
 
+  absl::Status Rewind() override;
+
  private:
   std::unique_ptr<OpIterator> child;
   int order_by_field;
@@ -37,6 +39,8 @@ class OrderBy : public OpIterator {
 
   OrderBy(std::unique_ptr<OpIterator> child, int order_by_field, Order order,
           TupleDesc& tuple_desc);
+
+  absl::Status Prepare();
 
   absl::Status FetchNext() override;
 };

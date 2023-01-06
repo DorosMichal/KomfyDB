@@ -30,7 +30,7 @@ class Join : public OpIterator {
 
   void Close() override;
 
-  void Rewind() override;
+  absl::Status Rewind() override;
 
  private:
   Join(std::unique_ptr<OpIterator> l_child, JoinPredicate join_predicate,

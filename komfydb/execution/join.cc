@@ -65,9 +65,9 @@ void Join::Close() {
   r_child->Close();
 }
 
-void Join::Rewind() {
-  l_child->Rewind();
-  r_child->Rewind();
+absl::Status Join::Rewind() {
+  RETURN_IF_ERROR(l_child->Rewind());
+  RETURN_IF_ERROR(r_child->Rewind());
   l_child_next = {};
   next_record = {};
   return absl::OkStatus();
@@ -96,8 +96,8 @@ absl::Status Join::FetchNext() {
             joined_record_id));
       }
     } else if (absl::IsOutOfRange(status)) {
-      r_child->Rewind();
       l_child_next = {};
+      RETURN_IF_ERROR(r_child->Rewind());
       return FetchNext();
     } else {
       return status;

@@ -41,6 +41,19 @@ int OrderBy::GetOrderByField() {
 
 absl::Status OrderBy::Open() {
   RETURN_IF_ERROR(child->Open());
+  return Prepare();
+}
+
+void OrderBy::Close() {
+  child->Close();
+}
+
+absl::Status OrderBy::Rewind() {
+  RETURN_IF_ERROR(child->Rewind());
+  return Prepare();
+}
+
+absl::Status OrderBy::Prepare() {
   ITERATE_RECORDS(child, rec) {
     child_records.push_back(std::move(rec.value()));
   }
@@ -61,10 +74,6 @@ absl::Status OrderBy::Open() {
             });
   it = child_records.begin();
   return absl::OkStatus();
-}
-
-void OrderBy::Close() {
-  child->Close();
 }
 
 absl::Status OrderBy::FetchNext() {

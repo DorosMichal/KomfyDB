@@ -37,6 +37,8 @@ class SeqScan : public OpIterator {
 
   void Close() override;
 
+  absl::Status Rewind() override;
+
   std::string GetAlias();
 
  private:
