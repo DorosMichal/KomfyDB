@@ -31,8 +31,8 @@ TupleDesc::TupleDesc(const std::vector<Type>& types) {
   }
 }
 
-TupleDesc::TupleDesc(const TupleDesc& td) {
-  items = td.items;
+TupleDesc::TupleDesc(const TupleDesc& tuple_desc) {
+  items = tuple_desc.items;
 }
 
 TupleDesc::TupleDesc(const TupleDesc& td1, const TupleDesc& td2) {
@@ -85,13 +85,13 @@ int TupleDesc::GetSize() const {
   return sz;
 }
 
-bool TupleDesc::operator==(const TupleDesc& td) const {
-  if (td.items.size() != items.size()) {
+bool TupleDesc::operator==(const TupleDesc& tuple_desc) const {
+  if (tuple_desc.items.size() != items.size()) {
     return false;
   }
 
   for (int i = 0; i < items.size(); i++) {
-    if (td.items[i] != items[i]) {
+    if (tuple_desc.items[i] != items[i]) {
       return false;
     }
   }
@@ -99,8 +99,8 @@ bool TupleDesc::operator==(const TupleDesc& td) const {
   return true;
 }
 
-bool TupleDesc::operator!=(const TupleDesc& td) const {
-  return !(*this == td);
+bool TupleDesc::operator!=(const TupleDesc& tuple_desc) const {
+  return !(*this == tuple_desc);
 }
 
 TupleDesc::operator std::string() const {

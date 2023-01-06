@@ -13,16 +13,17 @@
 namespace komfydb::execution {
 
 SeqScan::SeqScan(std::unique_ptr<TableIterator> iterator, TransactionId tid,
-                 TupleDesc td, absl::string_view table_alias, int table_id)
-    : OpIterator(td),
+                 TupleDesc tuple_desc, absl::string_view table_alias,
+                 int table_id)
+    : OpIterator(tuple_desc),
       iterator(std::move(iterator)),
       tid(tid),
       table_alias(table_alias),
       table_id(table_id) {}
 
 SeqScan::SeqScan(std::unique_ptr<TableIterator> iterator, TransactionId tid,
-                 TupleDesc td, int table_id)
-    : OpIterator(td),
+                 TupleDesc tuple_desc, int table_id)
+    : OpIterator(tuple_desc),
       iterator(std::move(iterator)),
       tid(tid),
       table_alias(common::GenerateUuidV4()),
@@ -36,9 +37,9 @@ absl::StatusOr<std::unique_ptr<SeqScan>> SeqScan::Create(
 absl::StatusOr<std::unique_ptr<SeqScan>> SeqScan::Create(
     std::unique_ptr<TableIterator> iterator, TransactionId tid,
     absl::string_view table_alias, int table_id) {
-  ASSIGN_OR_RETURN(TupleDesc * td, iterator->GetTupleDesc());
-  return std::unique_ptr<SeqScan>(
-      new SeqScan(std::move(iterator), tid, *td, table_alias, table_id));
+  ASSIGN_OR_RETURN(TupleDesc * tuple_desc, iterator->GetTupleDesc());
+  return std::unique_ptr<SeqScan>(new SeqScan(
+      std::move(iterator), tid, *tuple_desc, table_alias, table_id));
 }
 
 absl::Status SeqScan::Open() {

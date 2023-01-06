@@ -48,7 +48,7 @@ class OpIterator {
   absl::Status HasNext();
 
  protected:
-  TupleDesc td;
+  TupleDesc tuple_desc;
   std::unique_ptr<Record> next_record;
 
   virtual absl::Status FetchNext() = 0;

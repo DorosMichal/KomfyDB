@@ -18,7 +18,7 @@ class TupleDesc {
 
   TupleDesc(const std::vector<Type>& types);
 
-  TupleDesc(const TupleDesc& td);
+  TupleDesc(const TupleDesc& tuple_desc);
 
   TupleDesc(const TupleDesc& td1, const TupleDesc& td2);
 
@@ -34,9 +34,9 @@ class TupleDesc {
 
   int GetSize() const;
 
-  bool operator==(const TupleDesc& td) const;
+  bool operator==(const TupleDesc& tuple_desc) const;
 
-  bool operator!=(const TupleDesc& td) const;
+  bool operator!=(const TupleDesc& tuple_desc) const;
 
   // TODO(HashCode)
   // int HashCode();

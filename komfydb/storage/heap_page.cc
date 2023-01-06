@@ -83,23 +83,23 @@ void DumpInt(Field* field, std::vector<uint8_t>& result) {
 namespace komfydb::storage {
 
 absl::StatusOr<std::unique_ptr<HeapPage>> HeapPage::Create(
-    PageId pid, TupleDesc* td, std::vector<uint8_t>& data) {
-  int n_slots = (CONFIG_PAGE_SIZE * 8) / (td->GetSize() * 8 + 1);
+    PageId pid, TupleDesc* tuple_desc, std::vector<uint8_t>& data) {
+  int n_slots = (CONFIG_PAGE_SIZE * 8) / (tuple_desc->GetSize() * 8 + 1);
   int header_len = (n_slots + 7) / 8;
-  int n_fields = td->Length();
+  int n_fields = tuple_desc->Length();
   int data_idx = header_len;
   std::vector<uint8_t> header;
   std::vector<Record> records;
 
   header.insert(header.end(), data.begin(), data.begin() + header_len);
   for (int i = 0; i < n_slots; i++) {
-    Record record(td, pid, i);
+    Record record(tuple_desc, pid, i);
 
     if (!TuplePresent(header, i).value()) {
-      data_idx += td->GetSize();
+      data_idx += tuple_desc->GetSize();
     } else {
       for (int j = 0; j < n_fields; j++) {
-        ASSIGN_OR_RETURN(Type field_type, td->GetFieldType(j));
+        ASSIGN_OR_RETURN(Type field_type, tuple_desc->GetFieldType(j));
 
         if (field_type.GetValue() == Type::INT) {
           RETURN_IF_ERROR(record.SetField(j, ParseInt(data, data_idx)));
@@ -113,7 +113,7 @@ absl::StatusOr<std::unique_ptr<HeapPage>> HeapPage::Create(
   }
 
   return std::unique_ptr<HeapPage>(
-      new HeapPage(pid, td, header, std::move(records), n_slots));
+      new HeapPage(pid, tuple_desc, header, std::move(records), n_slots));
 }
 
 PageId HeapPage::GetId() {
@@ -132,19 +132,19 @@ absl::StatusOr<std::vector<uint8_t>> HeapPage::GetPageData() {
   //   return old_data;
 
   std::vector<uint8_t> result = header;
-  int tuple_len = td->Length();
+  int tuple_len = tuple_desc->Length();
 
   for (int i = 0; i < num_slots; i++) {
     ASSIGN_OR_RETURN(bool tuple_present, TuplePresent(header, i));
     if (!tuple_present) {
-      result.insert(result.end(), td->GetSize(), '\0');
+      result.insert(result.end(), tuple_desc->GetSize(), '\0');
       continue;
     }
 
     Record& record = records[i];
 
     for (int j = 0; j < tuple_len; j++) {
-      ASSIGN_OR_RETURN(Type field_type, td->GetFieldType(j));
+      ASSIGN_OR_RETURN(Type field_type, tuple_desc->GetFieldType(j));
       ASSIGN_OR_RETURN(Field * field, record.GetField(j));
 
       if (field_type.GetValue() == Type::STRING) {
@@ -160,7 +160,8 @@ absl::StatusOr<std::vector<uint8_t>> HeapPage::GetPageData() {
 
 absl::StatusOr<std::unique_ptr<Page>> HeapPage::GetBeforeImage() {
   absl::MutexLock l(&old_data_lock);
-  ASSIGN_OR_RETURN(std::unique_ptr<HeapPage> result, Create(pid, td, old_data));
+  ASSIGN_OR_RETURN(std::unique_ptr<HeapPage> result,
+                   Create(pid, tuple_desc, old_data));
   return result;
 }
 

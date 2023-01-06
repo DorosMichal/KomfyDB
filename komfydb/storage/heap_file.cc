@@ -14,10 +14,10 @@ namespace komfydb::storage {
 
 uint32_t HeapFile::table_cnt = 0;
 
-HeapFile::HeapFile(std::fstream file, TupleDesc td, uint32_t table_id,
+HeapFile::HeapFile(std::fstream file, TupleDesc tuple_desc, uint32_t table_id,
                    Permissions permissions)
     : file(std::move(file)),
-      td(td),
+      tuple_desc(tuple_desc),
       table_id(table_id),
       permissions(permissions) {}
 
@@ -26,7 +26,8 @@ HeapFile::~HeapFile() {
 }
 
 absl::StatusOr<std::unique_ptr<HeapFile>> HeapFile::Create(
-    const absl::string_view file_path, TupleDesc td, Permissions permissions) {
+    const absl::string_view file_path, TupleDesc tuple_desc,
+    Permissions permissions) {
   std::ios_base::openmode mode = std::ios::binary | std::ios::in;
   if (permissions == Permissions::READ_WRITE) {
     mode |= std::ios::out;
@@ -49,7 +50,7 @@ absl::StatusOr<std::unique_ptr<HeapFile>> HeapFile::Create(
   }
 
   return std::unique_ptr<HeapFile>(
-      new HeapFile(std::move(file), td, ++table_cnt, permissions));
+      new HeapFile(std::move(file), tuple_desc, ++table_cnt, permissions));
 }
 
 std::fstream* HeapFile::GetFile() {
@@ -61,7 +62,7 @@ uint32_t HeapFile::GetId() {
 }
 
 TupleDesc* HeapFile::GetTupleDesc() {
-  return &td;
+  return &tuple_desc;
 }
 
 absl::StatusOr<std::unique_ptr<Page>> HeapFile::ReadPage(PageId id) {
@@ -83,7 +84,8 @@ absl::StatusOr<std::unique_ptr<Page>> HeapFile::ReadPage(PageId id) {
   file.seekg(page_pos);
   file.read((char*)data.data(), CONFIG_PAGE_SIZE);
 
-  ASSIGN_OR_RETURN(std::unique_ptr<Page> page, HeapPage::Create(id, &td, data));
+  ASSIGN_OR_RETURN(std::unique_ptr<Page> page,
+                   HeapPage::Create(id, &tuple_desc, data));
 
   return page;
 }

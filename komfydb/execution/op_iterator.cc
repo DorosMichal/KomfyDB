@@ -6,10 +6,11 @@
 
 namespace komfydb::execution {
 
-OpIterator::OpIterator(TupleDesc& td) : td(td), next_record(nullptr) {}
+OpIterator::OpIterator(TupleDesc& tuple_desc)
+    : tuple_desc(tuple_desc), next_record(nullptr) {}
 
 TupleDesc* OpIterator::GetTupleDesc() {
-  return &td;
+  return &tuple_desc;
 }
 
 absl::StatusOr<std::unique_ptr<Record>> OpIterator::Next() {

@@ -124,10 +124,10 @@ absl::StatusOr<Database> Database::LoadSchema(
       }
     }
 
-    TupleDesc td(types, names);
+    TupleDesc tuple_desc(types, names);
     ASSIGN_OR_RETURN(std::unique_ptr<HeapFile> hp,
-                     HeapFile::Create(directory + "/" + name + ".dat", td,
-                                      Permissions::READ_ONLY));
+                     HeapFile::Create(directory + "/" + name + ".dat",
+                                      tuple_desc, Permissions::READ_ONLY));
     catalog->AddTable(std::move(hp), name, primary_key);
   }
 

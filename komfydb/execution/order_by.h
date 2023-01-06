@@ -36,7 +36,7 @@ class OrderBy : public OpIterator {
   std::vector<std::unique_ptr<Record>>::iterator it;
 
   OrderBy(std::unique_ptr<OpIterator> child, int order_by_field, Order order,
-          TupleDesc& td);
+          TupleDesc& tuple_desc);
 
   absl::Status FetchNext() override;
 };

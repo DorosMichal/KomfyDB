@@ -29,7 +29,7 @@ bool compare_fields(const Field* f1, const Field* f2) {
 namespace komfydb::common {
 
 void Tuple::swap(Tuple& t) {
-  td = t.td;
+  tuple_desc = t.tuple_desc;
   fields = std::move(t.fields);
 }
 
@@ -39,20 +39,20 @@ Tuple& Tuple::operator=(const Tuple& t) {
   return *this;
 }
 
-Tuple::Tuple(const TupleDesc* td) : td(td) {
-  if (td) {
-    fields.resize(td->Length());
+Tuple::Tuple(const TupleDesc* tuple_desc) : tuple_desc(tuple_desc) {
+  if (tuple_desc) {
+    fields.resize(tuple_desc->Length());
   }
 }
 
 Tuple::Tuple(const Tuple& t) {
-  td = t.td;
-  fields.resize(td->Length());
-  for (int i = 0; i < td->Length(); i++) {
+  tuple_desc = t.tuple_desc;
+  fields.resize(tuple_desc->Length());
+  for (int i = 0; i < tuple_desc->Length(); i++) {
     if (t.fields[i] == nullptr) {
       continue;
     }
-    switch (td->GetFieldType(i).value().GetValue()) {
+    switch (tuple_desc->GetFieldType(i).value().GetValue()) {
       case Type::INT:
         fields[i] = std::make_unique<IntField>(
             *dynamic_cast<IntField*>(t.fields[i].get()));
@@ -68,19 +68,19 @@ Tuple::Tuple(const Tuple& t) {
 Tuple::Tuple(Tuple& t1, Tuple&& t2, TupleDesc* joined_td)
     : tuple_desc(joined_td) {
   // copies the 1st Tuple, but moves the 2nd, used in nested loop join
-  fields.resize(td->Length());
+  fields.resize(tuple_desc->Length());
   Tuple tmp_t1 = t1;
   int idx = 0;
-  for (int i = 0; i < tmp_t1.td->Length(); i++, idx++) {
+  for (int i = 0; i < tmp_t1.tuple_desc->Length(); i++, idx++) {
     fields[idx] = std::move(tmp_t1.fields[i]);
   }
-  for (int i = 0; i < t2.td->Length(); i++, idx++) {
+  for (int i = 0; i < t2.tuple_desc->Length(); i++, idx++) {
     fields[idx] = std::move(t2.fields[i]);
   }
 }
 
 const TupleDesc* Tuple::GetTupleDesc() {
-  return td;
+  return tuple_desc;
 }
 
 absl::StatusOr<Field*> Tuple::GetField(int i) const {
@@ -118,12 +118,12 @@ Tuple::operator std::string() const {
 }
 
 bool Tuple::operator==(const Tuple& t) const {
-  if (*t.td != *td) {
+  if (*t.tuple_desc != *tuple_desc) {
     return false;
   }
 
   for (int i = 0; i < t.fields.size(); i++) {
-    switch (td->GetFieldType(i).value().GetValue()) {
+    switch (tuple_desc->GetFieldType(i).value().GetValue()) {
       case Type::INT:
         if (!compare_fields<int>(fields[i].get(), t.fields[i].get())) {
           return false;
