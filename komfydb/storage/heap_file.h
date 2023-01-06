@@ -30,7 +30,7 @@ namespace komfydb::storage {
 class HeapFile : public DbFile {
  private:
   std::fstream file;
-  TupleDesc td;
+  TupleDesc tuple_desc;
   uint32_t table_id;
   Permissions permissions;
 
@@ -38,14 +38,15 @@ class HeapFile : public DbFile {
   // thread safe. Probably it would be better to get some file's hash code.
   static uint32_t table_cnt;
 
-  HeapFile(std::fstream file, TupleDesc td, uint32_t table_id,
+  HeapFile(std::fstream file, TupleDesc tuple_desc, uint32_t table_id,
            Permissions permissions);
 
  public:
   ~HeapFile();
 
   static absl::StatusOr<std::unique_ptr<HeapFile>> Create(
-      const absl::string_view file_name, TupleDesc td, Permissions permissions);
+      const absl::string_view file_name, TupleDesc tuple_desc,
+      Permissions permissions);
 
   std::fstream* GetFile();
 

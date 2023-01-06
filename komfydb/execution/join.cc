@@ -54,10 +54,6 @@ absl::StatusOr<std::string> Join::GetJoinField2Name() {
   return tuple_desc->GetFieldName(field_idx);
 }
 
-TupleDesc* Join::GetTupleDesc() {
-  return &tuple_desc;
-}
-
 absl::Status Join::Open() {
   RETURN_IF_ERROR(l_child->Open());
   RETURN_IF_ERROR(r_child->Open());

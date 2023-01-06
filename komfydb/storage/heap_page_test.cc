@@ -27,13 +27,13 @@ class HeapPageTest : public ::testing::Test {
   PageId pid;
   std::vector<uint8_t> test_data, empty_data;
   std::fstream file;
-  std::unique_ptr<TupleDesc> td;
+  std::unique_ptr<TupleDesc> tuple_desc;
   int tuple_sz;
   int tuples_on_page;
 
   void SetUp() override {
-    td = std::make_unique<TupleDesc>(types);
-    tuple_sz = td->GetSize();
+    tuple_desc = std::make_unique<TupleDesc>(types);
+    tuple_sz = tuple_desc->GetSize();
     tuples_on_page = (CONFIG_PAGE_SIZE * 8) / (tuple_sz * 8 + 1);
 
     file.open(std::string(kTestDataFilePath), std::ios::in | std::ios::binary);
@@ -60,7 +60,7 @@ class HeapPageTest : public ::testing::Test {
 
 TEST_F(HeapPageTest, Records) {
   absl::StatusOr<std::unique_ptr<HeapPage>> hpage =
-      HeapPage::Create(pid, td.get(), test_data);
+      HeapPage::Create(pid, tuple_desc.get(), test_data);
 
   ASSERT_TRUE(hpage.ok());
   std::vector<Record> records = (*hpage)->GetRecords();
@@ -73,7 +73,7 @@ TEST_F(HeapPageTest, Records) {
       continue;
     }
     Record& record = records[rid++];
-    EXPECT_EQ(record.GetTupleDesc(), td.get());
+    EXPECT_EQ(record.GetTupleDesc(), tuple_desc.get());
     EXPECT_EQ(record.GetId(), RecordId(pid, i));
 
     Record comp_record(record.GetTupleDesc(), pid, i);
@@ -95,7 +95,7 @@ TEST_F(HeapPageTest, Records) {
 
 TEST_F(HeapPageTest, GetPageData) {
   absl::StatusOr<std::unique_ptr<HeapPage>> hpage =
-      HeapPage::Create(pid, td.get(), test_data);
+      HeapPage::Create(pid, tuple_desc.get(), test_data);
 
   ASSERT_TRUE(hpage.ok());
   absl::StatusOr<std::vector<uint8_t>> page_data = (*hpage)->GetPageData();
@@ -105,10 +105,11 @@ TEST_F(HeapPageTest, GetPageData) {
 
 TEST_F(HeapPageTest, AddAndRemoveTuples) {
   absl::StatusOr<std::unique_ptr<HeapPage>> hpage =
-      HeapPage::Create(pid, td.get(), empty_data);
+      HeapPage::Create(pid, tuple_desc.get(), empty_data);
   ASSERT_TRUE(hpage.ok());
 
-  Tuple t[3] = {Tuple(td.get()), Tuple(td.get()), Tuple(td.get())};
+  Tuple t[3] = {Tuple(tuple_desc.get()), Tuple(tuple_desc.get()),
+                Tuple(tuple_desc.get())};
   ASSERT_TRUE(t[0].SetField(0, std::make_unique<IntField>(0)).ok());
   ASSERT_TRUE(t[0].SetField(1, std::make_unique<StringField>("a")).ok());
   ASSERT_TRUE(t[0].SetField(2, std::make_unique<IntField>(1)).ok());

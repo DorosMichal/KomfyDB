@@ -15,20 +15,20 @@ using namespace komfydb::common;
 namespace komfydb::execution {
 
 OrderBy::OrderBy(std::unique_ptr<OpIterator> child, int order_by_field,
-                 Order order, TupleDesc& td)
-    : OpIterator(td),
+                 Order order, TupleDesc& tuple_desc)
+    : OpIterator(tuple_desc),
       child(std::move(child)),
       order_by_field(order_by_field),
       order(order) {}
 
 absl::StatusOr<std::unique_ptr<OrderBy>> OrderBy::Create(
     std::unique_ptr<OpIterator> child, int order_by_field, Order order) {
-  TupleDesc* td = child->GetTupleDesc();
-  /* Check if td has field nr order_by_field */
-  RETURN_IF_ERROR(td->GetFieldType(order_by_field).status());
+  TupleDesc* tuple_desc = child->GetTupleDesc();
+  /* Check if tuple_desc has field nr order_by_field */
+  RETURN_IF_ERROR(tuple_desc->GetFieldType(order_by_field).status());
 
   return std::unique_ptr<OrderBy>(
-      new OrderBy(std::move(child), order_by_field, order, *td));
+      new OrderBy(std::move(child), order_by_field, order, *tuple_desc));
 }
 
 OrderBy::Order OrderBy::GetOrder() {

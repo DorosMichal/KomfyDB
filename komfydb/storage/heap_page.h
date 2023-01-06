@@ -27,7 +27,7 @@ class HeapPage : public Page {
 
  private:
   PageId pid;
-  TupleDesc* td;
+  TupleDesc* tuple_desc;
   std::vector<uint8_t> header;
   std::vector<Record> records;
   int num_slots;  // TODO I don't like this name
@@ -35,10 +35,10 @@ class HeapPage : public Page {
   // Take a look on absl::MutexLock to see how to acquire it
   absl::Mutex old_data_lock;
 
-  HeapPage(PageId pid, TupleDesc* td, std::vector<uint8_t> header,
+  HeapPage(PageId pid, TupleDesc* tuple_desc, std::vector<uint8_t> header,
            std::vector<Record> records, int num_slots)
       : pid(pid),
-        td(td),
+        tuple_desc(tuple_desc),
         header(header),
         records(std::move(records)),
         num_slots(num_slots) {}
@@ -47,7 +47,7 @@ class HeapPage : public Page {
   ~HeapPage() override {}
 
   static absl::StatusOr<std::unique_ptr<HeapPage>> Create(
-      PageId id, TupleDesc* td, std::vector<uint8_t>& data);
+      PageId id, TupleDesc* tuple_desc, std::vector<uint8_t>& data);
 
   PageId GetId() override;
 

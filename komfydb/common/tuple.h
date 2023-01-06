@@ -16,14 +16,14 @@ namespace komfydb::common {
 // representing a Tuple in memory.
 class Tuple {
  protected:
-  const TupleDesc* td;
+  const TupleDesc* tuple_desc;
 
   std::vector<std::unique_ptr<Field>> fields;
 
   void swap(Tuple& t);
 
  public:
-  Tuple(const TupleDesc* td);
+  Tuple(const TupleDesc* tuple_desc);
 
   Tuple(const Tuple& t);
 
@@ -49,7 +49,7 @@ class Tuple {
   // std::vector<Field> GetFields();
 
   // Wtf should this do? lol
-  // void ResetTupleDesc(TupleDesc td);
+  // void ResetTupleDesc(TupleDesc tuple_desc);
 };
 
 };  // namespace komfydb::common

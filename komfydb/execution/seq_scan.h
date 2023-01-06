@@ -41,10 +41,10 @@ class SeqScan : public OpIterator {
 
  private:
   SeqScan(std::unique_ptr<TableIterator> iterator, TransactionId tid,
-          TupleDesc td, absl::string_view table_alias, int table_id);
+          TupleDesc tuple_desc, absl::string_view table_alias, int table_id);
 
   SeqScan(std::unique_ptr<TableIterator> iterator, TransactionId tid,
-          TupleDesc td, int table_id);
+          TupleDesc tuple_desc, int table_id);
 
   absl::Status FetchNext() override;
 

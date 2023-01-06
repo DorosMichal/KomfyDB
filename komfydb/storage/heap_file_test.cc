@@ -23,21 +23,23 @@ class HeapFileTest : public ::testing::Test {
   int table_id;
   const std::vector<Type> types = {Type::INT, Type::STRING, Type::INT,
                                    Type::STRING};
-  std::unique_ptr<TupleDesc> td;
+  std::unique_ptr<TupleDesc> tuple_desc;
   std::unique_ptr<HeapFile> hfile;
 
   void SetUp() override {
-    td = std::make_unique<TupleDesc>(types);
-    if (tuple_sz != td->GetSize()) {
+    tuple_desc = std::make_unique<TupleDesc>(types);
+    if (tuple_sz != tuple_desc->GetSize()) {
       FAIL() << "This test assumes that tuple's size on disk is " << tuple_sz
-             << ", but it's " << td->GetSize() << " in code.\n";
+             << ", but it's " << tuple_desc->GetSize() << " in code.\n";
     }
 
-    tuples_per_page = (CONFIG_PAGE_SIZE * 8) / (tuple_sz * 8 + td->Length());
+    tuples_per_page =
+        (CONFIG_PAGE_SIZE * 8) / (tuple_sz * 8 + tuple_desc->Length());
     pages_cnt = (tuples + tuples_per_page - 1) / tuples_per_page;
 
     absl::StatusOr<std::unique_ptr<HeapFile>> status_or_hfile =
-        HeapFile::Create(kTestDataFilePath, *td, Permissions::READ_ONLY);
+        HeapFile::Create(kTestDataFilePath, *tuple_desc,
+                         Permissions::READ_ONLY);
 
     if (!status_or_hfile.ok()) {
       FAIL() << "HeapFile::Create failed: " << status_or_hfile.status();

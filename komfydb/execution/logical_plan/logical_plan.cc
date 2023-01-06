@@ -26,8 +26,8 @@ absl::Status LogicalPlan::CheckColumnRef(ColumnRef ref) {
     return absl::InvalidArgumentError(
         absl::StrCat("Unknown alias ", ref.table));
   }
-  ASSIGN_OR_RETURN(TupleDesc * td, catalog->GetTupleDesc(it->second));
-  return td->IndexForFieldName(ref.column).status();
+  ASSIGN_OR_RETURN(TupleDesc * tuple_desc, catalog->GetTupleDesc(it->second));
+  return tuple_desc->IndexForFieldName(ref.column).status();
 }
 
 absl::Status LogicalPlan::AddScan(int table_id, std::string_view alias) {
@@ -105,8 +105,8 @@ absl::StatusOr<ColumnRef> LogicalPlan::GetColumnRef(std::string_view table,
   }
 
   for (auto& it : alias_to_id) {
-    ASSIGN_OR_RETURN(TupleDesc * td, catalog->GetTupleDesc(it.second));
-    if (td->IndexForFieldName(column).ok()) {
+    ASSIGN_OR_RETURN(TupleDesc * tuple_desc, catalog->GetTupleDesc(it.second));
+    if (tuple_desc->IndexForFieldName(column).ok()) {
       if (table != "") {
         return absl::InvalidArgumentError(
             absl::StrCat("Column ", column, " without table name is ambigous"));
@@ -133,9 +133,9 @@ absl::StatusOr<common::Type> LogicalPlan::GetColumnType(ColumnRef ref) {
     return absl::InvalidArgumentError(absl::StrCat(
         "Invalid column reference: no table with alias ", ref.table));
   }
-  ASSIGN_OR_RETURN(TupleDesc * td, catalog->GetTupleDesc(it->second));
-  ASSIGN_OR_RETURN(int column_idx, td->IndexForFieldName(ref.column));
-  ASSIGN_OR_RETURN(Type t, td->GetFieldType(column_idx));
+  ASSIGN_OR_RETURN(TupleDesc * tuple_desc, catalog->GetTupleDesc(it->second));
+  ASSIGN_OR_RETURN(int column_idx, tuple_desc->IndexForFieldName(ref.column));
+  ASSIGN_OR_RETURN(Type t, tuple_desc->GetFieldType(column_idx));
   return t;
 }
 

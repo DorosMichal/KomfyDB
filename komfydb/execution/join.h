@@ -26,8 +26,6 @@ class Join : public OpIterator {
 
   absl::StatusOr<std::string> GetJoinField2Name();
 
-  TupleDesc* GetTupleDesc() override;
-
   absl::Status Open() override;
 
   void Close() override;
