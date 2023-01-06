@@ -46,7 +46,7 @@ class SeqScan : public OpIterator {
   SeqScan(std::unique_ptr<TableIterator> iterator, TransactionId tid,
           TupleDesc td, int table_id);
 
-  absl::StatusOr<std::unique_ptr<Record>> FetchNext() override;
+  absl::Status FetchNext() override;
 
   std::unique_ptr<TableIterator> iterator;
   TransactionId tid;

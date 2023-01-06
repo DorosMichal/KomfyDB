@@ -67,11 +67,12 @@ void OrderBy::Close() {
   child->Close();
 }
 
-absl::StatusOr<std::unique_ptr<Record>> OrderBy::FetchNext() {
+absl::Status OrderBy::FetchNext() {
   if (it == child_records.end()) {
     return absl::OutOfRangeError("No more records in this OpIterator");
   }
-  return std::move(*it++);
+  next_record = std::move(*it++);
+  return absl::OkStatus();
 }
 
 }  // namespace komfydb::execution
