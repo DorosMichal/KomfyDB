@@ -63,18 +63,16 @@ void DumpInt(int data, std::vector<uint8_t>& result) {
   result.insert(result.end(), bytes, bytes + sizeof(data));
 }
 
-void DumpString(Field* field, std::vector<uint8_t>& result) {
-  std::string data;
-  field->GetValue(data);
+void DumpString(StringField* field, std::vector<uint8_t>& result) {
+  std::string data = field->GetValue();
   int padding = Type::STR_LEN - data.size();
   DumpInt(data.size(), result);
   result.insert(result.end(), data.begin(), data.end());
   result.insert(result.end(), padding, '\0');
 }
 
-void DumpInt(Field* field, std::vector<uint8_t>& result) {
-  int data;
-  field->GetValue(data);
+void DumpInt(IntField* field, std::vector<uint8_t>& result) {
+  int data = field->GetValue();
   DumpInt(data, result);
 }
 
@@ -167,10 +165,15 @@ absl::StatusOr<std::vector<uint8_t>> HeapPage::GetPageData() {
       ASSIGN_OR_RETURN(Type field_type, tuple_desc->GetFieldType(j));
       ASSIGN_OR_RETURN(Field * field, record.GetField(j));
 
-      if (field_type.GetValue() == Type::STRING) {
-        DumpString(field, result);
-      } else if (field_type.GetValue() == Type::INT) {
-        DumpInt(field, result);
+      switch (field_type.GetValue()) {
+        case Type::STRING: {
+          DumpString(static_cast<StringField*>(field), result);
+          break;
+        }
+        case Type::INT: {
+          DumpInt(static_cast<IntField*>(field), result);
+          break;
+        }
       }
     }
   }

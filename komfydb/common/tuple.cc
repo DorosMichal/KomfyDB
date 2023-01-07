@@ -8,20 +8,27 @@
 namespace {
 
 using komfydb::common::Field;
+using komfydb::common::IntField;
+using komfydb::common::StringField;
 
-template <typename T>
-bool compare_fields(const Field* f1, const Field* f2) {
-  T v1, v2;
-  if ((f1 == nullptr && f2 != nullptr) || (f1 != nullptr && f2 == nullptr)) {
-    return false;
-  }
-  if (f1 == nullptr && f2 == nullptr) {
+bool compare_fields(const IntField* f1, const IntField* f2) {
+  if (f1 == f2) {
     return true;
   }
-  f1->GetValue(v1);
-  f2->GetValue(v2);
+  if (f1 == nullptr || f2 == nullptr) {
+    return false;
+  }
+  return f1->GetValue() == f2->GetValue();
+}
 
-  return v1 == v2;
+bool compare_fields(const StringField* f1, const StringField* f2) {
+  if (f1 == f2) {
+    return true;
+  }
+  if (f1 == nullptr || f2 == nullptr) {
+    return false;
+  }
+  return f1->GetValue() == f2->GetValue();
 }
 
 };  // namespace
@@ -55,11 +62,11 @@ Tuple::Tuple(const Tuple& t) {
     switch (tuple_desc->GetFieldType(i).value().GetValue()) {
       case Type::INT:
         fields[i] = std::make_unique<IntField>(
-            *dynamic_cast<IntField*>(t.fields[i].get()));
+            *static_cast<IntField*>(t.fields[i].get()));
         break;
       case Type::STRING:
         fields[i] = std::make_unique<StringField>(
-            *dynamic_cast<StringField*>(t.fields[i].get()));
+            *static_cast<StringField*>(t.fields[i].get()));
         break;
     }
   }
@@ -93,14 +100,24 @@ absl::StatusOr<Field*> Tuple::GetField(int i) const {
   return fields[i].get();
 }
 
+absl::StatusOr<std::unique_ptr<Field>> Tuple::ReleaseField(int i) {
+  if (fields.size() <= i || i < 0) {
+    return absl::InvalidArgumentError("Index out of range");
+  }
+  if (fields[i] == nullptr) {
+    return absl::InvalidArgumentError("Field not set yet.");
+  }
+  return std::move(fields[i]);
+}
+
 // TODO(Tuple) This is bad imho. Here we assume that f is allocated by the
 // caller and what if this is not the case? We need to be careful..
 absl::Status Tuple::SetField(int i, std::unique_ptr<Field> f) {
   if (fields.size() <= i || i < 0) {
     return absl::InvalidArgumentError("Index out of range");
   }
-  if (fields[i].get() && fields[i]->GetType() != f->GetType()) {
-    return absl::InvalidArgumentError("Fields differ in type");
+  if (*tuple_desc->GetFieldType(i) != f->GetType()) {
+    return absl::InvalidArgumentError("Wrong Field type");
   }
 
   fields[i] = std::move(f);
@@ -123,17 +140,22 @@ bool Tuple::operator==(const Tuple& t) const {
   }
 
   for (int i = 0; i < t.fields.size(); i++) {
-    switch (tuple_desc->GetFieldType(i).value().GetValue()) {
-      case Type::INT:
-        if (!compare_fields<int>(fields[i].get(), t.fields[i].get())) {
+    switch ((*tuple_desc->GetFieldType(i)).GetValue()) {
+      case Type::INT: {
+        if (!compare_fields(static_cast<const IntField*>(fields[i].get()),
+                            static_cast<const IntField*>(t.fields[i].get()))) {
           return false;
         }
         break;
-      case Type::STRING:
-        if (!compare_fields<std::string>(fields[i].get(), t.fields[i].get())) {
+      }
+      case Type::STRING: {
+        if (!compare_fields(
+                static_cast<const StringField*>(fields[i].get()),
+                static_cast<const StringField*>(t.fields[i].get()))) {
           return false;
         }
         break;
+      }
     }
   }
 

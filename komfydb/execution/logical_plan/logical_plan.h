@@ -10,7 +10,7 @@
 #include "hsql/SQLParser.h"
 
 #include "komfydb/common/column_ref.h"
-#include "komfydb/execution/aggregate.h"
+#include "komfydb/execution/aggregator.h"
 #include "komfydb/execution/logical_plan/filter_node.h"
 #include "komfydb/execution/logical_plan/join_node.h"
 #include "komfydb/execution/logical_plan/scan_node.h"
@@ -69,7 +69,7 @@ class LogicalPlan {
   std::vector<ScanNode> scans;
 
   absl::flat_hash_map<std::string, int> alias_to_id;
-  Aggregate::AggregateType agg_type = Aggregate::NONE;
+  Aggregator::AggregateType agg_type = Aggregator::NONE;
   ColumnRef agg_column = {};
   ColumnRef group_by_column = {};
   ColumnRef order_by_column = {};

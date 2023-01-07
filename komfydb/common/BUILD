@@ -19,6 +19,7 @@ cc_library(
   ],
   deps = [
     "//komfydb/execution:op",
+    "//komfydb/execution:aggregator",
     "@com_google_absl//absl/status:statusor",
     "@com_google_absl//absl/status",
     "@com_google_absl//absl/strings",

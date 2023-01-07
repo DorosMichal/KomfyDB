@@ -22,14 +22,20 @@ class IntField : public Field {
 
   Type GetType() const override;
 
-  void GetValue(int& i) const override;
+  int GetValue() const;
 
-  void GetValue(std::string& s) const override{};
+  void SetValue(int i);
 
-  // TODO(HashCode)
-  // int HashCode() override;
+  std::unique_ptr<Field> CreateCopy() const override;
+
+  bool operator==(const IntField& field) const;
 
   operator std::string() const override;
+
+  template <typename H>
+  friend H AbslHashValue(H h, const IntField& field) {
+    return H::combine(std::move(h), field.value);
+  }
 };
 
 };  // namespace komfydb::common

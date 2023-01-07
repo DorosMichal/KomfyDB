@@ -8,6 +8,7 @@
 #include "komfydb/common/td_item.h"
 #include "komfydb/common/type.h"
 #include "komfydb/database.h"
+#include "komfydb/execution/aggregate.h"
 #include "komfydb/execution/filter.h"
 #include "komfydb/execution/join.h"
 #include "komfydb/execution/join_predicate.h"
@@ -53,7 +54,7 @@ int main(int argc, char* argv[]) {
   }
 
   std::unique_ptr<execution::SeqScan> seq_scan1 =
-      std::move(status_or_seq_scan1.value());
+      std::move(*status_or_seq_scan1);
 
   std::unique_ptr<IntField> filter_operand1 =
       std::make_unique<IntField>(2000000000);
@@ -62,8 +63,7 @@ int main(int argc, char* argv[]) {
   auto status_or_filter1 = execution::Filter::Create(
       std::move(seq_scan1), std::move(filter_predicate1));
 
-  std::unique_ptr<execution::Filter> filter1 =
-      std::move(status_or_filter1.value());
+  std::unique_ptr<execution::Filter> filter1 = std::move(*status_or_filter1);
 
   // table 2
 
@@ -79,7 +79,7 @@ int main(int argc, char* argv[]) {
   }
 
   std::unique_ptr<execution::SeqScan> seq_scan2 =
-      std::move(status_or_seq_scan2.value());
+      std::move(*status_or_seq_scan2);
 
   std::unique_ptr<IntField> filter_operand2 =
       std::make_unique<IntField>(2000000000);
@@ -88,8 +88,7 @@ int main(int argc, char* argv[]) {
   auto status_or_filter2 = execution::Filter::Create(
       std::move(seq_scan2), std::move(filter_predicate2));
 
-  std::unique_ptr<execution::Filter> filter2 =
-      std::move(status_or_filter2.value());
+  std::unique_ptr<execution::Filter> filter2 = std::move(*status_or_filter2);
 
   // join
 
@@ -101,32 +100,43 @@ int main(int argc, char* argv[]) {
     LOG(ERROR) << "Couldn't create join: " << status_or_join.status().message();
     return 1;
   }
-  std::unique_ptr<execution::Join> join = std::move(status_or_join.value());
+  std::unique_ptr<execution::Join> join = std::move(*status_or_join);
+
+  // aggregate
+
+  std::vector<AggregateType> aggregate_types = {
+      AggregateType::NONE, AggregateType::AVG, AggregateType::COUNT};
+  std::vector<int> aggregate_fields = {3, 0, 1}, groupby_fields = {3};
+
+  auto status_or_aggregate = execution::Aggregate::Create(
+      std::move(join), aggregate_types, aggregate_fields, groupby_fields);
+
+  std::unique_ptr<execution::Aggregate> aggregate =
+      std::move(*status_or_aggregate);
 
   // order by
 
   auto status_or_order_by = execution::OrderBy::Create(
-      std::move(join), 0, execution::OrderBy::Order::ASCENDING);
-  std::unique_ptr<execution::OrderBy> order_by =
-      std::move(status_or_order_by.value());
+      std::move(aggregate), 0, execution::OrderBy::Order::ASCENDING);
+  std::unique_ptr<execution::OrderBy> order_by = std::move(*status_or_order_by);
 
-  std::vector<int> out_field_idxs = {0, 2, 3, 4};
+  // project
+
+  // NOTE: Aggregate does projecting too
+  std::vector<int> out_field_idxs = {0, 1};
   auto status_or_project =
       execution::Project::Create(std::move(order_by), out_field_idxs);
-  std::unique_ptr<execution::Project> project =
-      std::move(status_or_project.value());
+  std::unique_ptr<execution::Project> project = std::move(*status_or_project);
 
   if (!project->Open().ok()) {
     LOG(ERROR) << "project open error";
+    return 1;
   }
 
   LOG(INFO) << "Opened project\n";
 
   ITERATE_RECORDS(project, record) {
-    std::cout << static_cast<std::string>(*(record.value())) << "\n";
-    int filtered_field;
-    record.value()->GetField(0).value()->GetValue(filtered_field);
-    assert(filtered_field >= 2000000000);
+    std::cout << static_cast<std::string>(*(*record)) << "\n";
   }
   if (!absl::IsOutOfRange(record.status())) {
     LOG(ERROR) << record.status().message();

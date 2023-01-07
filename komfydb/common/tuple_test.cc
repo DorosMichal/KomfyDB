@@ -22,8 +22,7 @@ TEST(Tuple, StringConversion) {
 
   auto f1 = tuple.GetField(0);
   ASSERT_TRUE(f1.ok());
-  int i;
-  (*f1)->GetValue(i);
+  int i = (static_cast<IntField*>(*f1))->GetValue();
   EXPECT_EQ(i, 1);
 };
 
