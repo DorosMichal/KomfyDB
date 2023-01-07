@@ -7,6 +7,8 @@
 #include "absl/status/statusor.h"
 
 #include "komfydb/common/field.h"
+#include "komfydb/common/int_field.h"
+#include "komfydb/common/string_field.h"
 #include "komfydb/common/tuple_desc.h"
 
 namespace komfydb::common {
@@ -37,6 +39,8 @@ class Tuple {
 
   absl::StatusOr<Field*> GetField(int i) const;
 
+  absl::StatusOr<std::unique_ptr<Field>> ReleaseField(int i);
+
   absl::Status SetField(int i, std::unique_ptr<Field> f);
 
   operator std::string() const;
@@ -44,6 +48,25 @@ class Tuple {
   bool operator==(const Tuple& t) const;
 
   bool operator!=(const Tuple& t) const;
+
+  // Don't use this for empty tuple
+  template <typename H>
+  friend H AbslHashValue(H h, const Tuple& tuple) {
+    for (int i = 0; i < tuple.fields.size(); i++) {
+      Field* field = tuple.fields[i].get();
+      switch (field->GetType().GetValue()) {
+        case Type::INT: {
+          h = H::combine(std::move(h), *static_cast<IntField*>(field));
+          break;
+        }
+        case Type::STRING: {
+          h = H::combine(std::move(h), *static_cast<StringField*>(field));
+          break;
+        }
+      }
+    }
+    return h;
+  }
 
   // TODO(Iterator)
   // std::vector<Field> GetFields();

@@ -8,8 +8,12 @@ IntField::IntField(int value) : value(value) {}
 
 IntField::IntField(const IntField& f) : value(f.value) {}
 
-void IntField::GetValue(int& i) const {
-  i = value;
+int IntField::GetValue() const {
+  return value;
+}
+
+void IntField::SetValue(int i) {
+  value = i;
 }
 
 absl::StatusOr<bool> IntField::Compare(const Op& op, const Field* f) const {
@@ -17,8 +21,7 @@ absl::StatusOr<bool> IntField::Compare(const Op& op, const Field* f) const {
     return absl::InvalidArgumentError("Can't compare fields of different type");
   }
 
-  int fv;
-  f->GetValue(fv);
+  int fv = static_cast<const IntField*>(f)->GetValue();
 
   switch (op.value) {
     case Op::EQUALS:
@@ -41,6 +44,14 @@ absl::StatusOr<bool> IntField::Compare(const Op& op, const Field* f) const {
 
 Type IntField::GetType() const {
   return Type::INT;
+}
+
+std::unique_ptr<Field> IntField::CreateCopy() const {
+  return std::make_unique<IntField>(value);
+}
+
+bool IntField::operator==(const IntField& field) const {
+  return value == field.value;
 }
 
 IntField::operator std::string() const {

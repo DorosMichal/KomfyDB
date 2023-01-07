@@ -79,7 +79,7 @@ absl::Status LogicalPlan::AddGroupBy(ColumnRef ref) {
 
 absl::Status LogicalPlan::AddAggregate(std::string_view agg_fun,
                                        ColumnRef ref) {
-  ASSIGN_OR_RETURN(agg_type, Aggregate::GetAggregateType(agg_fun));
+  ASSIGN_OR_RETURN(agg_type, Aggregator::GetAggregateType(agg_fun));
   RETURN_IF_ERROR(CheckColumnRef(ref));
   agg_column = ref;
   return absl::OkStatus();
@@ -176,7 +176,7 @@ void LogicalPlan::Dump() {
   }
 
   std::cout << "GroupBy: " << static_cast<std::string>(group_by_column) << "\n";
-  std::cout << "Aggregate: " << Aggregate::AggregateTypeToString(agg_type)
+  std::cout << "Aggregate: " << Aggregator::AggregateTypeToString(agg_type)
             << "(" << static_cast<std::string>(agg_column) << ")\n";
 
   std::cout << "OrderBy: " << static_cast<std::string>(order_by_column) << " ";

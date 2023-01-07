@@ -2,11 +2,22 @@ cc_library(
   name = "op",
   srcs = ["op.cc"],
   hdrs = ["op.h"],
-  visibility = ["//visibility:public"],
   deps = [
     "@com_google_absl//absl/status:statusor",
     "@com_google_absl//absl/container:flat_hash_map",
   ],
+  visibility = ["//visibility:public"],
+)
+
+cc_library(
+  name = "aggregator",
+  srcs = [],
+  hdrs = ["aggregator.h"],
+  deps = [
+    "@com_google_absl//absl/status:statusor",
+    "@com_google_absl//absl/container:flat_hash_map",
+  ],
+  visibility = ["//visibility:public"],
 )
 
 cc_library(
@@ -21,6 +32,8 @@ cc_library(
     "predicate.h",
     "filter.h",
     "project.h",
+    "aggregator.h",
+    "aggregate_tuple.h",
   ],
   srcs = [
     "op_iterator.cc",
@@ -31,6 +44,8 @@ cc_library(
     "predicate.cc",
     "filter.cc",
     "project.cc",
+    "aggregate.cc",
+    "aggregate_tuple.cc",
   ],
   deps = [
     ":op",

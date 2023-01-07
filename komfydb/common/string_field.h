@@ -23,18 +23,24 @@ class StringField : public Field {
 
   ~StringField() override {}
 
-  void GetValue(int& i) const override{};
-
-  void GetValue(std::string& s) const override;
-
   absl::StatusOr<bool> Compare(const Op& op, const Field* f) const override;
+
+  std::string GetValue() const;
+
+  void SetValue(absl::string_view s);
 
   Type GetType() const override;
 
-  // TODO(HashCode)
-  // int HashCode() override;
+  std::unique_ptr<Field> CreateCopy() const override;
+
+  bool operator==(const StringField& field) const;
 
   operator std::string() const override;
+
+  template <typename H>
+  friend H AbslHashValue(H h, const StringField& field) {
+    return H::combine(std::move(h), field.value);
+  }
 };
 
 };  // namespace komfydb::common
