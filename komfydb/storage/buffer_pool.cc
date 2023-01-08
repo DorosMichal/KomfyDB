@@ -9,7 +9,7 @@ namespace komfydb::storage {
 
 absl::StatusOr<Page*> BufferPool::GetPage(TransactionId tid, PageId pid,
                                           Permissions perm) {
-  if (!page_pool.contains(pid)) {
+  if (!page_pool.count(pid)) {
     if (page_pool.size() == pages_cnt) {
       // return absl::InvalidArgumentError("Cannot read another file to the pool");
       LOG(ERROR) << "Buffer run out of space\n";
