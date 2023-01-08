@@ -1,6 +1,6 @@
 # KomfyDB
 
-Simple database C++ implemenatation based on MIT SimpleDB.
+Toy database C++ implemenatation based on MIT's SimpleDB.
 
 ## Cloning
 
@@ -41,6 +41,26 @@ bazel run //komfydb:komfydb -- --logtostderr=1
 To cleanup simply run
 ```
 bazel clean --expunge
+```
+
+### Debugging
+
+Build the project by running:
+```
+bazel build --config=debug //...
+```
+
+### Profiling
+
+Build the project with these additional options:
+```
+bazel build --copt=-pg --cxxopt=-pg --linkopt=-pg //...
+```
+
+Then run
+```
+bazel-bin/komfydb/komfydb
+gprof bazel-bin/komfydb/komfydb > komfydb.prof
 ```
 
 ## Set up pre-commit
