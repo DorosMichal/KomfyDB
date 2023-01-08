@@ -1,4 +1,4 @@
-build --cxxopt='-std=c++17' --cxxopt='-march=native'
+build --cxxopt='-std=c++17' --cxxopt='-march=native' --cxxopt='-O2'
 
 build:asan --strip=never
 build:asan --copt -fsanitize=address
@@ -7,4 +7,12 @@ build:asan --linkopt -fsanitize=address
 
 build:debug --strip=never
 build:debug --copt -Og
+build:debug --compilation_mode=dbg
 
+
+build:profile --cxxopt -O2
+build:profile --cxxopt "-march=native"
+build:profile --cxxopt "-std=c++17"
+build:profile --copt -pg
+build:profile --cxxopt -pg
+build:profile --linkopt -pg
