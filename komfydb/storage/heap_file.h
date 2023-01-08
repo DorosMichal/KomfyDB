@@ -31,15 +31,16 @@ class HeapFile : public DbFile {
  private:
   std::fstream file;
   TupleDesc tuple_desc;
-  uint32_t table_id;
   Permissions permissions;
+  size_t file_length;
+  uint32_t table_id;
 
   // TODO This is probably a very bad way to create table_id's, it's not
   // thread safe. Probably it would be better to get some file's hash code.
   static uint32_t table_cnt;
 
-  HeapFile(std::fstream file, TupleDesc tuple_desc, uint32_t table_id,
-           Permissions permissions);
+  HeapFile(std::fstream file, size_t file_length, TupleDesc tuple_desc,
+           uint32_t table_id, Permissions permissions);
 
  public:
   ~HeapFile();

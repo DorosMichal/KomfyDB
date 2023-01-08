@@ -14,12 +14,13 @@ namespace komfydb::storage {
 
 uint32_t HeapFile::table_cnt = 0;
 
-HeapFile::HeapFile(std::fstream file, TupleDesc tuple_desc, uint32_t table_id,
-                   Permissions permissions)
+HeapFile::HeapFile(std::fstream file, size_t file_length, TupleDesc tuple_desc,
+                   uint32_t table_id, Permissions permissions)
     : file(std::move(file)),
       tuple_desc(tuple_desc),
-      table_id(table_id),
-      permissions(permissions) {}
+      permissions(permissions),
+      file_length(file_length),
+      table_id(table_id) {}
 
 HeapFile::~HeapFile() {
   file.close();
@@ -49,8 +50,8 @@ absl::StatusOr<std::unique_ptr<HeapFile>> HeapFile::Create(
                      " not divisble by page size."));
   }
 
-  return std::unique_ptr<HeapFile>(
-      new HeapFile(std::move(file), tuple_desc, ++table_cnt, permissions));
+  return std::unique_ptr<HeapFile>(new HeapFile(
+      std::move(file), file_length, tuple_desc, ++table_cnt, permissions));
 }
 
 std::fstream* HeapFile::GetFile() {
@@ -71,8 +72,6 @@ absl::StatusOr<std::unique_ptr<Page>> HeapFile::ReadPage(PageId id) {
         "Table ID does not match: ", table_id, "!=", id.GetTableId()));
   }
 
-  file.seekg(0, file.end);
-  uint32_t file_length = file.tellg();
   uint64_t page_pos = (uint64_t)CONFIG_PAGE_SIZE * (uint64_t)id.GetPageNumber();
   if (page_pos >= file_length) {
     return absl::OutOfRangeError(
@@ -91,8 +90,6 @@ absl::StatusOr<std::unique_ptr<Page>> HeapFile::ReadPage(PageId id) {
 }
 
 int HeapFile::PageCount() {
-  file.seekg(0, file.end);
-  uint32_t file_length = file.tellg();
   return file_length / CONFIG_PAGE_SIZE;
 }
 
