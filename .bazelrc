@@ -5,3 +5,6 @@ build:asan --copt -fsanitize=address
 build:asan --copt -g
 build:asan --linkopt -fsanitize=address
 
+build:debug --strip=never
+build:debug --copt -Og
+

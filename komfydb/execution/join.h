@@ -42,7 +42,6 @@ class Join : public OpIterator {
   std::unique_ptr<OpIterator> l_child;
   std::unique_ptr<OpIterator> r_child;
   std::unique_ptr<Record> l_child_next;
-  std::unique_ptr<Record> next_record;
   const RecordId joined_record_id;
 };
 };  // namespace komfydb::execution

@@ -27,7 +27,6 @@ Join::Join(std::unique_ptr<OpIterator> l_child, JoinPredicate join_predicate,
       l_child(std::move(l_child)),
       r_child(std::move(r_child)),
       l_child_next(nullptr),
-      next_record(nullptr),
       joined_record_id(RecordId(PageId(0, 0), -1)) {}
 
 absl::StatusOr<std::unique_ptr<Join>> Join::Create(
@@ -94,6 +93,7 @@ absl::Status Join::FetchNext() {
         next_record = std::make_unique<Record>(Record(
             Tuple(*l_child_next, std::move(*potential_match), &tuple_desc),
             joined_record_id));
+        return absl::OkStatus();
       }
     } else if (absl::IsOutOfRange(status)) {
       l_child_next = {};
@@ -103,7 +103,7 @@ absl::Status Join::FetchNext() {
       return status;
     }
   }
-  // Should never get here
+
   return absl::OkStatus();
 }
 
