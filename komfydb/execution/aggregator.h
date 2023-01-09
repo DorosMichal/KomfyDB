@@ -11,7 +11,7 @@ namespace komfydb::execution {
 class Aggregator {
  public:
   enum AggregateType {
-    NONE,
+    NO_GROUPING,
     MAX,
     MIN,
     SUM,
@@ -38,8 +38,8 @@ class Aggregator {
 
   static std::string AggregateTypeToString(AggregateType type) {
     switch (type) {
-      case NONE:
-        return "none";
+      case NO_GROUPING:
+        return "no_grouping";
       case MAX:
         return "max";
       case MIN:
