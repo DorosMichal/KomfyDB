@@ -36,7 +36,6 @@ class DbFile {
 
   virtual uint32_t GetId() = 0;
 
-  // TODO Shouldn't this return a const pointer?
   virtual TupleDesc* GetTupleDesc() = 0;
 
   virtual int PageCount() = 0;

@@ -82,6 +82,17 @@ void DumpInt(Field* field, std::vector<uint8_t>& result) {
 
 namespace komfydb::storage {
 
+HeapPage::HeapPage(PageId pid, TupleDesc* tuple_desc,
+                   std::vector<uint8_t> header, std::vector<Record> records,
+                   int num_slots)
+    : header(header),
+      records(std::move(records)),
+      last_transaction(transaction::NO_TID),
+      tuple_desc(tuple_desc),
+      pid(pid),
+      num_slots(num_slots),
+      is_dirty(false) {}
+
 absl::StatusOr<std::unique_ptr<HeapPage>> HeapPage::Create(
     PageId pid, TupleDesc* tuple_desc, std::vector<uint8_t>& data) {
   int n_slots = (CONFIG_PAGE_SIZE * 8) / (tuple_desc->GetSize() * 8 + 1);
@@ -120,16 +131,25 @@ PageId HeapPage::GetId() {
   return pid;
 }
 
-// // std::optional<TransactionId> HeapPage::DirtiedBy() {
-// // }
-//
-// // void HeapPage::MarkDirty(bool dirty, TransactionId tid) {
-// // }
-//
+TransactionId HeapPage::GetLastTransaction() {
+  return last_transaction;
+}
+
+bool HeapPage::IsDirty() {
+  return is_dirty;
+}
+
+void HeapPage::SetDirty(bool dirty, TransactionId tid) {
+  last_transaction = tid;
+  is_dirty = true;
+}
+
 absl::StatusOr<std::vector<uint8_t>> HeapPage::GetPageData() {
-  // TODO: uncomment when DirtiedBy is implemented
-  // if (!DirtiedBy())
+  // TODO(transactions) Not necessary for now, also requires prior call to
+  // `SetBeforeImage`.
+  // if (!is_dirty) {
   //   return old_data;
+  // }
 
   std::vector<uint8_t> result = header;
   int tuple_len = tuple_desc->Length();

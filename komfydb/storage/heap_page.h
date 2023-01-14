@@ -26,22 +26,19 @@ class HeapPage : public Page {
   friend class HeapPageFactory;
 
  private:
-  PageId pid;
-  TupleDesc* tuple_desc;
   std::vector<uint8_t> header;
   std::vector<Record> records;
-  int num_slots;  // TODO I don't like this name
   std::vector<uint8_t> old_data;
   // Take a look on absl::MutexLock to see how to acquire it
   absl::Mutex old_data_lock;
+  TransactionId last_transaction;
+  TupleDesc* tuple_desc;
+  PageId pid;
+  int num_slots;
+  bool is_dirty;
 
   HeapPage(PageId pid, TupleDesc* tuple_desc, std::vector<uint8_t> header,
-           std::vector<Record> records, int num_slots)
-      : pid(pid),
-        tuple_desc(tuple_desc),
-        header(header),
-        records(std::move(records)),
-        num_slots(num_slots) {}
+           std::vector<Record> records, int num_slots);
 
  public:
   ~HeapPage() override {}
@@ -51,10 +48,11 @@ class HeapPage : public Page {
 
   PageId GetId() override;
 
-  // not nessecary for lab1
-  // std::optional<TransactionId> DirtiedBy() override;
+  TransactionId GetLastTransaction() override;
 
-  // void MarkDirty(bool dirty, TransactionId tid) override;
+  void SetDirty(bool dirty, TransactionId tid) override;
+
+  bool IsDirty() override;
 
   absl::Status SetBeforeImage() override;
 

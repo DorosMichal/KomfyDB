@@ -14,13 +14,16 @@ class TransactionId {
  public:
   TransactionId();
 
+  TransactionId(long id);
+
   long GetId();
 
   bool operator==(const TransactionId& tid) const;
 
-  // TODO(HashCode): is this necessary?
-  // int HashCode();
+  bool operator==(const long& id) const;
 };
+
+const long NO_TID = (long)-1;
 
 };  // namespace komfydb::transaction
 
