@@ -8,12 +8,18 @@ TransactionId::TransactionId() {
   id = ++counter;
 }
 
+TransactionId::TransactionId(long id) : id(id) {}
+
 long TransactionId::GetId() {
   return id;
 }
 
 bool TransactionId::operator==(const TransactionId& tid) const {
   return tid.id == id;
+}
+
+bool TransactionId::operator==(const long& id) const {
+  return this->id == id;
 }
 
 }  // namespace komfydb::transaction

@@ -55,3 +55,17 @@ cc_test(
     "@com_google_googletest//:gtest_main",
   ],
 )
+
+cc_test(
+  name = "buffer_pool_test",
+  srcs = ["buffer_pool_test.cc",],
+  data= [
+    "testdata/buffer_pool_test.dat",
+    "testdata/buffer_pool_test_db_schema.txt",
+  ],
+  deps = [
+    ":storage",
+    "//komfydb:database",
+    "@com_google_googletest//:gtest_main",
+  ],
+)

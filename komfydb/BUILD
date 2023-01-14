@@ -27,6 +27,7 @@ cc_library(
     "//komfydb/common",
     "@com_github_google_glog//:glog",
   ],
+  visibility = ["//visibility:public"],
 )
 
 filegroup(

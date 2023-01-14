@@ -24,10 +24,11 @@ class Page {
 
   virtual PageId GetId() = 0;
 
-  // not nessecary for lab1
-  // virtual std::optional<TransactionId> DirtiedBy() = 0;
+  virtual TransactionId GetLastTransaction() = 0;
 
-  // virtual void MarkDirty(bool dirty, TransactionId tid) = 0;
+  virtual bool IsDirty() = 0;
+
+  virtual void SetDirty(bool dirty, TransactionId tid) = 0;
 
   virtual absl::StatusOr<std::vector<uint8_t>> GetPageData() = 0;
 
