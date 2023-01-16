@@ -31,6 +31,8 @@ class StringField : public Field {
 
   Type GetType() const override;
 
+  bool operator==(const StringField& other) const;
+
   // TODO(HashCode)
   // int HashCode() override;
 

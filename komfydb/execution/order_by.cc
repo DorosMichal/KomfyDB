@@ -45,18 +45,18 @@ absl::Status OrderBy::Open() {
 }
 
 void OrderBy::Close() {
+  child_records.clear();
   child->Close();
 }
 
 absl::Status OrderBy::Rewind() {
   RETURN_IF_ERROR(child->Rewind());
+  child_records.clear();
   return Prepare();
 }
 
 absl::Status OrderBy::Prepare() {
-  ITERATE_RECORDS(child, rec) {
-    child_records.push_back(std::move(rec.value()));
-  }
+  ITERATE_RECORDS(child, rec) { child_records.push_back(std::move(*rec)); }
   RETURN_IF_NOT_OOR(rec.status());
   std::sort(child_records.begin(), child_records.end(),
             [this](const std::unique_ptr<Record>& a,

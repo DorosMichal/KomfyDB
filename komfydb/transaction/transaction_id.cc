@@ -8,6 +8,8 @@ TransactionId::TransactionId() {
   id = ++counter;
 }
 
+TransactionId::TransactionId(long id) : id(id) {}
+
 long TransactionId::GetId() {
   return id;
 }

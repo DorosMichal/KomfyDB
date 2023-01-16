@@ -52,4 +52,8 @@ StringField::operator std::string() const {
   return value;
 }
 
+bool StringField::operator==(const StringField& other) const {
+  return value == other.value;
+}
+
 };  // namespace komfydb::common

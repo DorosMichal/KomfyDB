@@ -47,4 +47,8 @@ IntField::operator std::string() const {
   return std::to_string(value);
 }
 
+bool IntField::operator==(const IntField& other) const {
+  return value == other.value;
+}
+
 };  // namespace komfydb::common

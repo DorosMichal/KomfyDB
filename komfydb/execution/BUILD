@@ -10,9 +10,19 @@ cc_library(
 )
 
 cc_library(
+  name = "op_iterator",
+  srcs = ["op_iterator.cc",],
+  hdrs = ["op_iterator.h",],
+  deps = [
+    "//komfydb/storage:storage",
+    "//komfydb/utils:utility",
+    "@com_google_absl//absl/status",
+  ],
+)
+
+cc_library(
   name = "execution",
   hdrs = [
-    "op_iterator.h",
     "seq_scan.h",
     "order_by.h",
     "join_predicate.h",
@@ -22,7 +32,6 @@ cc_library(
     "filter.h",
   ],
   srcs = [
-    "op_iterator.cc",
     "seq_scan.cc",
     "order_by.cc",
     "join_predicate.cc",
@@ -32,9 +41,32 @@ cc_library(
   ],
   deps = [
     ":op",
+    ":op_iterator",
     "//komfydb/storage:storage",
     "//komfydb/utils:utility",
     "@com_google_absl//absl/status",
   ],
   visibility = ["//visibility:public"],
+)
+
+cc_library(
+  name = "mock_iterator",
+  srcs = ["mock_iterator.cc",],
+  hdrs = ["mock_iterator.h",],
+  deps = [
+    ":op_iterator",
+    "//komfydb/storage:storage",
+    "@com_google_absl//absl/status",
+  ],
+  visibility = ["//visibility:public"],
+)
+
+cc_test(
+  name = "order_by_test",
+  srcs = ["order_by_test.cc"],
+  deps = [
+    ":mock_iterator",
+    ":execution",
+    "@com_google_googletest//:gtest_main",
+  ],
 )

@@ -26,6 +26,8 @@ class IntField : public Field {
 
   void GetValue(std::string& s) const override{};
 
+  bool operator==(const IntField& other) const;
+
   // TODO(HashCode)
   // int HashCode() override;
 

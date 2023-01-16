@@ -14,6 +14,8 @@ class TransactionId {
  public:
   TransactionId();
 
+  TransactionId(long id);
+
   long GetId();
 
   bool operator==(const TransactionId& tid) const;
@@ -21,6 +23,8 @@ class TransactionId {
   // TODO(HashCode): is this necessary?
   // int HashCode();
 };
+
+const long NO_TID = (long)-1;
 
 };  // namespace komfydb::transaction
 
