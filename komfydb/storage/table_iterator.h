@@ -18,21 +18,10 @@ using komfydb::transaction::TransactionId;
 namespace komfydb::storage {
 
 class TableIterator {
- private:
-  TransactionId tid;
-  int page_ctr;
-  int table_id;
-  int num_pages;
-  std::vector<Record> records;
-  std::vector<Record>::iterator current_tuple;
-  std::shared_ptr<Catalog> catalog;
-  std::shared_ptr<BufferPool> bufferpool;
-  absl::Status LoadNextPage();
-
  public:
-  TableIterator(TransactionId tid, int table_id,
-                std::shared_ptr<Catalog> catalog,
-                std::shared_ptr<BufferPool> bufferpool);
+  static absl::StatusOr<std::unique_ptr<TableIterator>> Create(
+      TransactionId tid, int table_id, std::shared_ptr<Catalog> catalog,
+      std::shared_ptr<BufferPool> bufferpool);
 
   absl::Status Open();
 
@@ -47,6 +36,23 @@ class TableIterator {
   absl::StatusOr<TupleDesc*> GetTupleDesc();
 
   std::string GetTableName();
+
+ private:
+  std::vector<Record> records;
+  std::vector<Record>::iterator current_tuple;
+  std::shared_ptr<Catalog> catalog;
+  std::shared_ptr<BufferPool> bufferpool;
+  std::string table_name;
+  TransactionId tid;
+  int page_ctr;
+  int table_id;
+  int num_pages;
+
+  TableIterator(TransactionId tid, int table_id, std::string_view table_name,
+                std::shared_ptr<Catalog> catalog,
+                std::shared_ptr<BufferPool> bufferpool);
+
+  absl::Status LoadNextPage();
 };
 
 };  // namespace komfydb::storage

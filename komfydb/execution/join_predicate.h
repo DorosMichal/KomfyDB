@@ -21,6 +21,8 @@ class JoinPredicate {
 
   Op GetOperator();
 
+  friend std::ostream& operator<<(std::ostream& os, const JoinPredicate& jp);
+
  private:
   int l_field_idx;
   Op op;

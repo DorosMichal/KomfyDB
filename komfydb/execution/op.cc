@@ -52,4 +52,9 @@ Op::operator std::string() const {
   return op_to_str.find(value)->second;
 }
 
+std::ostream& operator<<(std::ostream& os, const Op& op) {
+  os << static_cast<std::string>(op);
+  return os;
+}
+
 };  // namespace komfydb::execution

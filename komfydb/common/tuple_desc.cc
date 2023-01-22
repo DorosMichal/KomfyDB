@@ -123,4 +123,9 @@ TupleDesc::operator std::string() const {
   return res;
 }
 
+std::ostream& operator<<(std::ostream& os, const TupleDesc& tuple_desc) {
+  os << static_cast<std::string>(tuple_desc);
+  return os;
+}
+
 };  // namespace komfydb::common

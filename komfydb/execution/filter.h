@@ -20,6 +20,8 @@ class Filter : public OpIterator {
 
   absl::Status Rewind() override;
 
+  void Explain(std::ostream& os, int indent = 0) override;
+
  private:
   std::unique_ptr<OpIterator> child;
   Predicate predicate;

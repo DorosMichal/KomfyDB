@@ -42,6 +42,12 @@ absl::StatusOr<std::unique_ptr<SeqScan>> SeqScan::Create(
       std::move(iterator), tid, *tuple_desc, table_alias, table_id));
 }
 
+void SeqScan::Explain(std::ostream& os, int indent) {
+  os << Indent(indent) << "-> SeqScan over " << table_alias
+     << " (physical name: " << iterator->GetTableName() << ")\n";
+  os << Indent(indent + td_indent) << "TD: " << tuple_desc << "\n";
+}
+
 absl::Status SeqScan::Open() {
   return iterator->Open();
 }

@@ -29,6 +29,8 @@ class Op {
   operator std::string() const;
 
   static absl::StatusOr<Op> StrToOp(std::string_view op);
+
+  friend std::ostream& operator<<(std::ostream& os, const Op& op);
 };
 
 };  // namespace komfydb::execution

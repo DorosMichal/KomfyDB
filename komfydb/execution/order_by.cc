@@ -84,4 +84,9 @@ absl::Status OrderBy::FetchNext() {
   return absl::OkStatus();
 }
 
+void OrderBy::Explain(std::ostream& os, int indent) {
+  os << Indent(indent) << "-> OrderBy field " << order_by_field << "\n";
+  child->Explain(os, indent + child_indent);
+}
+
 }  // namespace komfydb::execution

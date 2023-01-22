@@ -42,11 +42,14 @@ int main(int argc, char* argv[]) {
   std::vector<int> table_ids = catalog->GetTableIds();
 
   // table 1
-  std::unique_ptr<storage::TableIterator> table_iterator1 =
-      std::make_unique<storage::TableIterator>(tid, table_ids[0], catalog,
-                                               buffer_pool);
+  auto table_iterator1 =
+      storage::TableIterator::Create(tid, table_ids[0], catalog, buffer_pool);
+  if (!table_iterator1.ok()) {
+    LOG(ERROR) << "Couldn't create table iterator: "
+               << table_iterator1.status().message();
+  }
   auto status_or_seq_scan1 = execution::SeqScan::Create(
-      std::move(table_iterator1), tid, "test_table", table_ids[0]);
+      std::move(*table_iterator1), tid, "test_table", table_ids[0]);
   if (!status_or_seq_scan1.ok()) {
     LOG(ERROR) << "Couldn't create seq_scan: "
                << status_or_seq_scan1.status().message();
@@ -58,8 +61,8 @@ int main(int argc, char* argv[]) {
 
   std::unique_ptr<IntField> filter_operand1 =
       std::make_unique<IntField>(2000000000);
-  Predicate filter_predicate1 =
-      Predicate(0, Op::Value::GREATER_THAN_OR_EQ, std::move(filter_operand1));
+  execution::Predicate filter_predicate1(0, Op::Value::GREATER_THAN_OR_EQ,
+                                         std::move(filter_operand1));
   auto status_or_filter1 = execution::Filter::Create(
       std::move(seq_scan1), std::move(filter_predicate1));
 
@@ -67,11 +70,14 @@ int main(int argc, char* argv[]) {
 
   // table 2
 
-  std::unique_ptr<storage::TableIterator> table_iterator2 =
-      std::make_unique<storage::TableIterator>(tid, table_ids[1], catalog,
-                                               buffer_pool);
+  auto table_iterator2 =
+      storage::TableIterator::Create(tid, table_ids[1], catalog, buffer_pool);
+  if (!table_iterator2.ok()) {
+    LOG(ERROR) << "Couldn't create table iterator: "
+               << table_iterator2.status().message();
+  }
   auto status_or_seq_scan2 = execution::SeqScan::Create(
-      std::move(table_iterator2), tid, "test_table", table_ids[1]);
+      std::move(*table_iterator2), tid, "test_table", table_ids[1]);
   if (!status_or_seq_scan2.ok()) {
     LOG(ERROR) << "Couldn't create seq_scan: "
                << status_or_seq_scan2.status().message();
@@ -83,8 +89,8 @@ int main(int argc, char* argv[]) {
 
   std::unique_ptr<IntField> filter_operand2 =
       std::make_unique<IntField>(2000000000);
-  Predicate filter_predicate2 =
-      Predicate(0, Op::Value::GREATER_THAN_OR_EQ, std::move(filter_operand2));
+  execution::Predicate filter_predicate2(0, Op::Value::GREATER_THAN_OR_EQ,
+                                         std::move(filter_operand2));
   auto status_or_filter2 = execution::Filter::Create(
       std::move(seq_scan2), std::move(filter_predicate2));
 
@@ -127,6 +133,8 @@ int main(int argc, char* argv[]) {
   auto status_or_project =
       execution::Project::Create(std::move(order_by), out_field_idxs);
   std::unique_ptr<execution::Project> project = std::move(*status_or_project);
+
+  project->Explain(std::cout);
 
   if (!project->Open().ok()) {
     LOG(ERROR) << "project open error";

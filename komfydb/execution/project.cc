@@ -73,4 +73,13 @@ absl::Status Project::FetchNext() {
   return absl::OkStatus();
 }
 
+void Project::Explain(std::ostream& os, int indent) {
+  os << Indent(indent) << "-> Project over fields: ";
+  for (auto& idx : out_field_idxs) {
+    os << idx << " ";
+  }
+  os << "\n" << Indent(indent + td_indent) << "TD: " << tuple_desc << "\n";
+  child->Explain(os, indent + child_indent);
+}
+
 }  // namespace komfydb::execution

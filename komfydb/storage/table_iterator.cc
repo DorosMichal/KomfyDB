@@ -15,9 +15,23 @@ using komfydb::common::Permissions;
 namespace komfydb::storage {
 
 TableIterator::TableIterator(TransactionId tid, int table_id,
+                             std::string_view table_name,
                              std::shared_ptr<Catalog> catalog,
                              std::shared_ptr<BufferPool> bufferpool)
-    : tid(tid), table_id(table_id), catalog(catalog), bufferpool(bufferpool) {}
+    : catalog(std::move(catalog)),
+      bufferpool(std::move(bufferpool)),
+      table_name(table_name),
+      tid(tid),
+      table_id(table_id) {}
+
+absl::StatusOr<std::unique_ptr<TableIterator>> TableIterator::Create(
+    TransactionId tid, int table_id, std::shared_ptr<Catalog> catalog,
+    std::shared_ptr<BufferPool> bufferpool) {
+
+  ASSIGN_OR_RETURN(std::string table_name, catalog->GetTableName(table_id));
+  return std::unique_ptr<TableIterator>(new TableIterator(
+      tid, table_id, table_name, std::move(catalog), std::move(bufferpool)));
+}
 
 absl::Status TableIterator::LoadNextPage() {
   page_ctr++;
@@ -59,6 +73,10 @@ absl::StatusOr<Record> TableIterator::Next() {
 
 absl::StatusOr<TupleDesc*> TableIterator::GetTupleDesc() {
   return catalog->GetTupleDesc(table_id);
+}
+
+std::string TableIterator::GetTableName() {
+  return table_name;
 }
 
 };  // namespace komfydb::storage

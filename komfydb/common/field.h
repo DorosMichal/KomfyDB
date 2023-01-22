@@ -32,6 +32,11 @@ class Field {
   virtual std::unique_ptr<Field> CreateCopy() const = 0;
 
   virtual operator std::string() const = 0;
+
+  friend std::ostream& operator<<(std::ostream& os, const Field* field) {
+    os << static_cast<std::string>(*field);
+    return os;
+  }
 };
 
 };  // namespace komfydb::common

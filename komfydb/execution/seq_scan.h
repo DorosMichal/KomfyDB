@@ -16,7 +16,6 @@
 
 namespace {
 
-using komfydb::storage::Record;
 using komfydb::storage::TableIterator;
 using komfydb::transaction::TransactionId;
 
@@ -40,6 +39,8 @@ class SeqScan : public OpIterator {
   absl::Status Rewind() override;
 
   std::string GetAlias();
+
+  void Explain(std::ostream& os, int indent = 0) override;
 
  private:
   SeqScan(std::unique_ptr<TableIterator> iterator, TransactionId tid,
