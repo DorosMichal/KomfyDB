@@ -107,4 +107,11 @@ absl::Status Join::FetchNext() {
   return absl::OkStatus();
 }
 
+void Join::Explain(std::ostream& os, int indent) {
+  os << Indent(indent) << "-> Nested loops join: " << join_predicate << "\n";
+  os << Indent(indent + td_indent) << "TD: " << tuple_desc << "\n";
+  l_child->Explain(os, indent + child_indent);
+  r_child->Explain(os, indent + child_indent);
+}
+
 }  // namespace komfydb::execution

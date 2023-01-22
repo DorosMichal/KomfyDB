@@ -29,6 +29,8 @@ class Project : public OpIterator {
   absl::Status Rewind() override;
 
   std::string GetAlias();
+
+  void Explain(std::ostream& os, int indent = 0) override;
 };
 
 }  // namespace komfydb::execution

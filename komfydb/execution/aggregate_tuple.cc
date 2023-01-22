@@ -40,6 +40,9 @@ absl::Status AggregateTuple::ApplyAggregate(AggregateType aggregate_type, int i,
       IntField* new_int_field = static_cast<IntField*>(new_field);
       int old_value = old_int_field->GetValue();
       switch (aggregate_type) {
+        case AggregateType::NONE: {
+          break;
+        }
         case AggregateType::AVG:
         case AggregateType::SUM: {
           int new_value = new_int_field->GetValue();
@@ -118,6 +121,7 @@ absl::Status AggregateTuple::FinalizeAggregates(
       }
     }
   }
+  return absl::OkStatus();
 }
 
 }  // namespace komfydb::execution

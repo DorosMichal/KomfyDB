@@ -18,6 +18,8 @@ using namespace komfydb::storage;
 
 }  // namespace
 
+namespace komfydb::execution {
+
 class Predicate {
  public:
   enum Type {
@@ -41,11 +43,15 @@ class Predicate {
 
   bool Evaluate(const Record& record);
 
+  friend std::ostream& operator<<(std::ostream& os, const Predicate& p);
+
  private:
   Op op;
   int l_field, r_field;
   std::unique_ptr<Field> const_field;
   Type type;
 };
+
+};  // namespace komfydb::execution
 
 #endif  // __PREDICATE_H__

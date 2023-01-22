@@ -32,6 +32,8 @@ class Join : public OpIterator {
 
   absl::Status Rewind() override;
 
+  void Explain(std::ostream& os, int indent = 0) override;
+
  private:
   Join(std::unique_ptr<OpIterator> l_child, JoinPredicate join_predicate,
        std::unique_ptr<OpIterator> r_child, TupleDesc tuple_desc);

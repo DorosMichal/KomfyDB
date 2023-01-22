@@ -49,6 +49,9 @@ class TupleDesc {
 
   operator std::string() const;
 
+  friend std::ostream& operator<<(std::ostream& os,
+                                  const TupleDesc& tuple_desc);
+
  private:
   std::vector<TDItem> items;
 };

@@ -97,7 +97,7 @@ absl::StatusOr<std::unique_ptr<Aggregate>> Aggregate::Create(
       ASSIGN_OR_RETURN(std::string field_name,
                        child_tuple_desc->GetFieldName(aggregate_fields[i]));
       name = absl::StrCat(Aggregator::AggregateTypeToString(aggregate_type),
-                          " ", field_name);
+                          "__", field_name);
     }
     types.push_back(type);
     fields.push_back(name);
@@ -137,7 +137,7 @@ absl::Status Aggregate::PrepareWithGrouping() {
   }
   RETURN_IF_NOT_OOR(rec.status());
   for (auto it = map.begin(); it != map.end(); it++) {
-    it->second.FinalizeAggregates(aggregate_types);
+    RETURN_IF_ERROR(it->second.FinalizeAggregates(aggregate_types));
     out_tuples.push_back(it->second);
   }
   out_tuples_it = out_tuples.begin();
@@ -196,4 +196,21 @@ absl::Status Aggregate::Rewind() {
   return Prepare();
 }
 
-}  // namespace komfydb::execution
+void Aggregate::Explain(std::ostream& os, int indent) {
+  os << Indent(indent) << "-> Aggregate: ";
+  for (int i = 0; i < aggregate_fields.size(); i++) {
+    if (i != 0) {
+      os << ", ";
+    }
+    if (aggregate_types[i] == Aggregator::NONE) {
+      os << "[col " << aggregate_fields[i] << "]";
+    } else {
+      os << Aggregator::AggregateTypeToString(aggregate_types[i]) << "([col "
+         << aggregate_fields[i] << "])";
+    }
+  }
+  os << "\n";
+  child->Explain(os, indent + child_indent);
+}
+
+};  // namespace komfydb::execution

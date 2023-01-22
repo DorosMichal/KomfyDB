@@ -51,9 +51,15 @@ class OpIterator {
 
   absl::Status HasNext();
 
+  virtual void Explain(std::ostream& os, int indent = 0) = 0;
+
  protected:
   TupleDesc tuple_desc;
   std::unique_ptr<Record> next_record;
+  static const int child_indent = 2;
+  static const int td_indent = 4;
+
+  std::string Indent(int indent);
 
   virtual absl::Status FetchNext() = 0;
 };

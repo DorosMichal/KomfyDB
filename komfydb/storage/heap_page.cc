@@ -33,8 +33,26 @@ absl::Status MarkFree(std::vector<uint8_t>& header, int i) {
   return absl::OkStatus();
 }
 
+inline uint32_t load32_le(uint8_t const* V) {
+  uint32_t ret = 0;
+  ret |= (uint32_t)V[0];
+  ret |= ((uint32_t)V[1]) << 8;
+  ret |= ((uint32_t)V[2]) << 16;
+  ret |= ((uint32_t)V[3]) << 24;
+  return ret;
+}
+
 int ParseInt(uint8_t* data) {
-  int result = *reinterpret_cast<int*>(data);
+  // We need to use this custom function as the data in a heap page can be
+  // unaligned! This is due to how we compute the header length. It can be
+  // arbitrary, and the data starts right after it, so it can be that the first
+  // integer starts at byte 7th for example. Thus, we cannot simply cast the
+  // uint8_t* data to uint32_t*
+  //
+  // Fortunatelly, it seems that x86_64 and arm64 supports reading from
+  // unaligned memory and that the clang compiler optimizes the function
+  // to simply do a move on these architectures.
+  int result = load32_le(data);
   return ntohl(result);
 }
 
@@ -109,7 +127,6 @@ absl::StatusOr<std::unique_ptr<HeapPage>> HeapPage::Create(
     } else {
       for (int j = 0; j < n_fields; j++) {
         ASSIGN_OR_RETURN(Type field_type, tuple_desc->GetFieldType(j));
-
         if (field_type.GetValue() == Type::INT) {
           RETURN_IF_ERROR(record.SetField(j, ParseInt(data, data_idx)));
         } else if (field_type.GetValue() == Type::STRING) {

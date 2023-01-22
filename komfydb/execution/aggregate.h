@@ -12,6 +12,20 @@ namespace {}  // namespace
 namespace komfydb::execution {
 
 class Aggregate : public OpIterator {
+ public:
+  static absl::StatusOr<std::unique_ptr<Aggregate>> Create(
+      std::unique_ptr<OpIterator> child,
+      std::vector<Aggregator::AggregateType>& aggregate_types,
+      std::vector<int>& aggregate_fields, std::vector<int>& groupby_fields);
+
+  absl::Status Open() override;
+
+  void Close() override;
+
+  absl::Status Rewind() override;
+
+  void Explain(std::ostream& os, int indent = 0) override;
+
  private:
   std::unique_ptr<OpIterator> child;
   std::vector<Aggregator::AggregateType> aggregate_types;
@@ -31,18 +45,6 @@ class Aggregate : public OpIterator {
   absl::Status PrepareWithGrouping();
 
   absl::Status PrepareNoGrouping();
-
- public:
-  static absl::StatusOr<std::unique_ptr<Aggregate>> Create(
-      std::unique_ptr<OpIterator> child,
-      std::vector<Aggregator::AggregateType>& aggregate_types,
-      std::vector<int>& aggregate_fields, std::vector<int>& groupby_fields);
-
-  absl::Status Open() override;
-
-  void Close() override;
-
-  absl::Status Rewind() override;
 };
 
 }  // namespace komfydb::execution

@@ -27,4 +27,10 @@ Op JoinPredicate::GetOperator() {
   return op;
 }
 
+std::ostream& operator<<(std::ostream& os, const JoinPredicate& jp) {
+  os << "[col " << jp.l_field_idx << "] " << jp.op << " [col " << jp.r_field_idx
+     << "]";
+  return os;
+}
+
 };  // namespace komfydb::execution

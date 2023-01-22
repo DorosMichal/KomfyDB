@@ -7,6 +7,8 @@ using namespace komfydb::storage;
 
 }  // namespace
 
+namespace komfydb::execution {
+
 Predicate::Predicate(int field, Op op, std::unique_ptr<Field> const_field)
     : op(op),
       l_field(field),
@@ -44,16 +46,25 @@ bool Predicate::Evaluate(const Record& record) {
   /* We assume that GetField() or Compare() cannot fail here */
   switch (type) {
     case Type::COL_COL: {
-      return record.GetField(l_field)
-          .value()
-          ->Compare(op, record.GetField(r_field).value())
-          .value();
+      return *(
+          (*record.GetField(l_field))->Compare(op, *record.GetField(r_field)));
     }
     case Type::COL_CONST: {
-      return record.GetField(l_field)
-          .value()
-          ->Compare(op, const_field.get())
-          .value();
+      return *((*record.GetField(l_field))->Compare(op, const_field.get()));
     }
   }
 }
+
+std::ostream& operator<<(std::ostream& os, const Predicate& p) {
+  switch (p.type) {
+    case Predicate::Type::COL_COL: {
+      os << "[col " << p.l_field << "] " << p.op << "[col " << p.r_field << "]";
+    }
+    case Predicate::Type::COL_CONST: {
+      os << "[col " << p.l_field << "] " << p.op << " " << p.const_field.get();
+    }
+  }
+  return os;
+}
+
+};  // namespace komfydb::execution

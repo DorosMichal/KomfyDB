@@ -59,4 +59,9 @@ absl::Status Filter::FetchNext() {
   return record.status();
 }
 
+void Filter::Explain(std::ostream& os, int indent) {
+  os << Indent(indent) << "-> Filter with " << predicate << "\n";
+  child->Explain(os, indent + child_indent);
+}
+
 }  // namespace komfydb::execution

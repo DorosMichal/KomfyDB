@@ -12,7 +12,7 @@ int Type::GetLen() {
   } else {
     // TODO: When encoded, string has 4 additional bytes for the length on the
     // disk. However: this is not a place to compute this for sure.
-    return STR_LEN + 4;
+    return STR_LEN + INT_LEN;
   }
 }
 

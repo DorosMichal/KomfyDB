@@ -27,4 +27,8 @@ absl::Status OpIterator::HasNext() {
   return absl::OkStatus();
 }
 
+std::string OpIterator::Indent(int indent) {
+  return std::string(indent, ' ');
+}
+
 };  // namespace komfydb::execution
