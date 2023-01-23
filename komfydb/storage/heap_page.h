@@ -23,23 +23,6 @@ using komfydb::storage::Record;
 namespace komfydb::storage {
 
 class HeapPage : public Page {
-  friend class HeapPageFactory;
-
- private:
-  std::vector<uint8_t> header;
-  std::vector<Record> records;
-  std::vector<uint8_t> old_data;
-  // Take a look on absl::MutexLock to see how to acquire it
-  absl::Mutex old_data_lock;
-  TransactionId last_transaction;
-  TupleDesc* tuple_desc;
-  PageId pid;
-  int num_slots;
-  bool is_dirty;
-
-  HeapPage(PageId pid, TupleDesc* tuple_desc, std::vector<uint8_t> header,
-           std::vector<Record> records, int num_slots);
-
  public:
   ~HeapPage() override {}
 
@@ -62,9 +45,26 @@ class HeapPage : public Page {
 
   std::vector<Record> GetRecords() override;
 
-  absl::Status AddTuple(Tuple& t) override;
+  absl::Status AddTuples(std::unique_ptr<Tuple> tuples[], int num) override;
 
   absl::Status RemoveRecord(RecordId& id) override;
+
+  int GetFreeSpace() override;
+
+ private:
+  std::vector<uint8_t> header;
+  std::vector<Record> records;
+  std::vector<uint8_t> old_data;
+  // Take a look on absl::MutexLock to see how to acquire it
+  absl::Mutex old_data_lock;
+  TransactionId last_transaction;
+  TupleDesc* tuple_desc;
+  PageId pid;
+  int num_slots, free_space;
+  bool is_dirty;
+
+  HeapPage(PageId pid, TupleDesc* tuple_desc, std::vector<uint8_t> header,
+           std::vector<Record> records, int num_slots, int free_space);
 };
 
 };  // namespace komfydb::storage

@@ -32,6 +32,7 @@ absl::StatusOr<Page*> BufferPool::GetPage(TransactionId tid, PageId pid,
 }
 
 absl::Status BufferPool::EvictPage() {
+  // TODO(Transactions): can only evict if not dirty or transaction finished
   PageId evict = lru.back();
   lru.pop_back();
 
@@ -45,17 +46,63 @@ absl::Status BufferPool::FlushPage(PageId pid) {
   if (!page->IsDirty()) {
     return absl::OkStatus();
   }
-  // TODO(Writeable pages)
-  return absl::UnimplementedError("Modifying pages not implemented yet.");
+  ASSIGN_OR_RETURN(DbFile * file, catalog->GetDatabaseFile(pid.GetTableId()));
+  RETURN_IF_ERROR(file->WritePage(page));
+  // TODO(transactions) cancel transaction if error
+  return absl::OkStatus();
 }
 
 absl::Status BufferPool::FlushPages(TransactionId tid) {
-  // TODO(Writeable pages)
-  return absl::UnimplementedError("Modifying pages not implemented yet.");
+  for (auto it = page_pool.begin(); it != page_pool.end(); it++) {
+    if (it->second->GetLastTransaction() == tid) {
+      RETURN_IF_ERROR(FlushPage(it->second->GetId()));
+    }
+  }
+  return absl::OkStatus();
+}
+
+absl::Status BufferPool::EvictAndInsertPage(Page* page) {
+  if (page_pool.size() == pages_cnt) {
+    RETURN_IF_ERROR(EvictPage());
+  }
+  lru.push_front(page->GetId());
+  pid_to_lru[page->GetId()] = lru.begin();
+  return absl::OkStatus();
 }
 
 std::list<PageId> BufferPool::GetLru() {
   return lru;
+}
+
+absl::Status BufferPool::InsertTuples(
+    std::vector<std::unique_ptr<Tuple>>&& tuples, uint32_t table_id,
+    TransactionId tid) {
+  ASSIGN_OR_RETURN(DbFile * dbfile, catalog->GetDatabaseFile(table_id));
+  int page_count = dbfile->PageCount();
+  int tuples_added = 0, all_tuples = tuples.size();
+  // Iterate through existing pages
+  for (int page_no = 0; page_no < page_count && tuples_added < all_tuples;
+       page_no++) {
+    ASSIGN_OR_RETURN(Page * page, GetPage(tid, PageId(table_id, page_no),
+                                          Permissions::READ_WRITE));
+    int free_space = page->GetFreeSpace();
+    int to_add = std::min(all_tuples - tuples_added, free_space);
+    RETURN_IF_ERROR(page->AddTuples(&tuples[tuples_added], to_add));
+    page->SetDirty(true, tid);
+    tuples_added += to_add;
+  }
+  // Create new pages while needed
+  while (tuples_added < all_tuples) {
+    ASSIGN_OR_RETURN(std::unique_ptr<Page> page, dbfile->CreatePage());
+    int free_space = page->GetFreeSpace();
+    int to_add = std::min(all_tuples - tuples_added, free_space);
+    RETURN_IF_ERROR(page->AddTuples(&tuples[tuples_added], to_add));
+    page->SetDirty(true, tid);
+    page_pool[page->GetId()] = std::move(page);
+    tuples_added += to_add;
+    RETURN_IF_ERROR(EvictAndInsertPage(page.get()));
+  }
+  return absl::OkStatus();
 }
 
 };  // namespace komfydb::storage

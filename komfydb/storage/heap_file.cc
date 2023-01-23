@@ -1,5 +1,6 @@
 #include "komfydb/storage/heap_file.h"
 
+#include <errno.h>
 #include <fstream>
 #include <iostream>
 #include <memory>
@@ -36,9 +37,9 @@ absl::StatusOr<std::unique_ptr<HeapFile>> HeapFile::Create(
 
   std::fstream file;
   file.open(std::string(file_path), mode);
-  if (!file.good()) {
-    return absl::InvalidArgumentError(
-        absl::StrCat("Could not open db file: ", file_path));
+  if (file.fail()) {
+    return absl::InvalidArgumentError(absl::StrCat(
+        "Could not open db file: ", file_path, ": ", strerror(errno)));
   }
 
   file.seekg(0, file.end);
@@ -89,8 +90,35 @@ absl::StatusOr<std::unique_ptr<Page>> HeapFile::ReadPage(PageId id) {
   return page;
 }
 
+absl::Status HeapFile::WritePage(Page* page) {
+  PageId id = page->GetId();
+  if (id.GetTableId() != table_id) {
+    return absl::InvalidArgumentError(absl::StrCat(
+        "Table ID does not match: ", table_id, "!=", id.GetTableId()));
+  }
+
+  uint64_t page_pos = (uint64_t)CONFIG_PAGE_SIZE * (uint64_t)id.GetPageNumber();
+  if (page_pos >= file_length) {
+    return absl::OutOfRangeError(
+        absl::StrCat("Page number out of range: ", id.GetPageNumber(), " (",
+                     file_length / CONFIG_PAGE_SIZE, ")"));
+  }
+
+  ASSIGN_OR_RETURN(std::vector<uint8_t> data, page->GetPageData());
+  file.seekg(page_pos);
+  file.write((char*)data.data(), CONFIG_PAGE_SIZE);
+  return absl::OkStatus();
+}
+
 int HeapFile::PageCount() {
   return file_length / CONFIG_PAGE_SIZE;
+}
+
+absl::StatusOr<std::unique_ptr<Page>> HeapFile::CreatePage() {
+  file_length += CONFIG_PAGE_SIZE;
+  std::vector<uint8_t> empty_data(CONFIG_PAGE_SIZE, 0);
+  return HeapPage::Create(PageId(table_id, PageCount() - 1), &tuple_desc,
+                          empty_data);
 }
 
 };  // namespace komfydb::storage
