@@ -51,8 +51,8 @@ absl::Status Filter::Rewind() {
 
 absl::Status Filter::FetchNext() {
   ITERATE_RECORDS(child, record) {
-    if (predicate.Evaluate(*record.value())) {
-      next_record = std::move(record.value());
+    if (predicate.Evaluate(*(*record))) {
+      next_record = std::move(*record);
       return absl::OkStatus();
     }
   }

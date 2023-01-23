@@ -33,6 +33,8 @@ class Tuple {
 
   Tuple(Tuple& t1, Tuple&& t2, TupleDesc* joined_td);
 
+  virtual ~Tuple() = default;
+
   Tuple& operator=(const Tuple& t);
 
   const TupleDesc* GetTupleDesc();

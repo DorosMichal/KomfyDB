@@ -53,19 +53,15 @@ class HeapFile : public DbFile {
 
   absl::StatusOr<std::unique_ptr<Page>> ReadPage(PageId id) override;
 
-  // absl::Status WritePage(Page* p) override;
-
-  // absl::StatusOr<std::vector<Page*>> InsertTuple(TransactionId tid,
-  //                                   Tuple t) override;
-
-  // absl::StatusOr<std::vector<Page*>> DeleteTuple(TransactionId tid,
-  //                                   Tuple t) override;
+  absl::Status WritePage(Page* p) override;
 
   uint32_t GetId() override;
 
   TupleDesc* GetTupleDesc() override;
 
   int PageCount() override;
+
+  absl::StatusOr<std::unique_ptr<Page>> CreatePage() override;
 };
 
 };  // namespace komfydb::storage

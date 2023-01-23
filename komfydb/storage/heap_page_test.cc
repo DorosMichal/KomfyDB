@@ -118,10 +118,11 @@ TEST_F(HeapPageTest, AddAndRemoveTuples) {
   t[2] = t[0];
   ASSERT_TRUE(t[1].SetField(0, std::make_unique<IntField>(2)).ok());
   ASSERT_TRUE(t[2].SetField(1, std::make_unique<StringField>("c")).ok());
+  std::unique_ptr<Tuple> t_pointers[3] = {std::make_unique<Tuple>(t[0]),
+                                          std::make_unique<Tuple>(t[1]),
+                                          std::make_unique<Tuple>(t[2])};
 
-  for (int i = 0; i < 3; i++) {
-    ASSERT_TRUE((*hpage)->AddTuple(t[i]).ok());
-  }
+  ASSERT_TRUE((*hpage)->AddTuples(t_pointers, 3).ok());
 
   bool have_tuple[3] = {false, false, false};
   RecordId ids[3] = {RecordId(pid, 0), RecordId(pid, 0), RecordId(pid, 0)};
@@ -152,10 +153,10 @@ TEST_F(HeapPageTest, AddAndRemoveTuples) {
   ASSERT_FALSE(have_tuple[2]);
 
   for (int i = 0; i < tuples_on_page - 1; i++) {
-    ASSERT_TRUE((*hpage)->AddTuple(t[0]).ok());
+    ASSERT_TRUE((*hpage)->AddTuples(t_pointers, 1).ok());
   }
   /* No more space */
-  ASSERT_FALSE((*hpage)->AddTuple(t[0]).ok());
+  ASSERT_FALSE((*hpage)->AddTuples(t_pointers, 1).ok());
 }
 
 };  // namespace

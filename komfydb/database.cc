@@ -81,6 +81,7 @@ absl::StatusOr<Database> Database::LoadSchema(
     absl::string_view catalog_file_path) {
   std::string directory =
       std::filesystem::path(catalog_file_path).parent_path().string();
+  LOG(INFO) << "Catalog directory: " << directory;
   std::fstream catalog_file;
   catalog_file.open((std::string)catalog_file_path, std::ios::in);
   if (!catalog_file.good()) {
@@ -127,7 +128,7 @@ absl::StatusOr<Database> Database::LoadSchema(
     TupleDesc tuple_desc(types, names);
     ASSIGN_OR_RETURN(std::unique_ptr<HeapFile> hp,
                      HeapFile::Create(directory + "/" + name + ".dat",
-                                      tuple_desc, Permissions::READ_ONLY));
+                                      tuple_desc, Permissions::READ_WRITE));
     catalog->AddTable(std::move(hp), name, primary_key);
   }
 

@@ -61,6 +61,13 @@ absl::StatusOr<DbFile*> Catalog::GetDatabaseFile(int table_id) const {
   return it->second.get();
 }
 
+absl::StatusOr<DbFile*> Catalog::GetDatabaseFile(std::string_view name) {
+  ASSIGN_OR_RETURN(
+      int table_id,
+      StatusOrMapElement(table_name_to_id, static_cast<std::string>(name)));
+  return GetDatabaseFile(table_id);
+}
+
 absl::StatusOr<TupleDesc*> Catalog::GetTupleDesc(int table_id) const {
   ASSIGN_OR_RETURN(DbFile * file, GetDatabaseFile(table_id));
   return file->GetTupleDesc();

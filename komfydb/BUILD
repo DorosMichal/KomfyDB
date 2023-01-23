@@ -64,11 +64,7 @@ cc_library(
 cc_test(
   name = "parser_test",
   srcs = ["parser_test.cc",],
-  data = [
-    "testdata/database_catalog_test.txt",
-    "testdata/first_table.dat",
-    "testdata/second_table.dat",
-  ],
+  data = [":database_test_data"],
   deps = [
     ":parser",
     ":database",
@@ -79,11 +75,7 @@ cc_test(
 cc_binary(
   name = "parser_repl",
   srcs = ["parser_repl.cc",],
-  data = [
-    "testdata/database_catalog_test.txt",
-    "testdata/first_table.dat",
-    "testdata/second_table.dat",
-  ],
+  data = [":database_test_data"],
   deps = [
     ":parser",
     "//komfydb/execution/logical_plan",
@@ -101,11 +93,7 @@ cc_binary(
 cc_binary(
   name = "komfydb",
   srcs = ["komfydb.cc"],
-  data = [
-    "testdata/database_catalog_test.txt",
-    "testdata/first_table.dat",
-    "testdata/second_table.dat",
-  ],
+  data = [":database_test_data"],
   deps = [
     "//komfydb:database",
     "//komfydb/storage:storage",

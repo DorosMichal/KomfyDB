@@ -7,6 +7,7 @@
 #include "absl/status/statusor.h"
 
 #include "komfydb/common/permissions.h"
+#include "komfydb/common/tuple.h"
 #include "komfydb/config.h"
 #include "komfydb/storage/catalog.h"
 #include "komfydb/storage/page.h"
@@ -16,6 +17,7 @@
 namespace {
 
 using komfydb::common::Permissions;
+using komfydb::common::Tuple;
 using komfydb::transaction::TransactionId;
 
 };  // namespace
@@ -38,6 +40,9 @@ class BufferPool {
 
   absl::Status FlushPages(TransactionId tid);
 
+  absl::Status InsertTuples(std::vector<std::unique_ptr<Tuple>>&& tuples,
+                            uint32_t table_id, TransactionId tid);
+
   // Test purposes only.
   std::list<PageId> GetLru();
 
@@ -49,6 +54,8 @@ class BufferPool {
   std::list<PageId> lru;
 
   absl::Status EvictPage();
+
+  absl::Status EvictAndInsertPage(Page* page);
 };
 
 };  // namespace komfydb::storage

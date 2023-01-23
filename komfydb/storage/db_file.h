@@ -25,20 +25,15 @@ class DbFile {
 
   virtual absl::StatusOr<std::unique_ptr<Page>> ReadPage(PageId id) = 0;
 
-  // Not necessary for Lab 1
-  // virtual absl::Status WritePage(Page* p?);
-
-  // virtual absl::StatusOr<std::vector<Page*>> InsertTuple(TransactionId tid,
-  //                                                     Tuple t);
-
-  // virtual absl::StatusOr<std::vector<Page*>> DeleteTuple(TransactionId tid,
-  //                                                     Tuple t);
+  virtual absl::Status WritePage(Page* p) = 0;
 
   virtual uint32_t GetId() = 0;
 
   virtual TupleDesc* GetTupleDesc() = 0;
 
   virtual int PageCount() = 0;
+
+  virtual absl::StatusOr<std::unique_ptr<Page>> CreatePage() = 0;
 };
 
 };  // namespace komfydb::storage

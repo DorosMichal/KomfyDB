@@ -1,5 +1,7 @@
 #include "komfydb/storage/buffer_pool.h"
 
+#include <filesystem>
+
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
@@ -17,17 +19,18 @@ using ::testing::ContainerEq;
 
 class BufferPoolTest : public ::testing::Test {
  protected:
-  const char* kTestDataFilePath =
-      "komfydb/storage/testdata/buffer_pool_test.dat";
   std::unique_ptr<Database> db;
   std::shared_ptr<Catalog> catalog;
   int table_id;
 
   void SetUp() override {
+    std::string test_dir = testing::TempDir();
+    const auto copy_options = std::filesystem::copy_options::update_existing |
+                              std::filesystem::copy_options::recursive;
+    std::filesystem::copy("komfydb/storage/testdata", test_dir, copy_options);
+    std::string schema_file = test_dir + "/buffer_pool_test_db_schema.txt";
     db = std::make_unique<Database>(
-        std::move(Database::LoadSchema(
-                      "komfydb/storage/testdata/buffer_pool_test_db_schema.txt")
-                      .value()));
+        std::move(*Database::LoadSchema(schema_file)));
     catalog = db->GetCatalog();
     table_id = *catalog->GetTableId("buffer_pool_test");
   }

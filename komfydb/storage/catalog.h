@@ -41,6 +41,8 @@ class Catalog {
 
   absl::StatusOr<DbFile*> GetDatabaseFile(int table_id) const;
 
+  absl::StatusOr<DbFile*> GetDatabaseFile(std::string_view name);
+
   // TODO(Iterator)
   std::vector<int> GetTableIds();
 

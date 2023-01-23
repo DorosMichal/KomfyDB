@@ -100,18 +100,20 @@ namespace komfydb::storage {
 
 HeapPage::HeapPage(PageId pid, TupleDesc* tuple_desc,
                    std::vector<uint8_t> header, std::vector<Record> records,
-                   int num_slots)
+                   int num_slots, int free_space)
     : header(header),
       records(std::move(records)),
       last_transaction(transaction::NO_TID),
       tuple_desc(tuple_desc),
       pid(pid),
       num_slots(num_slots),
+      free_space(free_space),
       is_dirty(false) {}
 
 absl::StatusOr<std::unique_ptr<HeapPage>> HeapPage::Create(
     PageId pid, TupleDesc* tuple_desc, std::vector<uint8_t>& data) {
   int n_slots = (CONFIG_PAGE_SIZE * 8) / (tuple_desc->GetSize() * 8 + 1);
+  int free_space = 0;
   int header_len = (n_slots + 7) / 8;
   int n_fields = tuple_desc->Length();
   int data_idx = header_len;
@@ -124,6 +126,7 @@ absl::StatusOr<std::unique_ptr<HeapPage>> HeapPage::Create(
 
     if (!TuplePresent(header, i).value()) {
       data_idx += tuple_desc->GetSize();
+      free_space++;
     } else {
       for (int j = 0; j < n_fields; j++) {
         ASSIGN_OR_RETURN(Type field_type, tuple_desc->GetFieldType(j));
@@ -138,8 +141,8 @@ absl::StatusOr<std::unique_ptr<HeapPage>> HeapPage::Create(
     records.push_back(std::move(record));
   }
 
-  return std::unique_ptr<HeapPage>(
-      new HeapPage(pid, tuple_desc, header, std::move(records), n_slots));
+  return std::unique_ptr<HeapPage>(new HeapPage(
+      pid, tuple_desc, header, std::move(records), n_slots, free_space));
 }
 
 PageId HeapPage::GetId() {
@@ -222,18 +225,24 @@ std::vector<Record> HeapPage::GetRecords() {
   return result;
 }
 
-absl::Status HeapPage::AddTuple(Tuple& t) {
-  for (int i = 0; i < num_slots; i++) {
+absl::Status HeapPage::AddTuples(std::unique_ptr<Tuple> tuples[], int num) {
+  if (num > free_space) {
+    return absl::FailedPreconditionError(
+        absl::StrCat(std::string(pid), " has no space to add ",
+                     std::to_string(num), " tuples."));
+  }
+  for (int i = 0, j = 0; i < num_slots && j < num; i++) {
     // TODO: find first 0 bit faster
+    // TODO(Transactions): invalidate transaction on error
     ASSIGN_OR_RETURN(bool occupied, TuplePresent(header, i));
     if (!occupied) {
       RETURN_IF_ERROR(MarkOccupied(header, i));
-      records[i] = Record(t, RecordId(pid, i));
-      return absl::OkStatus();
+      records[i] = Record(*tuples[j], RecordId(pid, i));
+      j++;
     }
   }
-  return absl::FailedPreconditionError(
-      absl::StrCat(std::string(pid), " has no space to add a new record."));
+  free_space -= num;
+  return absl::OkStatus();
 }
 
 absl::Status HeapPage::RemoveRecord(RecordId& rid) {
@@ -249,7 +258,12 @@ absl::Status HeapPage::RemoveRecord(RecordId& rid) {
                      std::string(rid)));
   }
   RETURN_IF_ERROR(MarkFree(header, rid.GetTupleNumber()));
+  free_space++;
   return absl::OkStatus();
+}
+
+int HeapPage::GetFreeSpace() {
+  return free_space;
 }
 
 };  // namespace komfydb::storage

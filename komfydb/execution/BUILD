@@ -34,6 +34,8 @@ cc_library(
     "project.h",
     "aggregator.h",
     "aggregate_tuple.h",
+    "insert.h",
+    "fixed_iterator.h",
   ],
   srcs = [
     "op_iterator.cc",
@@ -46,6 +48,8 @@ cc_library(
     "project.cc",
     "aggregate.cc",
     "aggregate_tuple.cc",
+    "insert.cc",
+    "fixed_iterator.cc",
   ],
   deps = [
     ":op",

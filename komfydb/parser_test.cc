@@ -1,5 +1,7 @@
 #include "komfydb/parser.h"
 
+#include <filesystem>
+
 #include "gtest/gtest.h"
 
 #include "absl/status/statusor.h"
@@ -20,9 +22,13 @@ class ParserTest
   absl::StatusOr<LogicalPlan> lp;
 
   void SetUp() override {
-    db = std::make_unique<Database>(std::move(
-        Database::LoadSchema("komfydb/testdata/database_catalog_test.txt")
-            .value()));
+    std::string test_dir = testing::TempDir();
+    const auto copy_options = std::filesystem::copy_options::update_existing |
+                              std::filesystem::copy_options::recursive;
+    std::filesystem::copy("komfydb/testdata", test_dir, copy_options);
+    std::string schema_file = test_dir + "/database_catalog_test.txt";
+    db = std::make_unique<Database>(
+        std::move(Database::LoadSchema(schema_file).value()));
     parser = std::make_unique<Parser>(db->GetCatalog(), db->GetBufferPool());
   }
 };

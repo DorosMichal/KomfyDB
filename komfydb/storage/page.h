@@ -38,9 +38,11 @@ class Page {
 
   virtual std::vector<Record> GetRecords() = 0;
 
-  virtual absl::Status AddTuple(Tuple& t) = 0;
+  virtual absl::Status AddTuples(std::unique_ptr<Tuple> tuples[], int num) = 0;
 
   virtual absl::Status RemoveRecord(RecordId& id) = 0;
+
+  virtual int GetFreeSpace() = 0;
 };
 
 };  // namespace komfydb::storage
