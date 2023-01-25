@@ -131,6 +131,26 @@ std::vector<std::string> GetTupleLines(Tuple* tuple, int length,
   return GetLines(values, column_width);
 }
 
+void PrintRecord(Record* record, int length, std::ostream& os){
+  os << "(";
+  for(int i = 0; i < length; i++){
+      Field *field = *record->GetField(i);
+      
+      switch(field->GetType().GetValue()){
+        case Type::INT:{
+          os << std::string(*field);
+          break;
+        }
+        case Type::STRING:{
+          os << "\"" << std::string(*field) << "\"";
+          break;
+        }
+      }
+      os << ", ";
+  }
+  os << ")";
+}
+
 };  // namespace
 
 namespace komfydb::execution {
@@ -165,6 +185,19 @@ absl::Status Executor::PrettyExecute(std::unique_ptr<OpIterator> iterator,
     }
   }
   os << line_break << std::endl;
+  return absl::OkStatus();
+}
+
+absl::Status Executor::PythonExecute(std::unique_ptr<OpIterator> iterator, std::ostream& os) {
+  int length = iterator->GetTupleDesc()->Length();
+
+  RETURN_IF_ERROR(iterator->Open());
+  os << "[";
+  ITERATE_RECORDS(iterator, record) {
+    PrintRecord((*record).get(), length, os);
+    os << ", ";
+  }
+  os << "]" << std::endl;
   return absl::OkStatus();
 }
 

@@ -13,6 +13,8 @@ class Executor {
   absl::Status PrettyExecute(std::unique_ptr<OpIterator> iterator,
                              uint64_t limit = 0, std::ostream& os = std::cout);
 
+  absl::Status PythonExecute(std::unique_ptr<OpIterator> iterator, std::ostream& os = std::cout);
+
  private:
   void InitializePrettyPrinter(TupleDesc* iterator_tuple_desc);
 

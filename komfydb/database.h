@@ -39,6 +39,8 @@ class Database {
 
   void Repl();
 
+  void TestRepl();
+
   absl::Status LoadSchema(std::string_view schema_path);
 
   std::shared_ptr<Parser> GetParser();

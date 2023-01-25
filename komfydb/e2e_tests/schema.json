@@ -1,0 +1,15 @@
+{
+    "table1": [100,
+        {
+            "pk": ["INT", "unique"],
+            "tab2_pk": ["TEXT", "foreign", "table2", "pk"],
+            "a": ["INT", "range", 1, 5],
+            "b": ["TEXT", ["ala", "ma", "kota"]]
+        }],
+    "table2": [100,
+        {
+            "pk": ["TEXT", "unique"],
+            "c": ["INT", "range", 1, 100, 3],
+            "d": ["TEXT", "range", 3, 7]
+        }]
+}
