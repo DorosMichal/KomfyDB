@@ -42,7 +42,8 @@ class Parser {
   Parser(std::shared_ptr<Catalog> catalog,
          std::shared_ptr<BufferPool> buffer_pool);
 
-  absl::StatusOr<LogicalPlan> ParseQuery(std::string_view query);
+  absl::StatusOr<LogicalPlan> ParseQuery(std::string_view query,
+                                         uint64_t* limit);
 };
 
 };  // namespace komfydb

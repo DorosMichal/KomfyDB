@@ -67,7 +67,7 @@ bool StringField::operator==(const StringField& field) const {
 }
 
 StringField::operator std::string() const {
-  return absl::StrCat("StringField(\"", value, "\")");
+  return value;
 }
 
 };  // namespace komfydb::common

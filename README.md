@@ -1,6 +1,8 @@
 # KomfyDB
 
-Toy database C++ implemenatation based on MIT's SimpleDB.
+Toy relational database C++ implementation based on MIT's SimpleDB.
+
+![](/screenshot.png)
 
 ## Cloning
 
@@ -9,7 +11,7 @@ Run:
 git clone --recursive https://github.com/DorosMichal/KomfyDB
 ```
 
-## Requierments
+## Requirements
 
 - clang-13
 - bazel
@@ -50,6 +52,11 @@ Build the project by running:
 bazel build --config=debug //...
 ```
 
+Then, to debug run gdb on the target, e.g. to debug `//komfydb:komfydb`:
+```
+gdb bazel-bin/komfydb/komfydb
+```
+
 ### Profiling
 
 Build the project with these additional options:
@@ -61,13 +68,4 @@ Then run
 ```
 bazel-bin/komfydb/komfydb
 gprof bazel-bin/komfydb/komfydb > komfydb.prof
-```
-
-## Set up pre-commit
-
-Pre-commit needs to be installed manually: 
-```
-pip3 install --upgrade pip
-pip3 install pre-commit
-pre-commit install
 ```

@@ -38,7 +38,7 @@ class ParserTest
 // and database for unit tests.
 TEST_P(ParserTest, Queries) {
   auto [query, result] = GetParam();
-  lp = parser->ParseQuery(query);
+  lp = parser->ParseQuery(query, NULL);
   if (result == "OK") {
     EXPECT_TRUE(lp.ok());
   } else {
