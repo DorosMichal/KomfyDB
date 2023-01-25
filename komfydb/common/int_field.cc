@@ -55,7 +55,7 @@ bool IntField::operator==(const IntField& field) const {
 }
 
 IntField::operator std::string() const {
-  return absl::StrCat("IntField(", std::to_string(value), ")");
+  return std::to_string(value);
 }
 
 };  // namespace komfydb::common

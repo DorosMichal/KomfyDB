@@ -76,6 +76,18 @@ static const std::string unsuported_msg =
     "expressions like A op B, where A, B are constatns, table columns "
     "or B is a subquery.";
 
+absl::StatusOr<uint64_t> GetLimit(const hsql::SelectStatement* select) {
+  if (!select->limit) {
+    return 0;
+  }
+  hsql::Expr* limit = select->limit->limit;
+  if (!limit->isType(hsql::kExprLiteralInt)) {
+    return absl::InvalidArgumentError("Only literal int limit supported.");
+  }
+
+  return limit->ival;
+}
+
 };  // namespace
 
 namespace komfydb {
@@ -347,7 +359,8 @@ absl::StatusOr<LogicalPlan> Parser::ParseSelectStatement(
   return std::move(lp);
 }
 
-absl::StatusOr<LogicalPlan> Parser::ParseQuery(std::string_view query) {
+absl::StatusOr<LogicalPlan> Parser::ParseQuery(std::string_view query,
+                                               uint64_t* limit) {
   LOG(INFO) << "Parsing query: " << query;
   hsql::SQLParserResult result;
   hsql::SQLParser::parse(std::string(query), &result);
@@ -370,6 +383,11 @@ absl::StatusOr<LogicalPlan> Parser::ParseQuery(std::string_view query) {
 
   const hsql::SelectStatement* select =
       static_cast<const hsql::SelectStatement*>(stmt);
+
+  if (limit) {
+    ASSIGN_OR_RETURN(*limit, GetLimit(select));
+  }
+
   return ParseSelectStatement(select);
 }
 

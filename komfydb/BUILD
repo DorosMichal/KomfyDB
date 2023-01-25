@@ -79,6 +79,7 @@ cc_binary(
   deps = [
     ":parser",
     "//komfydb/execution/logical_plan",
+    "//komfydb/execution:executor",
     "//komfydb:database",
     "//komfydb/storage:storage",
     "//komfydb/common:common",

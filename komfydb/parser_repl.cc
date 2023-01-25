@@ -13,6 +13,7 @@
 #include "komfydb/common/td_item.h"
 #include "komfydb/common/type.h"
 #include "komfydb/database.h"
+#include "komfydb/execution/executor.h"
 #include "komfydb/execution/order_by.h"
 #include "komfydb/execution/seq_scan.h"
 #include "komfydb/parser.h"
@@ -41,6 +42,7 @@ int main(int argc, char* argv[]) {
   std::shared_ptr<BufferPool> buffer_pool = db->GetBufferPool();
   optimizer::TableStatsMap table_stats_map;
   Parser parser(std::move(catalog), std::move(buffer_pool));
+  execution::Executor executor;
 
   char* query;
   while ((query = readline("KomfyDB> ")) != nullptr) {
@@ -51,40 +53,36 @@ int main(int argc, char* argv[]) {
     hsql::SQLParserResult result;
     hsql::SQLParser::parse(query, &result);
 
+    uint64_t limit = 0;
     absl::StatusOr<execution::logical_plan::LogicalPlan> lp =
-        parser.ParseQuery(query);
+        parser.ParseQuery(query, &limit);
     if (!lp.ok()) {
       LOG(ERROR) << "Parsing error: " << lp.status().message();
       free(query);
       continue;
-    } else {
-      LOG(INFO) << "Parsing ok!";
-      lp->Dump();
-      auto iterator = lp->GeneratePhysicalPlan(transaction::TransactionId(),
-                                               table_stats_map, false);
-      if (!iterator.ok()) {
-        LOG(ERROR) << "Failed to generate physcial plan: "
-                   << iterator.status().message();
-        free(query);
-        continue;
-      }
-      LOG(INFO) << "Generating physical plan ok!!!";
-      (*iterator)->Explain(std::cout);
-      absl::Status open_status = (*iterator)->Open();
-      if (!open_status.ok()) {
-        LOG(ERROR) << "Open error: " << open_status.message();
-        free(query);
-        continue;
-      }
-
-      ITERATE_RECORDS(*iterator, record) { std::cout << **record << "\n"; }
-      if (!absl::IsOutOfRange(record.status())) {
-        LOG(ERROR) << "OpIterator fetching error: "
-                   << record.status().message();
-        free(query);
-        continue;
-      }
     }
+
+    LOG(INFO) << "Parsing ok!";
+    auto iterator = lp->GeneratePhysicalPlan(transaction::TransactionId(),
+                                             table_stats_map, false);
+    if (!iterator.ok()) {
+      LOG(ERROR) << "Failed to generate physcial plan: "
+                 << iterator.status().message();
+      free(query);
+      continue;
+    }
+
+    LOG(INFO) << "Generating physical plan ok!!!";
+    (*iterator)->Explain(std::cout);
+    absl::Status open_status = (*iterator)->Open();
+
+    if (!open_status.ok()) {
+      LOG(ERROR) << "Open error: " << open_status.message();
+      free(query);
+      continue;
+    }
+
+    executor.PrettyExecute(std::move(*iterator), limit);
 
     free(query);
   }

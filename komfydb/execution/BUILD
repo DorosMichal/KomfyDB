@@ -60,3 +60,14 @@ cc_library(
   ],
   visibility = ["//visibility:public"],
 )
+
+cc_library(
+  name = "executor",
+  srcs = ["executor.cc"],
+  hdrs = ["executor.h"],
+  deps = [
+    ":execution", 
+    "@com_google_absl//absl/status",
+  ],
+  visibility = ["//visibility:public"],
+)
