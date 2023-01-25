@@ -93,6 +93,16 @@ cc_binary(
 )
 
 cc_binary(
+  name = "e2e_tests",
+  srcs = ["e2e_tests.cc",],
+  data = [":database_test_data"],
+  deps = [
+    ":database",
+    "@com_github_google_glog//:glog",
+  ],
+)
+
+cc_binary(
   name = "sql_parser_test",
   srcs = ["sql_parser_test.cc",],
   deps = [

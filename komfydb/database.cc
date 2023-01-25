@@ -133,6 +133,48 @@ void Database::Repl() {
   }
 }
 
+void Database::TestRepl() {
+  execution::Executor executor;
+  absl::Status status;
+  char* input;
+
+  while ((input = readline("")) != nullptr) {
+    if (!strlen(input)) {
+      continue;
+    }
+    std::string query_str = input;
+    free(input);
+
+    hsql::SQLParserResult result;
+    hsql::SQLParser::parse(query_str, &result);
+
+    uint64_t limit = 0;
+    absl::StatusOr<Query> query =
+        parser->ParseQuery(query_str, TransactionId(), &limit, false);
+    if (!query.ok()) {
+      std::cout << "Parsing error: " << query.status().message() << std::endl;
+      continue;
+    }
+
+    switch (query->type) {
+      case Query::ITERATOR: {
+        status = executor.PythonExecute(std::move(query->iterator));
+        if (!status.ok()) {
+          std::cout << "Executor error: " << status.message() << std::endl;
+        }
+        break;
+      }
+      case Query::CREATE_TABLE: {
+        status = CreateTable(*query);
+        if (!status.ok()) {
+          std::cout << "Create table error: " << status.message() << std::endl;
+        }
+        break;
+      }
+    }
+  }
+}
+
 std::shared_ptr<Parser> Database::GetParser() {
   return parser;
 }
