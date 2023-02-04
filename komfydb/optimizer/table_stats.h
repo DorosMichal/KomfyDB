@@ -6,6 +6,7 @@
 
 #include "komfydb/common/field.h"
 #include "komfydb/execution/op.h"
+#include "komfydb/optimizer/histogram.h"
 
 namespace {
 
@@ -31,6 +32,8 @@ class TableStats {
 
  private:
   TableStats(int table_id, int io_cost_per_page);
+  str::vector<*Histogram> histograms;
+
 };
 
 using TableStatsMap = absl::flat_hash_map<std::string, TableStats>;

@@ -12,7 +12,7 @@ void StringHistogram::AddValue(std::string v) {
   return;
 }
 
-double StringHistogram::EstimageSelectivity(execution::Op op, std::string v) {
+double StringHistogram::EstimateSelectivity(execution::Op op, std::string v) {
   // TODO
   return 1.0;
 }
