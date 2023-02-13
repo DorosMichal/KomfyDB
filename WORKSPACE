@@ -54,9 +54,9 @@ filegroup(
 http_archive(
   name = "sql_parser",
   build_file_content = _ALL_CONTENT,
-  urls = ["https://github.com/hyrise/sql-parser/archive/refs/heads/master.zip"],
-  strip_prefix = "sql-parser-master",
-  sha256 = "6917c6a78dbb01cd55743ddcf1436fef6ae190ef51bcc6cf2e9ba67c9bbff39a",
+  urls = ["https://github.com/hyrise/sql-parser/archive/5a5fd248496e8d415fd2a4b1787e7114d90e60de.zip"],
+  strip_prefix = "sql-parser-5a5fd248496e8d415fd2a4b1787e7114d90e60de",
+  sha256 = "d20239bb1028a621109e22e570c7c59f2baf3461e0fde6c57bea7856e77d0011",
   patches = ["patches/sql_parser/makefile.patch"],
   patch_args = ["-p1"],
 )
