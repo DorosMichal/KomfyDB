@@ -45,6 +45,9 @@ class BufferPool {
   absl::Status InsertTuples(std::vector<std::unique_ptr<Tuple>>&& tuples,
                             uint32_t table_id, TransactionId tid);
 
+  absl::Status RemoveTuples(std::vector<RecordId>& ids, uint32_t table_id,
+                            TransactionId tid);
+
   // Test purposes only.
   std::list<PageId> GetLru();
 

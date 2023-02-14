@@ -15,8 +15,9 @@ using namespace komfydb::common;
 namespace komfydb::execution {
 
 Project::Project(std::unique_ptr<OpIterator> child,
-                 std::vector<int>& out_field_idxs, TupleDesc tuple_desc)
-    : OpIterator(tuple_desc, *child->GetFieldsTableAliases()),
+                 std::vector<int>& out_field_idxs, TupleDesc tuple_desc,
+                 std::vector<std::string> fields_table_aliases)
+    : OpIterator(tuple_desc, fields_table_aliases),
       child(std::move(child)),
       out_field_idxs(out_field_idxs) {}
 
@@ -24,13 +25,16 @@ absl::StatusOr<std::unique_ptr<Project>> Project::Create(
     std::unique_ptr<OpIterator> child, std::vector<int>& out_field_idxs) {
   TupleDesc* childTD = child->GetTupleDesc();
   std::vector<TDItem> new_items;
+  std::vector<std::string> aliases;
+  std::vector<std::string>* child_aliases = child->GetFieldsTableAliases();
   new_items.reserve(out_field_idxs.size());
   for (auto idx : out_field_idxs) {
     ASSIGN_OR_RETURN(TDItem item, childTD->GetItem(idx));
     new_items.push_back(item);
+    aliases.push_back((*child_aliases)[idx]);
   }
-  return std::unique_ptr<Project>(
-      new Project(std::move(child), out_field_idxs, TupleDesc(new_items)));
+  return std::unique_ptr<Project>(new Project(std::move(child), out_field_idxs,
+                                              TupleDesc(new_items), aliases));
 }
 
 absl::Status Project::Open() {

@@ -14,7 +14,7 @@ class Project : public OpIterator {
   std::vector<int> out_field_idxs;
 
   Project(std::unique_ptr<OpIterator> child, std::vector<int>& out_field_idxs,
-          TupleDesc tuple_desc);
+          TupleDesc tuple_desc, std::vector<std::string> fields_table_aliases);
 
   absl::Status FetchNext() override;
 

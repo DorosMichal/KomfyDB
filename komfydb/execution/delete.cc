@@ -1,4 +1,4 @@
-#include "komfydb/execution/insert.h"
+#include "komfydb/execution/delete.h"
 
 #include "komfydb/common/int_field.h"
 #include "komfydb/common/type.h"
@@ -21,61 +21,67 @@ using komfydb::transaction::TransactionId;
 
 namespace komfydb::execution {
 
-Insert::Insert(std::unique_ptr<OpIterator> child, uint32_t table_id,
+Delete::Delete(std::unique_ptr<OpIterator> child, uint32_t table_id,
                TupleDesc tuple_desc, std::shared_ptr<BufferPool> bufferpool,
                TransactionId tid)
-    : OpIterator(tuple_desc, "__insert__"),
+    : OpIterator(tuple_desc, "__delete__"),
       child(std::move(child)),
       bufferpool(std::move(bufferpool)),
       tid(tid),
       table_id(table_id),
-      inserted(false) {}
+      deleted(false) {}
 
-absl::StatusOr<std::unique_ptr<Insert>> Insert::Create(
+absl::StatusOr<std::unique_ptr<Delete>> Delete::Create(
     std::unique_ptr<OpIterator> child, uint32_t table_id,
     std::shared_ptr<BufferPool> bufferpool, TransactionId tid) {
   std::vector<Type> types = {Type::INT};
-  std::vector<std::string> fields = {"inserted_tuples"};
-  return std::unique_ptr<Insert>(new Insert(std::move(child), table_id,
+  std::vector<std::string> fields = {"deleted_tuples"};
+  std::vector<std::string>* child_aliases = child->GetFieldsTableAliases();
+  for (std::string alias : *child_aliases) {
+    if (alias != (*child_aliases)[0]) {
+      return absl::InvalidArgumentError(
+          "Cannot delete tulples with fields from different tables.");
+    }
+  }
+  return std::unique_ptr<Delete>(new Delete(std::move(child), table_id,
                                             TupleDesc(types, fields),
                                             std::move(bufferpool), tid));
 }
 
-absl::Status Insert::Open() {
+absl::Status Delete::Open() {
   return child->Open();
 }
 
-void Insert::Close() {
+void Delete::Close() {
   child->Close();
 }
 
-absl::Status Insert::Rewind() {
-  inserted = false;
+absl::Status Delete::Rewind() {
   return child->Rewind();
 }
 
-void Insert::Explain(std::ostream& os, int indent) {
-  os << Indent(indent) << "-> Inserting into table " << table_id << "\n";
+void Delete::Explain(std::ostream& os, int indent) {
+  os << Indent(indent) << "-> Deleting from table " << table_id << "\n";
   child->Explain(os, indent + child_indent);
 }
 
-absl::Status Insert::FetchNext() {
-  if (inserted) {
+absl::Status Delete::FetchNext() {
+  if (deleted) {
     return absl::OutOfRangeError(
-        "Insert already run. Use rewind to run again.");
+        "Delete already run. Use rewind to run again.");
   }
-  inserted = true;
+  deleted = true;
 
   // XXX In order to call bufferpool only once we
-  // gather (materialise) them using std::vector
+  // gather (materialise) records using std::vector
   int count = 0;
-  std::vector<std::unique_ptr<Tuple>> tuples;
+  std::vector<RecordId> ids;
   ITERATE_RECORDS(child, record) {
-    tuples.push_back(std::move(*record));
+    ids.push_back((*record)->GetId());
     count++;
   }
   RETURN_IF_NOT_OOR(record.status());
-  RETURN_IF_ERROR(bufferpool->InsertTuples(std::move(tuples), table_id, tid));
+  RETURN_IF_ERROR(bufferpool->RemoveTuples(ids, table_id, tid));
   next_record = std::make_unique<Record>(1, RecordId(PageId(0, 0), -1));
   RETURN_IF_ERROR(next_record->SetField(0, std::make_unique<IntField>(count)));
   return absl::OkStatus();
