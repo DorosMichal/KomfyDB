@@ -109,4 +109,20 @@ absl::Status BufferPool::InsertTuples(
   return absl::OkStatus();
 }
 
+absl::Status BufferPool::RemoveTuples(std::vector<RecordId>& ids_to_remove,
+                                      uint32_t table_id, TransactionId tid) {
+  ASSIGN_OR_RETURN(DbFile * dbfile, catalog->GetDatabaseFile(table_id));
+  int page_count = dbfile->PageCount(), all_tuples = ids_to_remove.size();
+  Page* page = nullptr;
+  for (int i = 0; i < all_tuples; i++) {
+    if (!page || ids_to_remove[i].GetPageId() != page->GetId()) {
+      ASSIGN_OR_RETURN(page, GetPage(tid, ids_to_remove[i].GetPageId(),
+                                     Permissions::READ_WRITE));
+    }
+    RETURN_IF_ERROR(page->RemoveRecord(ids_to_remove[i]));
+    page->SetDirty(true, tid);
+  }
+  return absl::OkStatus();
+}
+
 };  // namespace komfydb::storage
