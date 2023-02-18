@@ -7,6 +7,7 @@
 #include "absl/status/statusor.h"
 
 #include "komfydb/database.h"
+#include "transaction/transaction_id.h"
 
 namespace {
 
@@ -20,6 +21,7 @@ class ParserTest
   std::unique_ptr<Database> db;
   std::unique_ptr<Parser> parser;
   absl::StatusOr<LogicalPlan> lp;
+  TableStatsMap table_stats_map;
 
   void SetUp() override {
     std::string test_dir = testing::TempDir();
@@ -29,7 +31,8 @@ class ParserTest
     std::string schema_file = test_dir + "/database_catalog_test.txt";
     db = std::make_unique<Database>(
         std::move(Database::LoadSchema(schema_file).value()));
-    parser = std::make_unique<Parser>(db->GetCatalog(), db->GetBufferPool());
+    parser = std::make_unique<Parser>(db->GetCatalog(), db->GetBufferPool(),
+                                      table_stats_map);
   }
 };
 
@@ -38,12 +41,13 @@ class ParserTest
 // and database for unit tests.
 TEST_P(ParserTest, Queries) {
   auto [query, result] = GetParam();
-  lp = parser->ParseQuery(query, NULL);
+  absl::Status status =
+      parser->ParseQuery(query, TransactionId(), NULL, false).status();
   if (result == "OK") {
-    EXPECT_TRUE(lp.ok());
+    EXPECT_TRUE(status.ok());
   } else {
-    EXPECT_FALSE(lp.ok());
-    EXPECT_EQ(lp.status().message(), result);
+    EXPECT_FALSE(status.ok());
+    EXPECT_EQ(status.message(), result);
   }
 }
 
@@ -58,7 +62,7 @@ const std::vector<std::tuple<std::string, std::string>> test_queries = {
     {"SELECT t1.name1, t2.name2, t3.name1 "
      "FROM first_table t1, second_table t2, first_table t3 "
      "WHERE t1.name1 == t3.name3 "
-     "AND t2.name4 LIKE t2.name2",
+     "AND t2.name4 LIKE t3.name2",
      "OK"},
     {"SELECT * FROM first_table WHERE name1 > (SELECT * FROM first_table)",
      "OK"},

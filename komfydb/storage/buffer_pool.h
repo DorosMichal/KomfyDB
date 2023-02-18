@@ -55,7 +55,7 @@ class BufferPool {
 
   absl::Status EvictPage();
 
-  absl::Status EvictAndInsertPage(Page* page);
+  absl::Status InsertPage(std::unique_ptr<Page> page);
 };
 
 };  // namespace komfydb::storage

@@ -9,10 +9,7 @@
 
 namespace {
 
-using komfydb::common::IntField;
-using komfydb::common::StringField;
 using komfydb::common::Tuple;
-using komfydb::common::TupleDesc;
 
 };  // namespace
 

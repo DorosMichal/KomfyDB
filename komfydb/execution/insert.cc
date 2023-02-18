@@ -28,7 +28,8 @@ Insert::Insert(std::unique_ptr<OpIterator> child, uint32_t table_id,
       child(std::move(child)),
       bufferpool(std::move(bufferpool)),
       tid(tid),
-      table_id(table_id) {}
+      table_id(table_id),
+      inserted(false) {}
 
 absl::StatusOr<std::unique_ptr<Insert>> Insert::Create(
     std::unique_ptr<OpIterator> child, uint32_t table_id,
@@ -49,6 +50,7 @@ void Insert::Close() {
 }
 
 absl::Status Insert::Rewind() {
+  inserted = false;
   return child->Rewind();
 }
 
@@ -58,22 +60,24 @@ void Insert::Explain(std::ostream& os, int indent) {
 }
 
 absl::Status Insert::FetchNext() {
-  int inserted = 0;
+  if (inserted) {
+    return absl::OutOfRangeError(
+        "Insert already run. Use rewind to run again.");
+  }
+  inserted = true;
+
   // XXX In order to call bufferpool only once we
   // gather (materialise) them using std::vector
+  int count = 0;
   std::vector<std::unique_ptr<Tuple>> tuples;
   ITERATE_RECORDS(child, record) {
     tuples.push_back(std::move(*record));
-    inserted++;
+    count++;
   }
   RETURN_IF_NOT_OOR(record.status());
-  if (inserted == 0) {
-    return absl::OutOfRangeError("No more records in this OpIterator");
-  }
   RETURN_IF_ERROR(bufferpool->InsertTuples(std::move(tuples), table_id, tid));
   next_record = std::make_unique<Record>(1, RecordId(PageId(0, 0), -1));
-  RETURN_IF_ERROR(
-      next_record->SetField(0, std::make_unique<IntField>(inserted)));
+  RETURN_IF_ERROR(next_record->SetField(0, std::make_unique<IntField>(count)));
   return absl::OkStatus();
 }
 

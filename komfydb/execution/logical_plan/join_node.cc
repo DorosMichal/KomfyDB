@@ -8,6 +8,6 @@ JoinNode::JoinNode(ColumnRef lref, Op op, ColumnRef rref)
     : lref(lref), rref(rref), op(op), type(COL_COL) {}
 
 JoinNode::JoinNode(ColumnRef lref, Op op, std::unique_ptr<LogicalPlan> subplan)
-    : lref(lref), op(op), type(COL_SUB) {}
+    : lref(lref), subplan(std::move(subplan)), op(op), type(COL_SUB) {}
 
 };  // namespace komfydb::execution::logical_plan

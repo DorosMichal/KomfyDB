@@ -17,6 +17,9 @@ namespace komfydb {
 
 class Database {
  private:
+  // TODO Do we need this class at all? Maybe catalog and buffer pool could be
+  // simply instatiated in main and passed as pointers, as it seems they live
+  // through the entirety of program lifetime.
   std::shared_ptr<Catalog> catalog;
   std::shared_ptr<BufferPool> buffer_pool;
 

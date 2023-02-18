@@ -8,10 +8,7 @@
 
 namespace {
 
-using komfydb::common::Field;
-using komfydb::common::TDItem;
-using komfydb::common::TupleDesc;
-using komfydb::common::Type;
+using namespace komfydb::common;
 
 };  // namespace
 
