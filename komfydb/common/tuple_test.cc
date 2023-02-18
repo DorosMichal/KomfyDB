@@ -13,10 +13,8 @@ TEST(Tuple, StringConversion) {
   Type int_t(Type::INT);
   Type str_t(Type::STRING);
   std::vector<Type> tv{int_t, str_t};
-  std::vector<std::string> nv{"f1", "f2"};
 
-  TupleDesc tuple_desc(tv, nv);
-  Tuple tuple(&tuple_desc);
+  Tuple tuple(tv.size());
 
   EXPECT_TRUE(tuple.SetField(0, std::make_unique<IntField>(1)).ok());
 
@@ -31,9 +29,8 @@ TEST(Tuple, Comparison) {
                                     Type::STRING};
   const std::vector<Type> types2 = {Type::INT, Type::STRING};
 
-  const TupleDesc td1(types1), td2(types2);
-
-  Tuple t1(&td1), t2(&td1), t3(&td1), t4(&td2);
+  Tuple t1(types1.size()), t2(types1.size()), t3(types1.size()),
+      t4(types2.size());
   ASSERT_TRUE(t1.SetField(0, std::make_unique<IntField>(1)).ok());
   ASSERT_TRUE(t1.SetField(1, std::make_unique<StringField>("a")).ok());
   ASSERT_TRUE(t1.SetField(2, std::make_unique<IntField>(2)).ok());
@@ -63,14 +60,13 @@ TEST(Tuple, Comparison) {
 TEST(Tuple, CopyAssignment) {
   const std::vector<Type> types1 = {Type::INT, Type::STRING, Type::INT,
                                     Type::STRING};
-  const TupleDesc tuple_desc(types1);
-  Tuple t1(&tuple_desc);
+  Tuple t1(types1.size());
   ASSERT_TRUE(t1.SetField(0, std::make_unique<IntField>(1)).ok());
   ASSERT_TRUE(t1.SetField(1, std::make_unique<StringField>("a")).ok());
   ASSERT_TRUE(t1.SetField(2, std::make_unique<IntField>(2)).ok());
   ASSERT_TRUE(t1.SetField(3, std::make_unique<StringField>("b")).ok());
 
-  Tuple t2(&tuple_desc);
+  Tuple t2(types1.size());
   t2 = t1;
   Tuple t3(t1);
 

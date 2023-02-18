@@ -127,7 +127,7 @@ absl::Status Aggregate::PrepareWithGrouping() {
   }
   absl::flat_hash_map<Tuple, AggregateTuple> map;
   TupleDesc groupby_tuple_desc(groupby_types);
-  Tuple group_id(&groupby_tuple_desc);
+  Tuple group_id(groupby_tuple_desc.Length());
 
   ITERATE_RECORDS(child, rec) {
     std::unique_ptr<Record> record = std::move(*rec);
@@ -137,7 +137,7 @@ absl::Status Aggregate::PrepareWithGrouping() {
       RETURN_IF_ERROR(UpdateGroup(&map.at(group_id), aggregate_fields,
                                   aggregate_types, record.get()));
     } else {
-      AggregateTuple new_group(&tuple_desc);
+      AggregateTuple new_group(tuple_desc.Length());
       RETURN_IF_ERROR(InitializeGroup(&new_group, aggregate_fields,
                                       aggregate_types, record.get()));
       map.insert({group_id, new_group});
@@ -153,7 +153,7 @@ absl::Status Aggregate::PrepareWithGrouping() {
 }
 
 absl::Status Aggregate::PrepareNoGrouping() {
-  AggregateTuple result(&tuple_desc);
+  AggregateTuple result(tuple_desc.Length());
   bool initialized = false;
   ITERATE_RECORDS(child, rec) {
     std::unique_ptr<Record> record = std::move(*rec);

@@ -17,8 +17,7 @@ using komfydb::common::StringField;
 
 namespace komfydb::execution {
 
-AggregateTuple::AggregateTuple(const TupleDesc* tuple_desc)
-    : Tuple(tuple_desc), group_size(1) {}
+AggregateTuple::AggregateTuple(int size) : Tuple(size), group_size(1) {}
 
 AggregateTuple::AggregateTuple(const AggregateTuple& t)
     : Tuple(t), group_size(t.group_size) {}
@@ -33,7 +32,7 @@ void AggregateTuple::IncremetGroupSize() {
 
 absl::Status AggregateTuple::ApplyAggregate(AggregateType aggregate_type, int i,
                                             Field* new_field) {
-  ASSIGN_OR_RETURN(Type type, tuple_desc->GetFieldType(i));
+  Type type = fields[i]->GetType();
   switch (type.GetValue()) {
     case Type::INT: {
       IntField* old_int_field = static_cast<IntField*>(fields[i].get());
@@ -107,7 +106,7 @@ absl::Status AggregateTuple::ApplyAggregate(AggregateType aggregate_type, int i,
 
 absl::Status AggregateTuple::FinalizeAggregates(
     std::vector<AggregateType> aggregate_types) {
-  for (int i = 0; i < tuple_desc->Length(); i++) {
+  for (int i = 0; i < Size(); i++) {
     ASSIGN_OR_RETURN(Field * field, GetField(i));
     switch (aggregate_types[i]) {
       case AggregateType::AVG: {

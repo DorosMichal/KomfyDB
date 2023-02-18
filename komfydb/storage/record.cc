@@ -17,6 +17,9 @@ Record::Record(const Record& r) : Tuple(r), rid(r.rid) {}
 
 Record::Record(const Tuple& t, RecordId rid) : Tuple(t), rid(rid) {}
 
+Record::Record(int size, PageId pid, int tuple_no)
+    : Tuple(size), rid(pid, tuple_no) {}
+
 RecordId Record::GetId() {
   return rid;
 }

@@ -71,8 +71,7 @@ absl::Status Insert::FetchNext() {
     return absl::OutOfRangeError("No more records in this OpIterator");
   }
   RETURN_IF_ERROR(bufferpool->InsertTuples(std::move(tuples), table_id, tid));
-  next_record =
-      std::make_unique<Record>(&tuple_desc, RecordId(PageId(0, 0), -1));
+  next_record = std::make_unique<Record>(1, RecordId(PageId(0, 0), -1));
   RETURN_IF_ERROR(
       next_record->SetField(0, std::make_unique<IntField>(inserted)));
   return absl::OkStatus();

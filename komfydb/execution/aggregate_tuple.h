@@ -22,7 +22,7 @@ class AggregateTuple : public Tuple {
   int group_size;
 
  public:
-  AggregateTuple(const TupleDesc* tuple_desc);
+  AggregateTuple(int size);
 
   AggregateTuple(const AggregateTuple& t);
 

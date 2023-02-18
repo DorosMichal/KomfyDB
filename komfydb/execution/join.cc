@@ -93,9 +93,9 @@ absl::Status Join::FetchNext() {
     if ((status = r_child->HasNext()).ok()) {
       std::unique_ptr<Record> potential_match = r_child->Next().value();
       if (join_predicate.Filter(*l_child_next, *potential_match)) {
-        next_record = std::make_unique<Record>(Record(
-            Tuple(*l_child_next, std::move(*potential_match), &tuple_desc),
-            joined_record_id));
+        next_record = std::make_unique<Record>(
+            Record(Tuple(*l_child_next, std::move(*potential_match)),
+                   joined_record_id));
         return absl::OkStatus();
       }
     } else if (absl::IsOutOfRange(status)) {
