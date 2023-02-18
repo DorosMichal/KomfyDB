@@ -14,6 +14,8 @@ namespace {
 
 typedef komfydb::execution::Aggregator::AggregateType AggregateType;
 using komfydb::common::Field;
+using komfydb::common::IntField;
+using komfydb::common::StringField;
 using komfydb::common::Type;
 using komfydb::execution::AggregateTuple;
 using komfydb::storage::PageId;

@@ -40,8 +40,11 @@ int main(int argc, char* argv[]) {
 
   std::shared_ptr<Catalog> catalog = db->GetCatalog();
   std::shared_ptr<BufferPool> buffer_pool = db->GetBufferPool();
+
+  // TODO: Shouldnt table stats map be stored in database the same as catalog
+  // and buffer pool?
   optimizer::TableStatsMap table_stats_map;
-  Parser parser(std::move(catalog), std::move(buffer_pool));
+  Parser parser(std::move(catalog), std::move(buffer_pool), table_stats_map);
   execution::Executor executor;
 
   char* query;
@@ -54,17 +57,7 @@ int main(int argc, char* argv[]) {
     hsql::SQLParser::parse(query, &result);
 
     uint64_t limit = 0;
-    absl::StatusOr<execution::logical_plan::LogicalPlan> lp =
-        parser.ParseQuery(query, &limit);
-    if (!lp.ok()) {
-      LOG(ERROR) << "Parsing error: " << lp.status().message();
-      free(query);
-      continue;
-    }
-
-    LOG(INFO) << "Parsing ok!";
-    auto iterator = lp->GeneratePhysicalPlan(transaction::TransactionId(),
-                                             table_stats_map, false);
+    auto iterator = parser.ParseQuery(query, TransactionId(), &limit, false);
     if (!iterator.ok()) {
       LOG(ERROR) << "Failed to generate physcial plan: "
                  << iterator.status().message();

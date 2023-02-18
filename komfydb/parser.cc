@@ -12,6 +12,8 @@
 
 #include "common/column_ref.h"
 #include "common/string_field.h"
+#include "execution/fixed_iterator.h"
+#include "execution/insert.h"
 #include "execution/logical_plan/join_node.h"
 #include "execution/order_by.h"
 #include "utils/status_macros.h"
@@ -88,13 +90,55 @@ absl::StatusOr<uint64_t> GetLimit(const hsql::SelectStatement* select) {
   return limit->ival;
 }
 
+absl::StatusOr<Tuple> GetTuple(std::vector<hsql::Expr*>* values,
+                               TupleDesc* tuple_desc) {
+  if (values->size() != tuple_desc->Length()) {
+    return absl::InvalidArgumentError(
+        absl::StrCat("Invalid number of values: ", values->size(),
+                     " instead of ", tuple_desc->Length()));
+  }
+  std::vector<TDItem> tditems = tuple_desc->GetItems();
+  Tuple result(tuple_desc->Length());
+  for (int i = 0; i < values->size(); i++) {
+    hsql::Expr* value = (*values)[i];
+    TDItem tditem = tditems[i];
+    switch (value->type) {
+      case hsql::ExprType::kExprLiteralInt: {
+        if (tditem.field_type != Type::INT) {
+          return absl::InvalidArgumentError(absl::StrCat(
+              "Invalid value ", i + 1, " type, string instead of int."));
+        }
+        RETURN_IF_ERROR(
+            result.SetField(i, std::make_unique<IntField>(value->ival)));
+        break;
+      }
+      case hsql::ExprType::kExprLiteralString: {
+        if (tditem.field_type != Type::STRING) {
+          return absl::InvalidArgumentError(absl::StrCat(
+              "Invalid value ", i + 1, " type, int instead of string."));
+        }
+        RETURN_IF_ERROR(
+            result.SetField(i, std::make_unique<StringField>(value->name)));
+        break;
+      }
+      default: {
+        return absl::InvalidArgumentError("Unsupported value type.");
+      }
+    }
+  }
+  return std::move(result);
+}
+
 };  // namespace
 
 namespace komfydb {
 
 Parser::Parser(std::shared_ptr<Catalog> catalog,
-               std::shared_ptr<BufferPool> buffer_pool)
-    : catalog(std::move(catalog)), buffer_pool(std::move(buffer_pool)) {}
+               std::shared_ptr<BufferPool> buffer_pool,
+               TableStatsMap& table_stats_map)
+    : catalog(std::move(catalog)),
+      buffer_pool(std::move(buffer_pool)),
+      table_stats_map(table_stats_map) {}
 
 absl::Status Parser::ParseFromClause(LogicalPlan& lp,
                                      const hsql::TableRef* from) {
@@ -175,7 +219,7 @@ absl::Status Parser::ParseSimpleExpression(LogicalPlan& lp, hsql::Expr* lexpr,
       return absl::OkStatus();
     }
     // Else it's a subquery join.
-    ASSIGN_OR_RETURN(LogicalPlan subplan, ParseSelectStatement(rexpr->select));
+    ASSIGN_OR_RETURN(LogicalPlan subplan, GenerateLogicalPlan(rexpr->select));
     RETURN_IF_ERROR(lp.AddSubqueryJoin(lref, op, std::move(subplan)));
     return absl::OkStatus();
   }
@@ -341,26 +385,66 @@ absl::Status Parser::ParseOrderBy(LogicalPlan& lp,
   return absl::OkStatus();
 }
 
-absl::StatusOr<LogicalPlan> Parser::ParseSelectStatement(
+absl::StatusOr<LogicalPlan> Parser::GenerateLogicalPlan(
     const hsql::SelectStatement* stmt) {
-  LogicalPlan lp(catalog, buffer_pool);
+  LogicalPlan logical_plan(catalog, buffer_pool);
 
   LOG(INFO) << "Parsing From clause";
-  RETURN_IF_ERROR(ParseFromClause(lp, stmt->fromTable));
+  RETURN_IF_ERROR(ParseFromClause(logical_plan, stmt->fromTable));
   LOG(INFO) << "Parsing where clause";
-  RETURN_IF_ERROR(ParseWhereExpression(lp, stmt->whereClause));
+  RETURN_IF_ERROR(ParseWhereExpression(logical_plan, stmt->whereClause));
   LOG(INFO) << "Parsing group by";
-  RETURN_IF_ERROR(ParseGroupBy(lp, stmt->groupBy));
+  RETURN_IF_ERROR(ParseGroupBy(logical_plan, stmt->groupBy));
   LOG(INFO) << "Parsing column selection";
-  RETURN_IF_ERROR(ParseColumnSelection(lp, stmt->selectList));
+  RETURN_IF_ERROR(ParseColumnSelection(logical_plan, stmt->selectList));
   LOG(INFO) << "Parsing order by";
-  RETURN_IF_ERROR(ParseOrderBy(lp, stmt->order));
+  RETURN_IF_ERROR(ParseOrderBy(logical_plan, stmt->order));
 
-  return std::move(lp);
+  return std::move(logical_plan);
 }
 
-absl::StatusOr<LogicalPlan> Parser::ParseQuery(std::string_view query,
-                                               uint64_t* limit) {
+absl::StatusOr<std::unique_ptr<OpIterator>> Parser::ParseSelectStatement(
+    const hsql::SelectStatement* stmt, TransactionId tid, uint64_t* limit,
+    bool explain_optimizer) {
+  ASSIGN_OR_RETURN(LogicalPlan logical_plan, GenerateLogicalPlan(stmt));
+
+  if (limit) {
+    ASSIGN_OR_RETURN(*limit, GetLimit(stmt));
+  }
+
+  return logical_plan.GeneratePhysicalPlan(tid, table_stats_map,
+                                           explain_optimizer);
+}
+
+absl::StatusOr<std::unique_ptr<OpIterator>> Parser::ParseInsertStatement(
+    const hsql::InsertStatement* stmt, TransactionId tid) {
+  ASSIGN_OR_RETURN(int table_id, catalog->GetTableId(stmt->tableName));
+  ASSIGN_OR_RETURN(TupleDesc * tuple_desc, catalog->GetTupleDesc(table_id));
+  std::unique_ptr<OpIterator> subiterator;
+
+  switch (stmt->type) {
+    case hsql::InsertType::kInsertSelect: {
+      ASSIGN_OR_RETURN(subiterator, ParseSelectStatement(
+                                        stmt->select, tid, /*limit=*/nullptr,
+                                        /*explain_optimizer=*/false));
+      break;
+    }
+    case hsql::InsertType::kInsertValues: {
+      ASSIGN_OR_RETURN(Tuple tuple, GetTuple(stmt->values, tuple_desc));
+      Record record(std::move(tuple), RecordId(PageId(0, 0), -1));
+      ASSIGN_OR_RETURN(subiterator, execution::FixedIterator::Create(
+                                        *tuple_desc, {std::move(record)}));
+      break;
+    }
+  }
+
+  return execution::Insert::Create(std::move(subiterator), table_id,
+                                   buffer_pool, tid);
+}
+
+absl::StatusOr<std::unique_ptr<OpIterator>> Parser::ParseQuery(
+    std::string_view query, TransactionId tid, uint64_t* limit,
+    bool explain_optimizer) {
   LOG(INFO) << "Parsing query: " << query;
   hsql::SQLParserResult result;
   hsql::SQLParser::parse(std::string(query), &result);
@@ -375,20 +459,30 @@ absl::StatusOr<LogicalPlan> Parser::ParseQuery(std::string_view query,
   }
 
   const hsql::SQLStatement* stmt = stmts.back();
+  hsql::printStatementInfo(stmt);
 
-  if (!stmt->isType(hsql::StatementType::kStmtSelect)) {
+  if (!stmt->isType(hsql::StatementType::kStmtSelect) &&
+      !stmt->isType(hsql::StatementType::kStmtInsert)) {
     return absl::UnimplementedError(
-        "Currently only query statements are supported.");
+        "Currently only select and insert statements are supported.");
   }
 
-  const hsql::SelectStatement* select =
-      static_cast<const hsql::SelectStatement*>(stmt);
-
-  if (limit) {
-    ASSIGN_OR_RETURN(*limit, GetLimit(select));
+  switch (stmt->type()) {
+    case hsql::StatementType::kStmtSelect: {
+      const hsql::SelectStatement* select =
+          static_cast<const hsql::SelectStatement*>(stmt);
+      return ParseSelectStatement(select, tid, limit, explain_optimizer);
+    }
+    case hsql::StatementType::kStmtInsert: {
+      const hsql::InsertStatement* insert =
+          static_cast<const hsql::InsertStatement*>(stmt);
+      return ParseInsertStatement(insert, tid);
+    }
+    default: {
+      return absl::UnimplementedError(
+          "Currently only select and insert statements are supported.");
+    }
   }
-
-  return ParseSelectStatement(select);
 }
 
 };  // namespace komfydb

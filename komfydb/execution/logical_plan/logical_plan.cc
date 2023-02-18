@@ -26,7 +26,7 @@ using komfydb::common::Type;
 using komfydb::storage::TableIterator;
 
 // Find (like in Union-Find).
-std::string GetEquiv(std::string& name,
+std::string GetEquiv(const std::string& name,
                      absl::flat_hash_map<std::string, std::string>& equiv) {
   if (equiv[name] == name) {
     return name;
@@ -40,11 +40,10 @@ std::vector<std::string> GetSubplanRoots(
   std::vector<std::string> result;
   for (auto& [table, ref_table] : equiv) {
     LOG(INFO) << table << "->" << ref_table;
-    result.push_back(ref_table);
+    result.push_back(GetEquiv(table, equiv));
   }
   std::sort(result.begin(), result.end());
   result.erase(std::unique(result.begin(), result.end()), result.end());
-  LOG(INFO) << result.size();
   return result;
 }
 

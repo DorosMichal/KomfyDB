@@ -33,6 +33,10 @@ absl::StatusOr<Page*> BufferPool::GetPage(TransactionId tid, PageId pid,
 
 absl::Status BufferPool::EvictPage() {
   // TODO(Transactions): can only evict if not dirty or transaction finished
+  if (lru.empty()) {
+    return absl::OkStatus();
+  }
+
   PageId evict = lru.back();
   lru.pop_back();
 
@@ -61,12 +65,13 @@ absl::Status BufferPool::FlushPages(TransactionId tid) {
   return absl::OkStatus();
 }
 
-absl::Status BufferPool::EvictAndInsertPage(Page* page) {
+absl::Status BufferPool::InsertPage(std::unique_ptr<Page> page) {
   if (page_pool.size() == pages_cnt) {
     RETURN_IF_ERROR(EvictPage());
   }
   lru.push_front(page->GetId());
   pid_to_lru[page->GetId()] = lru.begin();
+  page_pool[page->GetId()] = std::move(page);
   return absl::OkStatus();
 }
 
@@ -98,9 +103,8 @@ absl::Status BufferPool::InsertTuples(
     int to_add = std::min(all_tuples - tuples_added, free_space);
     RETURN_IF_ERROR(page->AddTuples(&tuples[tuples_added], to_add));
     page->SetDirty(true, tid);
-    page_pool[page->GetId()] = std::move(page);
     tuples_added += to_add;
-    RETURN_IF_ERROR(EvictAndInsertPage(page.get()));
+    RETURN_IF_ERROR(InsertPage(std::move(page)));
   }
   return absl::OkStatus();
 }

@@ -39,6 +39,7 @@ class Insert : public OpIterator {
   std::shared_ptr<BufferPool> bufferpool;
   TransactionId tid;
   uint32_t table_id;
+  bool inserted;
 
   Insert(std::unique_ptr<OpIterator> child, uint32_t table_id,
          TupleDesc tuple_desc, std::shared_ptr<BufferPool> bufferpool,
