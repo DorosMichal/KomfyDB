@@ -43,7 +43,9 @@ class Catalog {
 
   absl::StatusOr<DbFile*> GetDatabaseFile(std::string_view name);
 
-  // TODO(Iterator)
+  absl::StatusOr<DbFile*> CreateDatabase(std::string_view name,
+                                         TupleDesc tuple_desc);
+
   std::vector<int> GetTableIds();
 
   void clear();

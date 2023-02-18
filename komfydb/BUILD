@@ -51,8 +51,14 @@ cc_test(
 
 cc_library(
   name = "parser",
-  srcs = ["parser.cc"],
-  hdrs = ["parser.h"],
+  srcs = [
+    "parser.cc", 
+    "query.cc",
+  ],
+  hdrs = [
+    "parser.h",
+    "query.h",
+  ],
   deps = [
     "//komfydb/execution/logical_plan:logical_plan",
     "//:hsql",

@@ -17,6 +17,7 @@
 #include "komfydb/execution/order_by.h"
 #include "komfydb/execution/seq_scan.h"
 #include "komfydb/parser.h"
+#include "komfydb/storage/heap_file.h"
 #include "komfydb/storage/heap_page.h"
 #include "komfydb/storage/table_iterator.h"
 #include "komfydb/utils/status_macros.h"
@@ -32,8 +33,9 @@ int main(int argc, char* argv[]) {
 
   LOG(INFO) << "Parser testing!";
 
+  const std::string catalog_directory = "komfydb/testdata/";
   absl::StatusOr<Database> db =
-      Database::LoadSchema("komfydb/testdata/database_catalog_test.txt");
+      Database::LoadSchema(catalog_directory + "database_catalog_test.txt");
   if (!db.ok()) {
     LOG(ERROR) << "LoadSchema error: " << db.status().message();
   }
@@ -44,39 +46,58 @@ int main(int argc, char* argv[]) {
   // TODO: Shouldnt table stats map be stored in database the same as catalog
   // and buffer pool?
   optimizer::TableStatsMap table_stats_map;
-  Parser parser(std::move(catalog), std::move(buffer_pool), table_stats_map);
+  Parser parser(catalog, buffer_pool, table_stats_map);
   execution::Executor executor;
 
-  char* query;
-  while ((query = readline("KomfyDB> ")) != nullptr) {
-    if (!strlen(query)) {
+  char* input;
+  while ((input = readline("KomfyDB> ")) != nullptr) {
+    if (!strlen(input)) {
       continue;
     }
-    add_history(query);
+    add_history(input);
+    std::string query_str = input;
+    free(input);
+
     hsql::SQLParserResult result;
-    hsql::SQLParser::parse(query, &result);
+    hsql::SQLParser::parse(query_str, &result);
 
     uint64_t limit = 0;
-    auto iterator = parser.ParseQuery(query, TransactionId(), &limit, false);
-    if (!iterator.ok()) {
-      LOG(ERROR) << "Failed to generate physcial plan: "
-                 << iterator.status().message();
-      free(query);
+    absl::StatusOr<Query> query =
+        parser.ParseQuery(query_str, TransactionId(), &limit, false);
+    if (!query.ok()) {
+      LOG(ERROR) << "Parsing error: " << query.status().message();
       continue;
     }
 
-    LOG(INFO) << "Generating physical plan ok!!!";
-    (*iterator)->Explain(std::cout);
-    absl::Status open_status = (*iterator)->Open();
+    switch (query->type) {
+      case Query::ITERATOR: {
+        query->iterator->Explain(std::cout);
+        absl::Status status =
+            executor.PrettyExecute(std::move(query->iterator), limit);
+        if (!status.ok()) {
+          std::cout << "Executor error: " << status.message() << std::endl;
+        }
+        break;
+      }
+      case Query::CREATE_TABLE: {
+        if (catalog->GetTableId(query->table_name).ok()) {
+          std::cout << "Table " << query->table_name << " already exists."
+                    << std::endl;
+          continue;
+        }
+        absl::StatusOr<std::unique_ptr<DbFile>> new_file =
+            HeapFile::Create(catalog_directory + query->table_name + ".dat",
+                             query->tuple_desc, Permissions::READ_WRITE);
+        if (!new_file.status().ok()) {
+          std::cout << "Cannot create table: " << new_file.status().message()
+                    << std::endl;
+          continue;
+        }
 
-    if (!open_status.ok()) {
-      LOG(ERROR) << "Open error: " << open_status.message();
-      free(query);
-      continue;
+        catalog->AddTable(std::move(*new_file), query->table_name,
+                          query->primary_key);
+        break;
+      }
     }
-
-    executor.PrettyExecute(std::move(*iterator), limit);
-
-    free(query);
   }
 }

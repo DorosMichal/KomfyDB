@@ -7,6 +7,7 @@
 
 #include "komfydb/execution/logical_plan/logical_plan.h"
 #include "komfydb/execution/op_iterator.h"
+#include "komfydb/query.h"
 
 namespace {
 
@@ -33,6 +34,8 @@ class Parser {
   absl::StatusOr<std::unique_ptr<OpIterator>> ParseInsertStatement(
       const hsql::InsertStatement* stmt, TransactionId tid);
 
+  absl::StatusOr<Query> ParseCreateStatement(const hsql::CreateStatement* stmt);
+
   absl::Status ParseFromClause(LogicalPlan& lp, const hsql::TableRef* from);
 
   absl::Status ParseSimpleExpression(LogicalPlan& lp, hsql::Expr* lexpr, Op op,
@@ -53,9 +56,8 @@ class Parser {
          std::shared_ptr<BufferPool> buffer_pool,
          TableStatsMap& table_stats_map);
 
-  absl::StatusOr<std::unique_ptr<OpIterator>> ParseQuery(
-      std::string_view query, TransactionId tid, uint64_t* limit,
-      bool explain_optimizer);
+  absl::StatusOr<Query> ParseQuery(std::string_view query, TransactionId tid,
+                                   uint64_t* limit, bool explain_optimizer);
 };
 
 };  // namespace komfydb

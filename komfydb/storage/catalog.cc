@@ -4,6 +4,9 @@
 #include "absl/status/statusor.h"
 #include "glog/logging.h"
 
+#include "heap_file.h"
+#include "komfydb/storage/db_file.h"
+#include "komfydb/storage/heap_file.h"
 #include "komfydb/utils/status_macros.h"
 #include "komfydb/utils/utility.h"
 

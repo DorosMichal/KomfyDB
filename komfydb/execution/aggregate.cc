@@ -1,4 +1,9 @@
 #include "komfydb/execution/aggregate.h"
+
+#include "absl/status/status.h"
+#include "absl/status/statusor.h"
+#include "glog/logging.h"
+
 #include "komfydb/common/field.h"
 #include "komfydb/execution/aggregate_tuple.h"
 #include "komfydb/execution/aggregator.h"
@@ -6,9 +11,6 @@
 #include "komfydb/storage/page_id.h"
 #include "komfydb/storage/record_id.h"
 #include "komfydb/utils/status_macros.h"
-
-#include "absl/status/status.h"
-#include "absl/status/statusor.h"
 
 namespace {
 
