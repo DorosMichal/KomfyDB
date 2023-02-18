@@ -33,8 +33,7 @@ class Record : public Tuple {
 
   Record& operator=(const Record& r);
 
-  Record(const TupleDesc* tuple_desc, PageId pid, int tuple_no)
-      : Tuple(tuple_desc), rid(pid, tuple_no) {}
+  Record(int size, PageId pid, int tuple_no);
 
   RecordId GetId();
 

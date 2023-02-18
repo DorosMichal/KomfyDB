@@ -63,8 +63,8 @@ TEST(Tuple, SupportsAbslHash) {
       std::make_unique<StringField>("kappa kappa");
   std::unique_ptr<StringField> str3 = std::make_unique<StringField>("---");
   std::unique_ptr<StringField> str4 = std::make_unique<StringField>("");
-  Tuple t1(&tuple_desc), t2(&tuple_desc), t3(&tuple_desc2), t4(&tuple_desc2),
-      t5(&tuple_desc3);
+  Tuple t1(types.size()), t2(types.size()), t3(types2.size()),
+      t4(types2.size()), t5(types3.size());
   ASSERT_TRUE(t1.SetField(0, std::move(int1)).ok());
   ASSERT_TRUE(t1.SetField(1, std::move(str1)).ok());
   ASSERT_TRUE(t1.SetField(2, std::move(int2)).ok());

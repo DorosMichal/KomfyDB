@@ -122,7 +122,7 @@ absl::StatusOr<std::unique_ptr<HeapPage>> HeapPage::Create(
 
   header.insert(header.end(), data.begin(), data.begin() + header_len);
   for (int i = 0; i < n_slots; i++) {
-    Record record(tuple_desc, pid, i);
+    Record record(tuple_desc->Length(), pid, i);
 
     if (!TuplePresent(header, i).value()) {
       data_idx += tuple_desc->GetSize();

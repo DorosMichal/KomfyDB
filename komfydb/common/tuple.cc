@@ -36,7 +36,6 @@ bool compare_fields(const StringField* f1, const StringField* f2) {
 namespace komfydb::common {
 
 void Tuple::swap(Tuple& t) {
-  tuple_desc = t.tuple_desc;
   fields = std::move(t.fields);
 }
 
@@ -46,20 +45,18 @@ Tuple& Tuple::operator=(const Tuple& t) {
   return *this;
 }
 
-Tuple::Tuple(const TupleDesc* tuple_desc) : tuple_desc(tuple_desc) {
-  if (tuple_desc) {
-    fields.resize(tuple_desc->Length());
-  }
+Tuple::Tuple(int size) {
+  fields.resize(size);
 }
 
 Tuple::Tuple(const Tuple& t) {
-  tuple_desc = t.tuple_desc;
-  fields.resize(tuple_desc->Length());
-  for (int i = 0; i < tuple_desc->Length(); i++) {
+  fields.resize(t.Size());
+  for (int i = 0; i < t.Size(); i++) {
     if (t.fields[i] == nullptr) {
+      fields[i] = nullptr;
       continue;
     }
-    switch (tuple_desc->GetFieldType(i).value().GetValue()) {
+    switch (t.fields[i]->GetType().GetValue()) {
       case Type::INT:
         fields[i] = std::make_unique<IntField>(
             *static_cast<IntField*>(t.fields[i].get()));
@@ -72,22 +69,21 @@ Tuple::Tuple(const Tuple& t) {
   }
 }
 
-Tuple::Tuple(Tuple& t1, Tuple&& t2, TupleDesc* joined_td)
-    : tuple_desc(joined_td) {
+Tuple::Tuple(Tuple& t1, Tuple&& t2) {
   // copies the 1st Tuple, but moves the 2nd, used in nested loop join
-  fields.resize(tuple_desc->Length());
+  fields.resize(t1.Size() + t2.Size());
   Tuple tmp_t1 = t1;
   int idx = 0;
-  for (int i = 0; i < tmp_t1.tuple_desc->Length(); i++, idx++) {
+  for (int i = 0; i < tmp_t1.Size(); i++, idx++) {
     fields[idx] = std::move(tmp_t1.fields[i]);
   }
-  for (int i = 0; i < t2.tuple_desc->Length(); i++, idx++) {
+  for (int i = 0; i < t2.Size(); i++, idx++) {
     fields[idx] = std::move(t2.fields[i]);
   }
 }
 
-const TupleDesc* Tuple::GetTupleDesc() {
-  return tuple_desc;
+int Tuple::Size() const {
+  return fields.size();
 }
 
 absl::StatusOr<Field*> Tuple::GetField(int i) const {
@@ -110,14 +106,9 @@ absl::StatusOr<std::unique_ptr<Field>> Tuple::ReleaseField(int i) {
   return std::move(fields[i]);
 }
 
-// TODO(Tuple) This is bad imho. Here we assume that f is allocated by the
-// caller and what if this is not the case? We need to be careful..
 absl::Status Tuple::SetField(int i, std::unique_ptr<Field> f) {
   if (fields.size() <= i || i < 0) {
     return absl::InvalidArgumentError("Index out of range");
-  }
-  if (*tuple_desc->GetFieldType(i) != f->GetType()) {
-    return absl::InvalidArgumentError("Wrong Field type");
   }
 
   fields[i] = std::move(f);
@@ -140,12 +131,15 @@ std::ostream& operator<<(std::ostream& os, const Tuple& tuple) {
 }
 
 bool Tuple::operator==(const Tuple& t) const {
-  if (*t.tuple_desc != *tuple_desc) {
+  if (Size() != t.Size()) {
     return false;
   }
 
   for (int i = 0; i < t.fields.size(); i++) {
-    switch ((*tuple_desc->GetFieldType(i)).GetValue()) {
+    if (fields[i]->GetType() != t.fields[i]->GetType()) {
+      return false;
+    }
+    switch (fields[i]->GetType().GetValue()) {
       case Type::INT: {
         if (!compare_fields(static_cast<const IntField*>(fields[i].get()),
                             static_cast<const IntField*>(t.fields[i].get()))) {

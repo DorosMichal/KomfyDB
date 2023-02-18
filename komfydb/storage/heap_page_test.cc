@@ -73,10 +73,9 @@ TEST_F(HeapPageTest, Records) {
       continue;
     }
     Record& record = records[rid++];
-    EXPECT_EQ(record.GetTupleDesc(), tuple_desc.get());
     EXPECT_EQ(record.GetId(), RecordId(pid, i));
 
-    Record comp_record(record.GetTupleDesc(), pid, i);
+    Record comp_record(tuple_desc->Length(), pid, i);
     ASSERT_TRUE(
         comp_record.SetField(0, std::make_unique<IntField>(i + 1)).ok());
     ASSERT_TRUE(
@@ -108,8 +107,8 @@ TEST_F(HeapPageTest, AddAndRemoveTuples) {
       HeapPage::Create(pid, tuple_desc.get(), empty_data);
   ASSERT_TRUE(hpage.ok());
 
-  Tuple t[3] = {Tuple(tuple_desc.get()), Tuple(tuple_desc.get()),
-                Tuple(tuple_desc.get())};
+  Tuple t[3] = {Tuple(tuple_desc->Length()), Tuple(tuple_desc->Length()),
+                Tuple(tuple_desc->Length())};
   ASSERT_TRUE(t[0].SetField(0, std::make_unique<IntField>(0)).ok());
   ASSERT_TRUE(t[0].SetField(1, std::make_unique<StringField>("a")).ok());
   ASSERT_TRUE(t[0].SetField(2, std::make_unique<IntField>(1)).ok());

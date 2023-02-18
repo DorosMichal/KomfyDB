@@ -18,26 +18,24 @@ namespace komfydb::common {
 // representing a Tuple in memory.
 class Tuple {
  protected:
-  const TupleDesc* tuple_desc;
-
   std::vector<std::unique_ptr<Field>> fields;
 
   void swap(Tuple& t);
 
  public:
-  Tuple(const TupleDesc* tuple_desc);
+  Tuple(int size);
 
   Tuple(const Tuple& t);
 
   Tuple(Tuple&& tuple) = default;
 
-  Tuple(Tuple& t1, Tuple&& t2, TupleDesc* joined_td);
+  Tuple(Tuple& t1, Tuple&& t2);
 
   virtual ~Tuple() = default;
 
   Tuple& operator=(const Tuple& t);
 
-  const TupleDesc* GetTupleDesc();
+  int Size() const;
 
   absl::StatusOr<Field*> GetField(int i) const;
 
@@ -71,12 +69,6 @@ class Tuple {
     }
     return h;
   }
-
-  // TODO(Iterator)
-  // std::vector<Field> GetFields();
-
-  // Wtf should this do? lol
-  // void ResetTupleDesc(TupleDesc tuple_desc);
 };
 
 };  // namespace komfydb::common
