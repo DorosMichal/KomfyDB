@@ -1,14 +1,21 @@
 #include "komfydb/storage/buffer_pool.h"
 
+#include "buffer_pool.h"
 #include "glog/logging.h"
 
 #include "komfydb/storage/db_file.h"
+#include "komfydb/transaction/transaction_id.h"
 #include "komfydb/utils/status_macros.h"
 
 namespace komfydb::storage {
 
 BufferPool::BufferPool(std::shared_ptr<Catalog> catalog, int pages_cnt)
     : pages_cnt(pages_cnt), catalog(std::move(catalog)) {}
+
+BufferPool::~BufferPool() {
+  static_cast<void>(
+      FlushPages(transaction::TransactionId(transaction::NO_TID)));
+}
 
 absl::StatusOr<Page*> BufferPool::GetPage(TransactionId tid, PageId pid,
                                           Permissions perm) {
@@ -58,7 +65,8 @@ absl::Status BufferPool::FlushPage(PageId pid) {
 
 absl::Status BufferPool::FlushPages(TransactionId tid) {
   for (auto it = page_pool.begin(); it != page_pool.end(); it++) {
-    if (it->second->GetLastTransaction() == tid) {
+    if (tid.GetId() == transaction::NO_TID ||
+        it->second->GetLastTransaction() == tid) {
       RETURN_IF_ERROR(FlushPage(it->second->GetId()));
     }
   }

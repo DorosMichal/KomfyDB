@@ -442,9 +442,49 @@ absl::StatusOr<std::unique_ptr<OpIterator>> Parser::ParseInsertStatement(
                                    buffer_pool, tid);
 }
 
-absl::StatusOr<std::unique_ptr<OpIterator>> Parser::ParseQuery(
-    std::string_view query, TransactionId tid, uint64_t* limit,
-    bool explain_optimizer) {
+absl::StatusOr<Query> Parser::ParseCreateStatement(
+    const hsql::CreateStatement* stmt) {
+  if (stmt->type != hsql::CreateType::kCreateTable) {
+    return absl::UnimplementedError("Only CREATE TABLE supported.");
+  }
+
+  std::string table_name = stmt->tableName;
+  std::vector<Type> types;
+  std::vector<std::string> names;
+  std::string primary_key = "";
+  for (int i = 0; i < stmt->columns->size(); i++) {
+    hsql::ColumnDefinition* column_def = (*(stmt->columns))[i];
+    names.push_back(column_def->name);
+    switch (column_def->type.data_type) {
+      case hsql::DataType::INT: {
+        types.push_back(Type::INT);
+        break;
+      }
+      case hsql::DataType::TEXT: {
+        types.push_back(Type::STRING);
+        break;
+      }
+      default: {
+        return absl::UnimplementedError(
+            absl::StrCat("Only INT and TEXT column types supported."));
+      }
+    }
+    if (column_def->column_constraints->count(
+            hsql::ConstraintType::PrimaryKey)) {
+      primary_key = column_def->name;
+    }
+  }
+  if (primary_key == "") {
+    primary_key = names[0];
+  }
+
+  TupleDesc tuple_desc(types, names);
+  return Query(table_name, tuple_desc, primary_key);
+}
+
+absl::StatusOr<Query> Parser::ParseQuery(std::string_view query,
+                                         TransactionId tid, uint64_t* limit,
+                                         bool explain_optimizer) {
   LOG(INFO) << "Parsing query: " << query;
   hsql::SQLParserResult result;
   hsql::SQLParser::parse(std::string(query), &result);
@@ -459,24 +499,20 @@ absl::StatusOr<std::unique_ptr<OpIterator>> Parser::ParseQuery(
   }
 
   const hsql::SQLStatement* stmt = stmts.back();
-  hsql::printStatementInfo(stmt);
-
-  if (!stmt->isType(hsql::StatementType::kStmtSelect) &&
-      !stmt->isType(hsql::StatementType::kStmtInsert)) {
-    return absl::UnimplementedError(
-        "Currently only select and insert statements are supported.");
-  }
 
   switch (stmt->type()) {
     case hsql::StatementType::kStmtSelect: {
-      const hsql::SelectStatement* select =
-          static_cast<const hsql::SelectStatement*>(stmt);
-      return ParseSelectStatement(select, tid, limit, explain_optimizer);
+      return ParseSelectStatement(
+          static_cast<const hsql::SelectStatement*>(stmt), tid, limit,
+          explain_optimizer);
     }
     case hsql::StatementType::kStmtInsert: {
-      const hsql::InsertStatement* insert =
-          static_cast<const hsql::InsertStatement*>(stmt);
-      return ParseInsertStatement(insert, tid);
+      return ParseInsertStatement(
+          static_cast<const hsql::InsertStatement*>(stmt), tid);
+    }
+    case hsql::StatementType::kStmtCreate: {
+      return ParseCreateStatement(
+          static_cast<const hsql::CreateStatement*>(stmt));
     }
     default: {
       return absl::UnimplementedError(

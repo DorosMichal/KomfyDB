@@ -31,6 +31,8 @@ class BufferPool {
 
   BufferPool(std::shared_ptr<Catalog> catalog, int pages_cnt = PAGES_CNT);
 
+  ~BufferPool();
+
   int GetPageSize() const { return pages_cnt; }
 
   absl::StatusOr<Page*> GetPage(TransactionId tid, PageId pid,

@@ -5,6 +5,8 @@
 #include <iostream>
 #include <memory>
 
+#include "glog/logging.h"
+
 #include "komfydb/common/tuple_desc.h"
 #include "komfydb/config.h"
 #include "komfydb/storage/heap_page.h"
@@ -32,12 +34,12 @@ absl::StatusOr<std::unique_ptr<HeapFile>> HeapFile::Create(
     Permissions permissions) {
   std::ios_base::openmode mode = std::ios::binary | std::ios::in;
   if (permissions == Permissions::READ_WRITE) {
-    mode |= std::ios::out;
+    mode |= std::ios::out | std::ios::app;
   }
 
   std::fstream file;
   file.open(std::string(file_path), mode);
-  if (file.fail()) {
+  if (!file.good()) {
     return absl::InvalidArgumentError(absl::StrCat(
         "Could not open db file: ", file_path, ": ", strerror(errno)));
   }
@@ -50,6 +52,8 @@ absl::StatusOr<std::unique_ptr<HeapFile>> HeapFile::Create(
         absl::StrCat("File size ", std::to_string(file_length),
                      " not divisble by page size."));
   }
+
+  LOG(INFO) << "Opened " << file_path << ", size=" << file_length << "B";
 
   return std::unique_ptr<HeapFile>(new HeapFile(
       std::move(file), file_length, tuple_desc, ++table_cnt, permissions));
