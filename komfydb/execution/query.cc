@@ -1,6 +1,6 @@
-#include "komfydb/query.h"
+#include "komfydb/execution/query.h"
 
-namespace komfydb {
+namespace komfydb::execution {
 
 Query::Query(std::unique_ptr<execution::OpIterator> iterator)
     : iterator(std::move(iterator)), type(ITERATOR) {}
@@ -15,4 +15,4 @@ Query::Query(std::string_view table_name, TupleDesc tuple_desc,
 Query::Query(std::string_view table_name, TupleDesc tuple_desc)
     : Query(table_name, tuple_desc, 0) {}
 
-};  // namespace komfydb
+};  // namespace komfydb::execution

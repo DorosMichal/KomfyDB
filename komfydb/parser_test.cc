@@ -29,8 +29,8 @@ class ParserTest
                               std::filesystem::copy_options::recursive;
     std::filesystem::copy("komfydb/testdata", test_dir, copy_options);
     std::string schema_file = test_dir + "/database_catalog_test.txt";
-    db = std::make_unique<Database>(
-        std::move(Database::LoadSchema(schema_file).value()));
+    db = Database::Create(test_dir);
+    assert(db->LoadSchema(schema_file).ok());
     parser = std::make_unique<Parser>(db->GetCatalog(), db->GetBufferPool(),
                                       table_stats_map);
   }

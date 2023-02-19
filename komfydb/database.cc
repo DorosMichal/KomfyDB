@@ -1,5 +1,8 @@
 #include "komfydb/database.h"
 
+#include <readline/history.h>
+#include <readline/readline.h>
+
 #include <filesystem>
 #include <fstream>
 #include <string>
@@ -10,129 +13,128 @@
 
 #include "komfydb/common/tuple_desc.h"
 #include "komfydb/common/type.h"
+#include "komfydb/execution/executor.h"
+#include "komfydb/execution/query.h"
+#include "komfydb/optimizer/table_stats.h"
 #include "komfydb/storage/db_file.h"
 #include "komfydb/storage/heap_file.h"
+#include "komfydb/transaction/transaction_id.h"
 #include "komfydb/utils/status_macros.h"
-
-namespace {
-
-using komfydb::common::TupleDesc;
-using komfydb::common::Type;
-using komfydb::storage::DbFile;
-using komfydb::storage::HeapFile;
-
-inline void ltrim(std::string& s) {
-  s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](unsigned char ch) {
-            return !std::isspace(ch);
-          }));
-}
-
-// trim from end (in place)
-inline void rtrim(std::string& s) {
-  s.erase(std::find_if(s.rbegin(), s.rend(),
-                       [](unsigned char ch) { return !std::isspace(ch); })
-              .base(),
-          s.end());
-}
-
-// trim from both ends (in place)
-inline void trim(std::string& s) {
-  ltrim(s);
-  rtrim(s);
-}
-
-inline void ToLower(std::string& s) {
-  std::transform(s.begin(), s.end(), s.begin(),
-                 [](unsigned char c) { return std::tolower(c); });
-}
-
-std::vector<std::string> SplitLine(std::string line, char delim) {
-  std::vector<std::string> tokens;
-  std::stringstream line_stream(line);
-  std::string token;
-
-  while (getline(line_stream, token, delim)) {
-    trim(token);
-    tokens.push_back(token);
-  }
-  return tokens;
-}
-
-absl::StatusOr<Type> GetType(std::string& type_str) {
-  ToLower(type_str);
-  if (type_str == "int") {
-    return Type::INT;
-  } else if (type_str == "string") {
-    return Type::STRING;
-  } else {
-    return absl::InvalidArgumentError(
-        absl::StrCat("Cannot parse type: ", type_str));
-  }
-}
-
-};  // namespace
 
 namespace komfydb {
 
-Database::Database(std::shared_ptr<Catalog> catalog)
-    : catalog(catalog), buffer_pool(std::make_shared<BufferPool>(catalog)) {}
+Database::Database(std::shared_ptr<Catalog> catalog,
+                   std::shared_ptr<BufferPool> buffer_pool,
+                   std::shared_ptr<Parser> parser,
+                   optimizer::TableStatsMap&& table_stats_map,
+                   std::string_view catalog_directory)
+    : catalog(catalog),
+      buffer_pool(buffer_pool),
+      parser(parser),
+      table_stats_map(std::move(table_stats_map)),
+      catalog_directory(catalog_directory) {}
 
-absl::StatusOr<Database> Database::LoadSchema(
-    absl::string_view catalog_file_path) {
-  std::string directory =
-      std::filesystem::path(catalog_file_path).parent_path().string();
-  LOG(INFO) << "Catalog directory: " << directory;
-  std::fstream catalog_file;
-  catalog_file.open((std::string)catalog_file_path, std::ios::in);
-  if (!catalog_file.good()) {
+std::unique_ptr<Database> Database::Create(std::string_view catalog_directory) {
+  std::shared_ptr<Catalog> catalog = std::make_shared<Catalog>();
+  std::shared_ptr<BufferPool> buffer_pool =
+      std::make_shared<BufferPool>(catalog);
+  optimizer::TableStatsMap table_stats_map;
+  std::shared_ptr<Parser> parser =
+      std::make_shared<Parser>(catalog, buffer_pool, table_stats_map);
+  return std::unique_ptr<Database>(new Database(catalog, buffer_pool, parser,
+                                                std::move(table_stats_map),
+                                                catalog_directory));
+}
+
+absl::Status Database::CreateTable(Query& query) {
+  if (catalog->GetTableId(query.table_name).ok()) {
     return absl::InvalidArgumentError(
-        absl::StrCat("Cannot open catalog file: ", catalog_file_path));
+        absl::StrCat("Table ", query.table_name, " already exists."));
+  }
+  absl::StatusOr<std::unique_ptr<DbFile>> new_file = HeapFile::Create(
+      absl::StrCat(catalog_directory, query.table_name, ".dat"),
+      query.tuple_desc, Permissions::READ_WRITE);
+  if (!new_file.status().ok()) {
+    return absl::InvalidArgumentError(
+        absl::StrCat("Cannot create table: ", new_file.status().message()));
   }
 
-  std::string line;
-  std::shared_ptr<Catalog> catalog = std::make_shared<Catalog>();
+  catalog->AddTable(std::move(*new_file), query.table_name, query.primary_key);
+  return absl::OkStatus();
+}
 
-  while (std::getline(catalog_file, line)) {
-    std::string name = line.substr(0, line.find("("));
-    line = line.substr(line.find("(") + 1);
-    line.pop_back();  // delete last ')'
-    trim(name);
-    std::vector<std::string> tokens = SplitLine(line, ',');
-    std::vector<std::string> names;
-    std::vector<Type> types;
-    std::string primary_key = "";
-    for (auto token : tokens) {
-      LOG(INFO) << "Parsing token " << token;
-      trim(token);
-      std::vector<std::string> parts = SplitLine(token, ' ');
-      if (parts.size() < 2 || parts.size() > 4) {
-        return absl::InvalidArgumentError(
-            absl::StrCat("Cannot parse field description: ", token));
-      }
-      ASSIGN_OR_RETURN(Type type, GetType(parts[1]));
-      types.push_back(type);
-      trim(parts[0]);
-      names.push_back(parts[0]);
-      if (parts.size() == 3) {
-        trim(parts[2]);
-        ToLower(parts[2]);
-        if (parts[2] == "pk") {
-          primary_key = parts[0];
-        } else {
-          return absl::InvalidArgumentError(
-              absl::StrCat("Unknown field attribute: ", parts[2]));
-        }
-      }
+absl::Status Database::LoadSchema(std::string_view schema_path) {
+  LOG(INFO) << "Loading schema " << schema_path;
+  std::fstream schema_file;
+  schema_file.open((std::string)schema_path, std::ios::in);
+
+  if (!schema_file.good()) {
+    return absl::InvalidArgumentError(
+        absl::StrCat("Cannot open catalog file: ", schema_path));
+  }
+
+  std::string command;
+  while (std::getline(schema_file, command)) {
+    ASSIGN_OR_RETURN(
+        Query query,
+        parser->ParseQuery(command, TransactionId(transaction::NO_TID), NULL,
+                           false));
+    if (query.type != Query::CREATE_TABLE) {
+      return absl::InvalidArgumentError(absl::StrCat(
+          "Invalid command in schema, only CREATE TABLE is allowed: ",
+          command));
+    }
+    RETURN_IF_ERROR(CreateTable(query));
+  }
+  return absl::OkStatus();
+}
+
+void Database::Repl() {
+  execution::Executor executor;
+  absl::Status status;
+  char* input;
+
+  while ((input = readline("KomfyDB> ")) != nullptr) {
+    if (!strlen(input)) {
+      continue;
+    }
+    add_history(input);
+    std::string query_str = input;
+    free(input);
+
+    hsql::SQLParserResult result;
+    hsql::SQLParser::parse(query_str, &result);
+
+    uint64_t limit = 0;
+    absl::StatusOr<Query> query =
+        parser->ParseQuery(query_str, TransactionId(), &limit, false);
+    if (!query.ok()) {
+      std::cout << "Parsing error: " << query.status().message() << std::endl;
+      continue;
     }
 
-    TupleDesc tuple_desc(types, names);
-    ASSIGN_OR_RETURN(std::unique_ptr<HeapFile> hp,
-                     HeapFile::Create(directory + "/" + name + ".dat",
-                                      tuple_desc, Permissions::READ_WRITE));
-    catalog->AddTable(std::move(hp), name, primary_key);
+    switch (query->type) {
+      case Query::ITERATOR: {
+        query->iterator->Explain(std::cout);
+        status = executor.PrettyExecute(std::move(query->iterator), limit);
+        if (!status.ok()) {
+          std::cout << "Executor error: " << status.message() << std::endl;
+        }
+        break;
+      }
+      case Query::CREATE_TABLE: {
+        status = CreateTable(*query);
+        if (!status.ok()) {
+          std::cout << "Create table error: " << status.message() << std::endl;
+        }
+        break;
+      }
+    }
   }
+}
 
-  return Database(std::move(catalog));
+std::shared_ptr<Parser> Database::GetParser() {
+  return parser;
 }
 
 std::shared_ptr<Catalog> Database::GetCatalog() {
@@ -141,6 +143,10 @@ std::shared_ptr<Catalog> Database::GetCatalog() {
 
 std::shared_ptr<BufferPool> Database::GetBufferPool() {
   return buffer_pool;
+}
+
+optimizer::TableStatsMap& Database::GetTableStatsMap() {
+  return table_stats_map;
 }
 
 };  // namespace komfydb

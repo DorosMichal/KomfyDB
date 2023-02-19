@@ -29,8 +29,8 @@ class BufferPoolTest : public ::testing::Test {
                               std::filesystem::copy_options::recursive;
     std::filesystem::copy("komfydb/storage/testdata", test_dir, copy_options);
     std::string schema_file = test_dir + "/buffer_pool_test_db_schema.txt";
-    db = std::make_unique<Database>(
-        std::move(*Database::LoadSchema(schema_file)));
+    db = Database::Create(test_dir);
+    assert(db->LoadSchema(schema_file).ok());
     catalog = db->GetCatalog();
     table_id = *catalog->GetTableId("buffer_pool_test");
   }

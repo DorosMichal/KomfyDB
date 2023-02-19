@@ -7,11 +7,12 @@
 
 #include "komfydb/execution/logical_plan/logical_plan.h"
 #include "komfydb/execution/op_iterator.h"
-#include "komfydb/query.h"
+#include "komfydb/execution/query.h"
 
 namespace {
 
 using komfydb::execution::OpIterator;
+using komfydb::execution::Query;
 using komfydb::execution::logical_plan::LogicalPlan;
 
 };  // namespace
