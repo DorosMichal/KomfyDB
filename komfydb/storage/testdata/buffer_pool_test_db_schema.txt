@@ -1,1 +1,1 @@
-buffer_pool_test (name1 int, name2 string, name3 int pk, name4 string)
+CREATE TABLE buffer_pool_test (name1 INT, name2 TEXT, name3 INT, name4 TEXT)

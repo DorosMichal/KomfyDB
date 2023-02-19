@@ -1,2 +1,2 @@
-first_table (name1 int, name2 string, name3 int pk, name4 string)
-second_table (name1 int, name2 string, name3 int pk, name4 string)
+CREATE TABLE first_table (name1 INT, name2 TEXT, name3 INT, name4 TEXT)
+CREATE TABLE second_table (name1 INT, name2 TEXT, name3 INT, name4 TEXT)

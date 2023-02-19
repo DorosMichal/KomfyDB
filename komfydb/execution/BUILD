@@ -71,3 +71,14 @@ cc_library(
   ],
   visibility = ["//visibility:public"],
 )
+
+cc_library(
+  name = "query",
+  srcs = ["query.cc"],
+  hdrs = ["query.h"],
+  deps = [
+    ":execution",
+    "@com_google_absl//absl/status",
+  ],
+  visibility = ["//visibility:public"],
+)

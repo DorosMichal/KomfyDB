@@ -15,10 +15,8 @@ TEST(Database, LoadSchema) {
   std::filesystem::copy("komfydb/testdata", test_dir);
 
   std::string schema_file = test_dir + "/database_catalog_test.txt";
-  absl::StatusOr<Database> db = Database::LoadSchema(schema_file);
-  std::cout << db.status().message() << "\n";
-  std::cout << testing::TempDir() << "\n";
-  ASSERT_TRUE(db.ok());
+  std::unique_ptr<Database> db = Database::Create(test_dir);
+  ASSERT_TRUE(db->LoadSchema(schema_file).ok());
 }
 
 };  // namespace

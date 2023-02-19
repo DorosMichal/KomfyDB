@@ -6,7 +6,7 @@
 
 #include "komfydb/execution/op_iterator.h"
 
-namespace komfydb {
+namespace komfydb::execution {
 
 class Query {
  public:
@@ -26,6 +26,6 @@ class Query {
   Query(std::string_view table_name, TupleDesc tuple_desc);
 };
 
-};  // namespace komfydb
+};  // namespace komfydb::execution
 
 #endif  // __QUERY_H__

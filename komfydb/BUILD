@@ -14,21 +14,6 @@ cc_library(
   visibility = ["//visibility:public"],
 )
 
-cc_library(
-  name = "database",
-  srcs = [
-    "database.cc",
-  ],
-  hdrs = [
-    "database.h",
-  ],
-  deps = [
-    "//komfydb/storage",
-    "//komfydb/common",
-    "@com_github_google_glog//:glog",
-  ],
-  visibility = ["//visibility:public"],
-)
 
 filegroup(
   name = "database_test_data",
@@ -51,16 +36,11 @@ cc_test(
 
 cc_library(
   name = "parser",
-  srcs = [
-    "parser.cc", 
-    "query.cc",
-  ],
-  hdrs = [
-    "parser.h",
-    "query.h",
-  ],
+  srcs = ["parser.cc",],
+  hdrs = ["parser.h",],
   deps = [
     "//komfydb/execution/logical_plan:logical_plan",
+    "//komfydb/execution:query",
     "//:hsql",
     "@com_google_absl//absl/status:statusor",
     "@com_github_google_glog//:glog",
@@ -78,35 +58,36 @@ cc_test(
   ],
 )
 
-cc_binary(
-  name = "parser_repl",
-  srcs = ["parser_repl.cc",],
-  data = [":database_test_data"],
+cc_library(
+  name = "database",
+  srcs = [
+    "database.cc",
+  ],
+  hdrs = [
+    "database.h",
+  ],
   deps = [
     ":parser",
     "//komfydb/execution/logical_plan",
     "//komfydb/execution:executor",
-    "//komfydb:database",
-    "//komfydb/storage:storage",
-    "//komfydb/common:common",
-    "//komfydb/transaction:transaction",
-    "//komfydb/execution:execution",
+    "//komfydb/storage",
+    "//komfydb/common",
+    "//komfydb/transaction",
+    "//komfydb/execution",
+    "//komfydb/execution:query",
     "@com_github_google_glog//:glog",
     "//:hsql",
   ],
   linkopts = ["-lreadline",],
+  visibility = ["//visibility:public"],
 )
 
 cc_binary(
   name = "komfydb",
-  srcs = ["komfydb.cc"],
+  srcs = ["main.cc",],
   data = [":database_test_data"],
   deps = [
-    "//komfydb:database",
-    "//komfydb/storage:storage",
-    "//komfydb/common:common",
-    "//komfydb/transaction:transaction",
-    "//komfydb/execution:execution",
+    ":database",
     "@com_github_google_glog//:glog",
   ],
 )
