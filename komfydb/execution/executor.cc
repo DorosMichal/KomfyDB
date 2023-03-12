@@ -131,22 +131,22 @@ std::vector<std::string> GetTupleLines(Tuple* tuple, int length,
   return GetLines(values, column_width);
 }
 
-void PrintRecord(Record* record, int length, std::ostream& os){
+void PrintRecord(Record* record, int length, std::ostream& os) {
   os << "(";
-  for(int i = 0; i < length; i++){
-      Field *field = *record->GetField(i);
-      
-      switch(field->GetType().GetValue()){
-        case Type::INT:{
-          os << std::string(*field);
-          break;
-        }
-        case Type::STRING:{
-          os << "\"" << std::string(*field) << "\"";
-          break;
-        }
+  for (int i = 0; i < length; i++) {
+    Field* field = *record->GetField(i);
+
+    switch (field->GetType().GetValue()) {
+      case Type::INT: {
+        os << std::string(*field);
+        break;
       }
-      os << ", ";
+      case Type::STRING: {
+        os << "\"" << std::string(*field) << "\"";
+        break;
+      }
+    }
+    os << ", ";
   }
   os << ")";
 }
@@ -159,8 +159,11 @@ void Executor::InitializePrettyPrinter(TupleDesc* iterator_tuple_desc) {
   tuple_desc = iterator_tuple_desc;
 
   struct winsize w;
-  ioctl(0, TIOCGWINSZ, &w);
-  terminal_width = w.ws_col;
+  if (ioctl(0, TIOCGWINSZ, &w) == -1) {
+    terminal_width = 200;
+  } else {
+    terminal_width = w.ws_col;
+  }
   // +-----+-----+
   // | ... | ... |
   //  <---> <--->
@@ -188,7 +191,8 @@ absl::Status Executor::PrettyExecute(std::unique_ptr<OpIterator> iterator,
   return absl::OkStatus();
 }
 
-absl::Status Executor::PythonExecute(std::unique_ptr<OpIterator> iterator, std::ostream& os) {
+absl::Status Executor::PythonExecute(std::unique_ptr<OpIterator> iterator,
+                                     std::ostream& os) {
   int length = iterator->GetTupleDesc()->Length();
 
   RETURN_IF_ERROR(iterator->Open());

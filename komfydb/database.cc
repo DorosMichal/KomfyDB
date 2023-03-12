@@ -21,6 +21,38 @@
 #include "komfydb/transaction/transaction_id.h"
 #include "komfydb/utils/status_macros.h"
 
+namespace {
+
+std::string ReadInputLine() {
+  if (isatty(STDIN_FILENO)) {
+    while (true) {
+      char* input = readline("KomfyDB> ");
+      if (input == nullptr) {
+        return "";
+      }
+      if (!strlen(input)) {
+        free(input);
+        continue;
+      }
+      add_history(input);
+      return input;
+    }
+  } else {
+    while (true) {
+      std::string result;
+      if (!std::getline(std::cin, result)) {
+        return "";
+      }
+      if (result == "") {
+        continue;
+      }
+      return result;
+    }
+  }
+}
+
+};  // namespace
+
 namespace komfydb {
 
 Database::Database(std::shared_ptr<Catalog> catalog,
@@ -92,16 +124,9 @@ absl::Status Database::LoadSchema(std::string_view schema_path) {
 void Database::Repl() {
   execution::Executor executor;
   absl::Status status;
-  char* input;
+  std::string query_str;
 
-  while ((input = readline("KomfyDB> ")) != nullptr) {
-    if (!strlen(input)) {
-      continue;
-    }
-    add_history(input);
-    std::string query_str = input;
-    free(input);
-
+  while ((query_str = ReadInputLine()) != "") {
     hsql::SQLParserResult result;
     hsql::SQLParser::parse(query_str, &result);
 
