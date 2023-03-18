@@ -1,5 +1,3 @@
-#include <optional>
-
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
 
@@ -81,30 +79,27 @@ absl::Status Join::FetchNext() {
 
   absl::Status status;
 
-  if (!l_child_next) {
-    if ((status = l_child->HasNext()).ok()) {
-      l_child_next = l_child->Next().value();
-    } else {
-      return status;
-    }
-  }
-
   while (!next_record) {
-    if ((status = r_child->HasNext()).ok()) {
-      std::unique_ptr<Record> potential_match = r_child->Next().value();
+    if (!l_child_next) {
+      if ((status = l_child->HasNext()).ok()) {
+        l_child_next = *(l_child->Next());
+      } else {
+        return status;
+      }
+    }
+    while ((status = r_child->HasNext()).ok()) {
+      std::unique_ptr<Record> potential_match = *(r_child->Next());
       if (join_predicate.Filter(*l_child_next, *potential_match)) {
         next_record = std::make_unique<Record>(
             Record(Tuple(*l_child_next, std::move(*potential_match)),
                    joined_record_id));
         return absl::OkStatus();
       }
-    } else if (absl::IsOutOfRange(status)) {
-      l_child_next = {};
-      RETURN_IF_ERROR(r_child->Rewind());
-      return FetchNext();
-    } else {
-      return status;
     }
+    RETURN_IF_NOT_OOR(status);
+    l_child_next = {};
+    RETURN_IF_ERROR(r_child->Rewind());
+    continue;
   }
 
   return absl::OkStatus();
