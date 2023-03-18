@@ -57,9 +57,8 @@ absl::Status InitializeGroup(AggregateTuple* group,
         break;
       }
       default: {
-        ASSIGN_OR_RETURN(std::unique_ptr<Field> field,
-                         record->ReleaseField(aggregate_fields[i]));
-        RETURN_IF_ERROR(group->SetField(i, std::move(field)));
+        ASSIGN_OR_RETURN(Field * field, record->GetField(aggregate_fields[i]));
+        RETURN_IF_ERROR(group->SetField(i, field->CreateCopy()));
         break;
       }
     }
