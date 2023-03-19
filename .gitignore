@@ -1,4 +1,5 @@
 .ccls-cache/
+.gdb_history
 bazel-*
 compile_commands.json
 .vscode

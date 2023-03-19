@@ -109,8 +109,7 @@ absl::Status Database::LoadSchema(std::string_view schema_path) {
   while (std::getline(schema_file, command)) {
     ASSIGN_OR_RETURN(
         Query query,
-        parser->ParseQuery(command, TransactionId(transaction::NO_TID), NULL,
-                           false));
+        parser->ParseQuery(command, TransactionId(transaction::NO_TID), false));
     if (query.type != Query::CREATE_TABLE) {
       return absl::InvalidArgumentError(absl::StrCat(
           "Invalid command in schema, only CREATE TABLE is allowed: ",
@@ -130,9 +129,8 @@ void Database::Repl() {
     hsql::SQLParserResult result;
     hsql::SQLParser::parse(query_str, &result);
 
-    uint64_t limit = 0;
     absl::StatusOr<Query> query =
-        parser->ParseQuery(query_str, TransactionId(), &limit, false);
+        parser->ParseQuery(query_str, TransactionId(), false);
     if (!query.ok()) {
       std::cout << "Parsing error: " << query.status().message() << std::endl;
       continue;
@@ -141,7 +139,7 @@ void Database::Repl() {
     switch (query->type) {
       case Query::ITERATOR: {
         query->iterator->Explain(std::cout);
-        status = executor.PrettyExecute(std::move(query->iterator), limit);
+        status = executor.PrettyExecute(std::move(query->iterator));
         if (!status.ok()) {
           std::cout << "Executor error: " << status.message() << std::endl;
         }
@@ -173,9 +171,8 @@ void Database::TestRepl() {
     hsql::SQLParserResult result;
     hsql::SQLParser::parse(query_str, &result);
 
-    uint64_t limit = 0;
     absl::StatusOr<Query> query =
-        parser->ParseQuery(query_str, TransactionId(), &limit, false);
+        parser->ParseQuery(query_str, TransactionId(), false);
     if (!query.ok()) {
       std::cout << "Parsing error: " << query.status().message() << std::endl;
       continue;

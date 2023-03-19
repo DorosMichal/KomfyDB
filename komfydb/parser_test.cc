@@ -42,7 +42,7 @@ class ParserTest
 TEST_P(ParserTest, Queries) {
   auto [query, result] = GetParam();
   absl::Status status =
-      parser->ParseQuery(query, TransactionId(), NULL, false).status();
+      parser->ParseQuery(query, TransactionId(), false).status();
   if (result == "OK") {
     EXPECT_TRUE(status.ok());
   } else {

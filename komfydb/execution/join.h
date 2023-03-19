@@ -10,10 +10,13 @@
 #include "komfydb/storage/record_id.h"
 
 namespace {
+
 using komfydb::storage::RecordId;
-}
+
+};
 
 namespace komfydb::execution {
+
 class Join : public OpIterator {
  public:
   static absl::StatusOr<std::unique_ptr<Join>> Create(
@@ -46,6 +49,7 @@ class Join : public OpIterator {
   std::unique_ptr<Record> l_child_next;
   const RecordId joined_record_id;
 };
+
 };  // namespace komfydb::execution
 
 #endif  // __JOIN_H__

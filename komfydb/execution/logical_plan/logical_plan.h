@@ -12,6 +12,7 @@
 
 #include "komfydb/common/column_ref.h"
 #include "komfydb/execution/aggregate.h"
+#include "komfydb/execution/limit.h"
 #include "komfydb/execution/logical_plan/aggregate_node.h"
 #include "komfydb/execution/logical_plan/filter_node.h"
 #include "komfydb/execution/logical_plan/join_node.h"
@@ -39,8 +40,7 @@ namespace komfydb::execution::logical_plan {
 class LogicalPlan {
  public:
   LogicalPlan(std::shared_ptr<Catalog> catalog,
-              std::shared_ptr<BufferPool> buffer_pool)
-      : catalog(std::move(catalog)), buffer_pool(std::move(buffer_pool)) {}
+              std::shared_ptr<BufferPool> buffer_pool);
 
   absl::Status AddFilterColCol(ColumnRef lref, Op op, ColumnRef rref);
   absl::Status AddFilterColConst(ColumnRef ref, Op op,
@@ -58,6 +58,8 @@ class LogicalPlan {
   absl::Status AddSelect(ColumnRef ref);
 
   absl::Status AddOrderBy(ColumnRef ref, OrderBy::Order asc);
+
+  absl::Status AddLimit(limit_t limit);
 
   absl::StatusOr<common::ColumnRef> GetColumnRef(std::string_view table,
                                                  std::string_view column);
@@ -89,6 +91,8 @@ class LogicalPlan {
   ColumnRef order_by_column = {};
   OrderBy::Order order;
 
+  limit_t limit;
+
   absl::Status ProcessScanNodes(TransactionId tid);
   absl::Status ProcessFilterNodes(TableStatsMap& table_stats);
   absl::Status ProcessJoinNodes(TransactionId tid, TableStatsMap& table_stats,
@@ -98,6 +102,8 @@ class LogicalPlan {
   absl::StatusOr<std::unique_ptr<OpIterator>> ProcessAggregateNodes(
       std::unique_ptr<OpIterator> plan);
   absl::StatusOr<std::unique_ptr<OpIterator>> ProcessOrderBy(
+      std::unique_ptr<OpIterator> plan);
+  absl::StatusOr<std::unique_ptr<OpIterator>> ProcessLimit(
       std::unique_ptr<OpIterator> plan);
 
   // Returns InvalidArgumentError if this reference is invalid.
