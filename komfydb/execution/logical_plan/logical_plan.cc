@@ -51,6 +51,12 @@ std::vector<std::string> GetSubplanRoots(
 
 namespace komfydb::execution::logical_plan {
 
+LogicalPlan::LogicalPlan(std::shared_ptr<Catalog> catalog,
+                         std::shared_ptr<BufferPool> buffer_pool)
+    : catalog(std::move(catalog)),
+      buffer_pool(std::move(buffer_pool)),
+      limit(-1) {}
+
 absl::Status LogicalPlan::CheckColumnRef(ColumnRef ref) {
   if (ref.IsStar())
     return absl::OkStatus();
@@ -150,6 +156,11 @@ absl::Status LogicalPlan::AddOrderBy(ColumnRef ref, OrderBy::Order asc) {
   RETURN_IF_ERROR(CheckColumnRef(ref));
   order_by_column = ref;
   order = asc;
+  return absl::OkStatus();
+}
+
+absl::Status LogicalPlan::AddLimit(limit_t limit) {
+  this->limit = limit;
   return absl::OkStatus();
 }
 
@@ -325,6 +336,11 @@ absl::StatusOr<std::unique_ptr<OpIterator>> LogicalPlan::ProcessOrderBy(
   return OrderBy::Create(std::move(plan), field, order);
 }
 
+absl::StatusOr<std::unique_ptr<OpIterator>> LogicalPlan::ProcessLimit(
+    std::unique_ptr<OpIterator> plan) {
+  return Limit::Create(std::move(plan), limit);
+}
+
 absl::StatusOr<std::unique_ptr<OpIterator>> LogicalPlan::GeneratePhysicalPlan(
     TransactionId tid, TableStatsMap& table_stats, bool explain) {
   equiv.clear();
@@ -348,6 +364,10 @@ absl::StatusOr<std::unique_ptr<OpIterator>> LogicalPlan::GeneratePhysicalPlan(
     ASSIGN_OR_RETURN(plan, ProcessAggregateNodes(std::move(plan)));
   } else {
     ASSIGN_OR_RETURN(plan, ProcessSelectNodes(std::move(plan)));
+  }
+
+  if (limit >= 0) {
+    ASSIGN_OR_RETURN(plan, ProcessLimit(std::move(plan)));
   }
 
   return plan;

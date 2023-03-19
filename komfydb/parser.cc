@@ -10,13 +10,14 @@
 #include "hsql/sql/Table.h"
 #include "hsql/util/sqlhelper.h"
 
-#include "common/column_ref.h"
-#include "common/string_field.h"
-#include "execution/fixed_iterator.h"
-#include "execution/insert.h"
-#include "execution/logical_plan/join_node.h"
-#include "execution/order_by.h"
-#include "utils/status_macros.h"
+#include "komfydb/common/column_ref.h"
+#include "komfydb/common/string_field.h"
+#include "komfydb/execution/fixed_iterator.h"
+#include "komfydb/execution/insert.h"
+#include "komfydb/execution/limit.h"
+#include "komfydb/execution/logical_plan/join_node.h"
+#include "komfydb/execution/order_by.h"
+#include "komfydb/utils/status_macros.h"
 
 namespace {
 
@@ -77,18 +78,6 @@ static const std::string unsuported_msg =
     "Only supported operators are e1 AND e2 and simple binary "
     "expressions like A op B, where A, B are constatns, table columns "
     "or B is a subquery.";
-
-absl::StatusOr<uint64_t> GetLimit(const hsql::SelectStatement* select) {
-  if (!select->limit) {
-    return 0;
-  }
-  hsql::Expr* limit = select->limit->limit;
-  if (!limit->isType(hsql::kExprLiteralInt)) {
-    return absl::InvalidArgumentError("Only literal int limit supported.");
-  }
-
-  return limit->ival;
-}
 
 absl::StatusOr<Tuple> GetTuple(std::vector<hsql::Expr*>* values,
                                TupleDesc* tuple_desc) {
@@ -385,6 +374,19 @@ absl::Status Parser::ParseOrderBy(LogicalPlan& lp,
   return absl::OkStatus();
 }
 
+absl::Status Parser::ParseLimit(LogicalPlan& lp,
+                                const hsql::LimitDescription* limit) {
+  if (!limit) {
+    return absl::OkStatus();
+  }
+  hsql::Expr* limit_expr = limit->limit;
+  if (!limit_expr->isType(hsql::kExprLiteralInt)) {
+    return absl::InvalidArgumentError("Only literal int limit supported.");
+  }
+
+  return lp.AddLimit(limit_expr->ival);
+}
+
 absl::StatusOr<LogicalPlan> Parser::GenerateLogicalPlan(
     const hsql::SelectStatement* stmt) {
   LogicalPlan logical_plan(catalog, buffer_pool);
@@ -399,18 +401,16 @@ absl::StatusOr<LogicalPlan> Parser::GenerateLogicalPlan(
   RETURN_IF_ERROR(ParseColumnSelection(logical_plan, stmt->selectList));
   LOG(INFO) << "Parsing order by";
   RETURN_IF_ERROR(ParseOrderBy(logical_plan, stmt->order));
+  LOG(INFO) << "Parsing limit";
+  RETURN_IF_ERROR(ParseLimit(logical_plan, stmt->limit));
 
   return std::move(logical_plan);
 }
 
 absl::StatusOr<std::unique_ptr<OpIterator>> Parser::ParseSelectStatement(
-    const hsql::SelectStatement* stmt, TransactionId tid, uint64_t* limit,
+    const hsql::SelectStatement* stmt, TransactionId tid,
     bool explain_optimizer) {
   ASSIGN_OR_RETURN(LogicalPlan logical_plan, GenerateLogicalPlan(stmt));
-
-  if (limit) {
-    ASSIGN_OR_RETURN(*limit, GetLimit(stmt));
-  }
 
   return logical_plan.GeneratePhysicalPlan(tid, table_stats_map,
                                            explain_optimizer);
@@ -424,9 +424,9 @@ absl::StatusOr<std::unique_ptr<OpIterator>> Parser::ParseInsertStatement(
 
   switch (stmt->type) {
     case hsql::InsertType::kInsertSelect: {
-      ASSIGN_OR_RETURN(subiterator, ParseSelectStatement(
-                                        stmt->select, tid, /*limit=*/nullptr,
-                                        /*explain_optimizer=*/false));
+      ASSIGN_OR_RETURN(subiterator,
+                       ParseSelectStatement(stmt->select, tid,
+                                            /*explain_optimizer=*/false));
       break;
     }
     case hsql::InsertType::kInsertValues: {
@@ -483,7 +483,7 @@ absl::StatusOr<Query> Parser::ParseCreateStatement(
 }
 
 absl::StatusOr<Query> Parser::ParseQuery(std::string_view query,
-                                         TransactionId tid, uint64_t* limit,
+                                         TransactionId tid,
                                          bool explain_optimizer) {
   LOG(INFO) << "Parsing query: " << query;
   hsql::SQLParserResult result;
@@ -503,7 +503,7 @@ absl::StatusOr<Query> Parser::ParseQuery(std::string_view query,
   switch (stmt->type()) {
     case hsql::StatementType::kStmtSelect: {
       return ParseSelectStatement(
-          static_cast<const hsql::SelectStatement*>(stmt), tid, limit,
+          static_cast<const hsql::SelectStatement*>(stmt), tid,
           explain_optimizer);
     }
     case hsql::StatementType::kStmtInsert: {

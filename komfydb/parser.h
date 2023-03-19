@@ -29,7 +29,7 @@ class Parser {
       const hsql::SelectStatement* stmt);
 
   absl::StatusOr<std::unique_ptr<OpIterator>> ParseSelectStatement(
-      const hsql::SelectStatement* stmt, TransactionId tid, uint64_t* limit,
+      const hsql::SelectStatement* stmt, TransactionId tid,
       bool explain_optimizer);
 
   absl::StatusOr<std::unique_ptr<OpIterator>> ParseInsertStatement(
@@ -52,13 +52,15 @@ class Parser {
   absl::Status ParseOrderBy(LogicalPlan& lp,
                             std::vector<hsql::OrderDescription*>* descr);
 
+  absl::Status ParseLimit(LogicalPlan& lp, const hsql::LimitDescription* limit);
+
  public:
   Parser(std::shared_ptr<Catalog> catalog,
          std::shared_ptr<BufferPool> buffer_pool,
          TableStatsMap& table_stats_map);
 
   absl::StatusOr<Query> ParseQuery(std::string_view query, TransactionId tid,
-                                   uint64_t* limit, bool explain_optimizer);
+                                   bool explain_optimizer);
 };
 
 };  // namespace komfydb

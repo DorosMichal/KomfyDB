@@ -171,11 +171,10 @@ void Executor::InitializePrettyPrinter(TupleDesc* iterator_tuple_desc) {
 }
 
 absl::Status Executor::PrettyExecute(std::unique_ptr<OpIterator> iterator,
-                                     uint64_t limit, std::ostream& os) {
+                                     std::ostream& os) {
   InitializePrettyPrinter(iterator->GetTupleDesc());
   PrintHeader(tuple_desc, column_width, os);
   int length = tuple_desc->Length();
-  uint64_t cnt = 0;
 
   std::string line_break = GetLineBreak(column_width, length);
   RETURN_IF_ERROR(iterator->Open());
@@ -183,9 +182,6 @@ absl::Status Executor::PrettyExecute(std::unique_ptr<OpIterator> iterator,
     auto tuple_lines = GetTupleLines((*record).get(), length, column_width);
     os << line_break << std::endl;
     PrintLines(tuple_lines, os);
-    if (limit && ++cnt >= limit) {
-      break;
-    }
   }
   os << line_break << std::endl;
   return absl::OkStatus();
