@@ -9,6 +9,9 @@ class SQLiteDatabase(Database):
         self.connection = sqlite3.connect(':memory:')
         self.cursor = self.connection.cursor()
 
+    def __repr__(self) -> str:
+        return "SQLiteDB"
+
     def load(self, db_file: Path):
         script = db_file.read_text()
         self.cursor.executescript(script)

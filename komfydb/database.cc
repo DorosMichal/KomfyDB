@@ -1,5 +1,9 @@
 #include "komfydb/database.h"
 
+#include <sys/types.h>
+#include <unistd.h>
+#include <signal.h>
+
 #include <readline/history.h>
 #include <readline/readline.h>
 
@@ -9,6 +13,7 @@
 
 #include "absl/status/statusor.h"
 #include "absl/strings/str_cat.h"
+#include "absl/container/flat_hash_map.h"
 #include "glog/logging.h"
 
 #include "komfydb/common/tuple_desc.h"
@@ -51,7 +56,32 @@ std::string ReadInputLine() {
   }
 }
 
+enum Command {
+  SYNC,
+};
+
+const absl::flat_hash_map<std::string_view, Command> str_to_cmd = {
+  {"SYNC;", Command::SYNC}
+};
+
+Command StrToCommand(std::string_view query_str){
+  assert(str_to_cmd.contains(query_str));
+  return str_to_cmd.find(query_str)->second;
+}
+
+bool IsDiagnosticCommand(std::string_view query_str){
+  return str_to_cmd.contains(query_str);
+}
+
+void ParseDiagnosticCommand(std::string_view diagnostic_cmd_str){
+  switch(StrToCommand(diagnostic_cmd_str)){
+    case Command::SYNC: {
+      kill(getppid(), SIGUSR1);
+    }
+  }
+}
 };  // namespace
+
 
 namespace komfydb {
 
@@ -183,17 +213,17 @@ void Database::Repl() {
   }
 }
 
+
 void Database::TestRepl() {
   execution::Executor executor;
   absl::Status status;
-  char* input;
+  std::string query_str;
 
-  while ((input = readline("")) != nullptr) {
-    if (!strlen(input)) {
+  while (std::getline(std::cin, query_str)) {
+    if(IsDiagnosticCommand(query_str)){
+      ParseDiagnosticCommand(query_str);
       continue;
     }
-    std::string query_str = input;
-    free(input);
 
     hsql::SQLParserResult result;
     hsql::SQLParser::parse(query_str, &result);
@@ -202,6 +232,7 @@ void Database::TestRepl() {
         parser->ParseQuery(query_str, TransactionId(), false);
     if (!query.ok()) {
       std::cout << "Parsing error: " << query.status().message() << std::endl;
+      kill(getppid(), SIGUSR2);
       continue;
     }
 
@@ -227,6 +258,8 @@ void Database::TestRepl() {
         break;
       }
     }
+    // parent script must recieve signal after query completes regardless of errors etc.
+    kill(getppid(), SIGUSR2);
   }
 }
 
