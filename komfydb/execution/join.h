@@ -19,15 +19,9 @@ namespace komfydb::execution {
 
 class Join : public OpIterator {
  public:
-  enum JoinType {
-    NESTED_LOOPS,
-    HASH,
-  };
-
   static absl::StatusOr<std::unique_ptr<Join>> Create(
       std::unique_ptr<OpIterator> l_child, JoinPredicate join_predicate,
-      std::unique_ptr<OpIterator> r_child,
-      JoinType type = JoinType::NESTED_LOOPS);
+      std::unique_ptr<OpIterator> r_child);
 
   JoinPredicate GetJoinPredicate();
 
@@ -43,18 +37,12 @@ class Join : public OpIterator {
 
   void Explain(std::ostream& os, int indent = 0) override;
 
- private:
+ protected:
   Join(std::unique_ptr<OpIterator> l_child, JoinPredicate join_predicate,
-       std::unique_ptr<OpIterator> r_child, TupleDesc tuple_desc,
-       JoinType type);
+       std::unique_ptr<OpIterator> r_child, TupleDesc tuple_desc);
 
   absl::Status FetchNext() override;
 
-  absl::Status FetchNextNestedLoops();
-
-  absl::Status FetchNextHash();
-
-  JoinType type;
   JoinPredicate join_predicate;
   std::unique_ptr<OpIterator> l_child;
   std::unique_ptr<OpIterator> r_child;

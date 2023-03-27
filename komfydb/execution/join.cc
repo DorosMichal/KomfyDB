@@ -21,11 +21,9 @@ using komfydb::storage::RecordId;
 namespace komfydb::execution {
 
 Join::Join(std::unique_ptr<OpIterator> l_child, JoinPredicate join_predicate,
-           std::unique_ptr<OpIterator> r_child, TupleDesc tuple_desc,
-           JoinType type)
+           std::unique_ptr<OpIterator> r_child, TupleDesc tuple_desc)
     : OpIterator(tuple_desc, JoinVectors(*l_child->GetFieldsTableAliases(),
                                          *r_child->GetFieldsTableAliases())),
-      type(type),
       join_predicate(join_predicate),
       l_child(std::move(l_child)),
       r_child(std::move(r_child)),
@@ -34,10 +32,10 @@ Join::Join(std::unique_ptr<OpIterator> l_child, JoinPredicate join_predicate,
 
 absl::StatusOr<std::unique_ptr<Join>> Join::Create(
     std::unique_ptr<OpIterator> l_child, JoinPredicate join_predicate,
-    std::unique_ptr<OpIterator> r_child, JoinType type) {
+    std::unique_ptr<OpIterator> r_child) {
   TupleDesc tuple_desc(*l_child->GetTupleDesc(), *r_child->GetTupleDesc());
   return std::unique_ptr<Join>(new Join(std::move(l_child), join_predicate,
-                                        std::move(r_child), tuple_desc, type));
+                                        std::move(r_child), tuple_desc));
 }
 
 JoinPredicate Join::GetJoinPredicate() {
@@ -76,17 +74,6 @@ absl::Status Join::Rewind() {
 }
 
 absl::Status Join::FetchNext() {
-  switch (type) {
-    case JoinType::NESTED_LOOPS: {
-      return FetchNextNestedLoops();
-    }
-    case JoinType::HASH: {
-      return FetchNextHash();
-    }
-  }
-}
-
-absl::Status Join::FetchNextNestedLoops() {
   if (next_record)
     return absl::OkStatus();
 
@@ -117,8 +104,6 @@ absl::Status Join::FetchNextNestedLoops() {
 
   return absl::OkStatus();
 }
-
-absl::Status FetchNextHash() {}
 
 void Join::Explain(std::ostream& os, int indent) {
   os << Indent(indent) << "-> Nested loops join: " << join_predicate << "\n";
