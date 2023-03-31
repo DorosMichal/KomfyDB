@@ -9,10 +9,14 @@
 #include "komfydb/storage/record_id.h"
 
 namespace {
+
 using komfydb::storage::RecordId;
-}
+
+};
 
 namespace komfydb::execution {
+
+using RecordVector = std::vector<std::unique_ptr<Record>>;
 
 class HashJoin : public Join {
  public:
@@ -30,11 +34,12 @@ class HashJoin : public Join {
   HashJoin(std::unique_ptr<OpIterator> l_child, JoinPredicate join_predicate,
            std::unique_ptr<OpIterator> r_child, TupleDesc tuple_desc);
 
-  absl::flat_hash_map<Tuple, std::vector<std::unique_ptr<Record>>> map;
-  std::vector<std::unique_ptr<Record>>* current_vector;
-  std::vector<std::unique_ptr<Record>>::iterator current_match;
+  absl::flat_hash_map<Tuple, RecordVector> map;
+  absl::flat_hash_map<Tuple, RecordVector>::iterator current_vector;
+  RecordVector::iterator current_match;
   std::unique_ptr<Record> r_child_next;
 
+  void EmitRecord();
   absl::Status FetchNext() override;
 };
 

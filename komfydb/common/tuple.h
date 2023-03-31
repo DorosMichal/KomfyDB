@@ -31,6 +31,8 @@ class Tuple {
 
   Tuple(Tuple& t1, Tuple&& t2);
 
+  Tuple(Tuple& t1, Tuple& t2);
+
   virtual ~Tuple() = default;
 
   Tuple& operator=(const Tuple& t);

@@ -49,12 +49,13 @@ absl::Status HashJoin::Open() {
     Tuple key = Tuple(1);
     ASSIGN_OR_RETURN(Field * key_field,
                      (*record)->GetField(join_predicate.GetField1idx()));
-    key.SetField(0, std::make_unique<Field>(*key_field));
+    RETURN_IF_ERROR(key.SetField(0, key_field->CreateCopy()));
     if (map.contains(key)) {
       map[key].push_back(std::move(*record));
     } else {
-      map.insert(
-          {key, std::vector<std::unique_ptr<Record>>({std::move(*record)})});
+      RecordVector value;
+      value.push_back(std::move(*record));
+      map.insert({key, std::move(value)});
     }
   }
   RETURN_IF_NOT_OOR(record.status());
@@ -65,7 +66,7 @@ absl::Status HashJoin::Rewind() {
   RETURN_IF_ERROR(l_child->Rewind());
   RETURN_IF_ERROR(r_child->Rewind());
   r_child_next = nullptr;
-  current_vector = nullptr;
+  current_vector = map.end();
   next_record = nullptr;
   return absl::OkStatus();
 }
@@ -77,34 +78,34 @@ void HashJoin::Explain(std::ostream& os, int indent) {
   r_child->Explain(os, indent + child_indent);
 }
 
+void HashJoin::EmitRecord() {
+  next_record = std::make_unique<Record>(
+      Record(Tuple(*(*current_match++), *r_child_next), joined_record_id));
+  if (current_match == current_vector->second.end()) {
+    current_vector = map.end();
+    r_child_next = nullptr;
+  }
+}
+
 absl::Status HashJoin::FetchNext() {
   if (r_child_next == nullptr) {
     ASSIGN_OR_RETURN(r_child_next, r_child->Next());
   }
-  if (current_vector) {
-    next_record = std::make_unique<Record>(
-        Record(Tuple(*(*current_match++), std::move(*r_child_next)),
-               joined_record_id));
-    if (current_match == current_vector->end()) {
-      current_vector = nullptr;
-    }
+  if (current_vector != map.end()) {
+    EmitRecord();
     return absl::OkStatus();
   }
   Tuple key = Tuple(1);
   ASSIGN_OR_RETURN(Field * key_field,
                    r_child_next->GetField(join_predicate.GetField2idx()));
-  key.SetField(0, std::make_unique<Field>(*key_field));
-  if (map.contains(key)) {
-    current_vector = &map.at(key);
-    current_match = current_vector->begin();
-    next_record = std::make_unique<Record>(
-        Record(Tuple(*(*current_match++), std::move(*r_child_next)),
-               joined_record_id));
-    if (current_match == current_vector->end()) {
-      current_vector = nullptr;
-    }
+  RETURN_IF_ERROR(key.SetField(0, key_field->CreateCopy()));
+  current_vector = map.find(key);
+  if (current_vector != map.end()) {
+    current_match = current_vector->second.begin();
+    EmitRecord();
     return absl::OkStatus();
   }
+  r_child_next = nullptr;
   return FetchNext();
 }
 

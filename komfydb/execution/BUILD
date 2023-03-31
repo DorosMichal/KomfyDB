@@ -38,6 +38,7 @@ cc_library(
     "predicate.h",
     "project.h",
     "seq_scan.h",
+    "hash_join.h",
   ],
   srcs = [
     "aggregate.cc",
@@ -54,6 +55,7 @@ cc_library(
     "predicate.cc",
     "project.cc",
     "seq_scan.cc",
+    "hash_join.cc",
   ],
   deps = [
     ":op",
