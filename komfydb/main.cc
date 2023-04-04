@@ -2,17 +2,18 @@
 #include <signal.h>
 #include <unistd.h>
 
-#include <hsql/sql/SelectStatement.h>
 #include <readline/history.h>
 #include <readline/readline.h>
 
 #include <csignal>
+#include <filesystem>
 #include <iostream>
 
-#include "execution/logical_plan/logical_plan.h"
-#include "execution/op_iterator.h"
+#include "gflags/gflags.h"
 #include "glog/logging.h"
+
 #include "hsql/SQLParser.h"
+#include "hsql/sql/SelectStatement.h"
 #include "hsql/util/sqlhelper.h"
 
 #include "komfydb/common/td_item.h"
@@ -26,11 +27,32 @@
 #include "komfydb/storage/heap_page.h"
 #include "komfydb/storage/table_iterator.h"
 #include "komfydb/utils/status_macros.h"
-#include "optimizer/table_stats.h"
-#include "transaction/transaction_id.h"
-#include "utils/status_macros.h"
 
 using namespace komfydb;
+
+static bool ValidateDirectoryFlag(const char* flagname,
+                                  const std::string& value) {
+  if (!std::filesystem::is_directory(value) && value != "") {
+    std::cout << "Invalid path for " << flagname << ": " << value << std::endl;
+    return false;
+  }
+  return true;
+}
+
+DEFINE_string(schema_dir, "./", "Path to the database schema.");
+DEFINE_validator(schema_dir, &ValidateDirectoryFlag);
+
+DEFINE_string(schema_file, "schema.txt",
+              "Schema file. This file should be a list of \'CREATE TABLE\' "
+              "commands. The tables are created/loaded from catalog_path (the "
+              "same as schema_path by default)");
+
+DEFINE_string(catalog_dir, "",
+              "Path to tables\' files (by default the same as schema_path).");
+DEFINE_validator(catalog_dir, &ValidateDirectoryFlag);
+
+DEFINE_bool(load_schema, true,
+            "Specifies if a schema file will be read or not.");
 
 void HandlerPrint(std::string str) {
   write(STDOUT_FILENO, str.c_str(), str.length());
@@ -47,15 +69,17 @@ int main(int argc, char* argv[]) {
   google::InitGoogleLogging(argv[0]);
   gflags::ParseCommandLineFlags(&argc, &argv, true);
 
-  LOG(INFO) << "Parser testing!";
+  if (FLAGS_catalog_dir == "") {
+    FLAGS_catalog_dir = FLAGS_schema_dir;
+  }
 
-  const std::string catalog_directory = "komfydb/testdata/";
+  std::filesystem::path catalog_path(FLAGS_catalog_dir);
+  std::filesystem::path schema_path(FLAGS_schema_dir);
+
   absl::Status status;
-
-  std::unique_ptr<Database> db = Database::Create(catalog_directory);
-  if (!(status =
-            db->LoadSchema(catalog_directory + "database_catalog_test.txt"))
-           .ok()) {
+  std::unique_ptr<Database> db = Database::Create(catalog_path);
+  if (FLAGS_load_schema &&
+      !(status = db->LoadSchema(schema_path / FLAGS_schema_file)).ok()) {
     std::cout << "Schema loading error: " << status.message();
     return 1;
   }

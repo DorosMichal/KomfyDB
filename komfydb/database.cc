@@ -59,14 +59,15 @@ Database::Database(std::shared_ptr<Catalog> catalog,
                    std::shared_ptr<BufferPool> buffer_pool,
                    std::shared_ptr<Parser> parser,
                    optimizer::TableStatsMap&& table_stats_map,
-                   std::string_view catalog_directory)
+                   std::filesystem::path catalog_directory)
     : catalog(catalog),
       buffer_pool(buffer_pool),
       parser(parser),
       table_stats_map(std::move(table_stats_map)),
       catalog_directory(catalog_directory) {}
 
-std::unique_ptr<Database> Database::Create(std::string_view catalog_directory) {
+std::unique_ptr<Database> Database::Create(
+    std::filesystem::path catalog_directory) {
   std::shared_ptr<Catalog> catalog = std::make_shared<Catalog>();
   std::shared_ptr<BufferPool> buffer_pool =
       std::make_shared<BufferPool>(catalog);
@@ -83,9 +84,9 @@ absl::Status Database::CreateTable(Query& query) {
     return absl::InvalidArgumentError(
         absl::StrCat("Table ", query.table_name, " already exists."));
   }
-  absl::StatusOr<std::unique_ptr<DbFile>> new_file = HeapFile::Create(
-      absl::StrCat(catalog_directory, query.table_name, ".dat"),
-      query.tuple_desc, Permissions::READ_WRITE);
+  absl::StatusOr<std::unique_ptr<DbFile>> new_file =
+      HeapFile::Create(catalog_directory / (query.table_name + ".dat"),
+                       query.tuple_desc, Permissions::READ_WRITE);
   if (!new_file.status().ok()) {
     return absl::InvalidArgumentError(
         absl::StrCat("Cannot create table: ", new_file.status().message()));
@@ -95,14 +96,14 @@ absl::Status Database::CreateTable(Query& query) {
   return absl::OkStatus();
 }
 
-absl::Status Database::LoadSchema(std::string_view schema_path) {
+absl::Status Database::LoadSchema(std::filesystem::path schema_path) {
   LOG(INFO) << "Loading schema " << schema_path;
   std::fstream schema_file;
-  schema_file.open((std::string)schema_path, std::ios::in);
+  schema_file.open(schema_path, std::ios::in);
 
   if (!schema_file.good()) {
     return absl::InvalidArgumentError(
-        absl::StrCat("Cannot open catalog file: ", schema_path));
+        absl::StrCat("Cannot open schema file: ", schema_path.string()));
   }
 
   std::string command;
