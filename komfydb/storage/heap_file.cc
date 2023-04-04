@@ -1,6 +1,7 @@
 #include "komfydb/storage/heap_file.h"
 
 #include <errno.h>
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <memory>
@@ -30,7 +31,7 @@ HeapFile::~HeapFile() {
 }
 
 absl::StatusOr<std::unique_ptr<HeapFile>> HeapFile::Create(
-    const absl::string_view file_path, TupleDesc tuple_desc,
+    const std::filesystem::path file_path, TupleDesc tuple_desc,
     Permissions permissions) {
   std::ios_base::openmode mode = std::ios::binary | std::ios::in;
   if (permissions == Permissions::READ_WRITE) {
@@ -38,10 +39,10 @@ absl::StatusOr<std::unique_ptr<HeapFile>> HeapFile::Create(
   }
 
   std::fstream file;
-  file.open(std::string(file_path), mode);
+  file.open(file_path, mode);
   if (!file.good()) {
     return absl::InvalidArgumentError(absl::StrCat(
-        "Could not open db file: ", file_path, ": ", strerror(errno)));
+        "Could not open db file: ", file_path.string(), ": ", strerror(errno)));
   }
 
   file.seekg(0, file.end);

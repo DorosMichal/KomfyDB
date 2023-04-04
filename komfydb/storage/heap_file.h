@@ -1,6 +1,7 @@
 #ifndef __HEAP_FILE_H__
 #define __HEAP_FILE_H__
 
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <list>
@@ -46,7 +47,7 @@ class HeapFile : public DbFile {
   ~HeapFile();
 
   static absl::StatusOr<std::unique_ptr<HeapFile>> Create(
-      const absl::string_view file_name, TupleDesc tuple_desc,
+      const std::filesystem::path file_path, TupleDesc tuple_desc,
       Permissions permissions);
 
   std::fstream* GetFile();
