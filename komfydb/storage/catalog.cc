@@ -88,6 +88,14 @@ std::vector<int> Catalog::GetTableIds() {
   return result;
 }
 
+std::vector<std::string> Catalog::GetTableNames() const {
+  std::vector<std::string> result;
+  for (auto& it : table_names) {
+    result.push_back(it.second);
+  }
+  return result;
+}
+
 void clear();
 
 };  // namespace komfydb::storage

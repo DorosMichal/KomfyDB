@@ -152,6 +152,32 @@ void Database::Repl() {
         }
         break;
       }
+      case Query::SHOW_TABLES: {
+        status = executor.PrettyShowTables(catalog->GetTableNames());
+        if (!status.ok()) {
+          std::cout << "Executor error: " << status.message() << std::endl;
+        }
+        break;
+      }
+      case Query::SHOW_COLUMNS: {
+        absl::StatusOr<int> table_id = catalog->GetTableId(query->table_name);
+        if (!table_id.ok()) {
+          std::cout << "No table with name " << query->table_name << std::endl;
+          break;
+        }
+        absl::StatusOr<TupleDesc*> tuple_desc =
+            catalog->GetTupleDesc(*table_id);
+        if (!tuple_desc.ok()) {
+          std::cout << "Catalog error: " << tuple_desc.status().message()
+                    << std::endl;
+          break;
+        }
+        status = executor.PrettyShowColumns(query->table_name, *tuple_desc);
+        if (!status.ok()) {
+          std::cout << "Executor error: " << status.message() << std::endl;
+        }
+        break;
+      }
     }
   }
 }
@@ -191,6 +217,12 @@ void Database::TestRepl() {
         if (!status.ok()) {
           std::cout << "Create table error: " << status.message() << std::endl;
         }
+        break;
+      }
+      default: {
+        std::cout << "Only SELECT, INSERT, DELETE and CREATE TABLE supported "
+                     "in test repl."
+                  << std::endl;
         break;
       }
     }
