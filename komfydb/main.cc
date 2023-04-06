@@ -1,7 +1,12 @@
+#include <setjmp.h>
+#include <signal.h>
+#include <unistd.h>
+
 #include <hsql/sql/SelectStatement.h>
 #include <readline/history.h>
 #include <readline/readline.h>
 
+#include <csignal>
 #include <iostream>
 
 #include "execution/logical_plan/logical_plan.h"
@@ -27,6 +32,17 @@
 
 using namespace komfydb;
 
+void HandlerPrint(std::string str) {
+  write(STDOUT_FILENO, str.c_str(), str.length());
+}
+
+sigjmp_buf env;
+void SigintHandler(int signum) {
+  HandlerPrint(
+      "Sigint received, terminating... (CTRL+C for immediate termination)\n");
+  siglongjmp(env, 1);
+}
+
 int main(int argc, char* argv[]) {
   google::InitGoogleLogging(argv[0]);
   gflags::ParseCommandLineFlags(&argc, &argv, true);
@@ -42,6 +58,18 @@ int main(int argc, char* argv[]) {
            .ok()) {
     std::cout << "Schema loading error: " << status.message();
     return 1;
+  }
+
+  struct sigaction action = {};
+  action.sa_handler = &SigintHandler;
+  // So the signal disposition is restored back to default after the first
+  // handling of SIGINT.
+  action.sa_flags = SA_RESETHAND;
+  sigaction(SIGINT, &action, NULL);
+
+  int result = sigsetjmp(env, 0);
+  if (result) {
+    return 0;
   }
 
   db->Repl();
