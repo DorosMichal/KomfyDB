@@ -37,6 +37,8 @@ class Parser {
 
   absl::StatusOr<Query> ParseCreateStatement(const hsql::CreateStatement* stmt);
 
+  absl::StatusOr<Query> ParseShowStatement(const hsql::ShowStatement* stmt);
+
   absl::Status ParseFromClause(LogicalPlan& lp, const hsql::TableRef* from);
 
   absl::Status ParseSimpleExpression(LogicalPlan& lp, hsql::Expr* lexpr, Op op,

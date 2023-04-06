@@ -13,6 +13,12 @@ class Executor {
   absl::Status PrettyExecute(std::unique_ptr<OpIterator> iterator,
                              std::ostream& os = std::cout);
 
+  absl::Status PrettyShowTables(std::vector<std::string> tables,
+                                std::ostream& os = std::cout);
+
+  absl::Status PrettyShowColumns(std::string_view table, TupleDesc* tuple_desc,
+                                 std::ostream& os = std::cout);
+
   absl::Status PythonExecute(std::unique_ptr<OpIterator> iterator,
                              std::ostream& os = std::cout);
 

@@ -48,6 +48,8 @@ class Catalog {
 
   std::vector<int> GetTableIds();
 
+  std::vector<std::string> GetTableNames() const;
+
   void clear();
 };
 

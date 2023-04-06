@@ -1,4 +1,5 @@
 #include "komfydb/parser.h"
+#include <hsql/sql/ShowStatement.h>
 
 #include <vector>
 
@@ -482,6 +483,18 @@ absl::StatusOr<Query> Parser::ParseCreateStatement(
   return Query(table_name, tuple_desc, primary_key);
 }
 
+absl::StatusOr<Query> Parser::ParseShowStatement(
+    const hsql::ShowStatement* stmt) {
+  switch (stmt->type) {
+    case hsql::ShowType::kShowTables: {
+      return Query();
+    }
+    case hsql::ShowType::kShowColumns: {
+      return Query(stmt->name);
+    }
+  }
+}
+
 absl::StatusOr<Query> Parser::ParseQuery(std::string_view query,
                                          TransactionId tid,
                                          bool explain_optimizer) {
@@ -513,6 +526,9 @@ absl::StatusOr<Query> Parser::ParseQuery(std::string_view query,
     case hsql::StatementType::kStmtCreate: {
       return ParseCreateStatement(
           static_cast<const hsql::CreateStatement*>(stmt));
+    }
+    case hsql::StatementType::kStmtShow: {
+      return ParseShowStatement(static_cast<const hsql::ShowStatement*>(stmt));
     }
     default: {
       return absl::UnimplementedError(

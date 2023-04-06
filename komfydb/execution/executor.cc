@@ -21,11 +21,11 @@ void PrintLines(std::vector<std::string>& lines, std::ostream& os) {
 // WrapWord("abcabca", 3) -> { "abc", "abc", "a" }
 std::vector<std::string> WrapWord(std::string word, int length) {
   std::vector<std::string> result;
-  int parts = word.length() / length;
-  for (int i = 0; i < parts; i++) {
+  int parts = (word.length() + length - 1) / length;
+  for (int i = 0; i < parts - 1; i++) {
     result.push_back(word.substr(i * length, length));
   }
-  result.push_back(word.substr(parts * length));
+  result.push_back(word.substr((parts - 1) * length));
   return result;
 }
 
@@ -50,7 +50,7 @@ std::vector<std::vector<std::string>> WrapColumns(
   return result;
 }
 
-std::string ExtendToColumnWidth(std::string& content, int column_width) {
+std::string ExtendToColumnWidth(const std::string& content, int column_width) {
   int sz = column_width - content.size();
   return content + std::string(sz, ' ');
 }
@@ -168,6 +168,45 @@ void Executor::InitializePrettyPrinter(TupleDesc* iterator_tuple_desc) {
   // | ... | ... |
   //  <---> <--->
   column_width = (terminal_width - 1) / tuple_desc->Length() - 1;
+}
+
+absl::Status Executor::PrettyShowTables(std::vector<std::string> tables,
+                                        std::ostream& os) {
+  // Yess, very C++ much
+  const std::string header = "Tables";
+  int length =
+      std::max_element(tables.begin(), tables.end(),
+                       [&](const std::string& s1, const std::string& s2) {
+                         return s1.size() < s2.size();
+                       })
+          ->size();
+  column_width = std::max({length, (int)header.size()}) + 2;
+
+  std::string line_break = GetLineBreak(column_width, 1);
+
+  // column_width is such that every name should fit into one line, so GetLines
+  // returns only a single line.
+  os << line_break << std::endl
+     << GetLines({header}, column_width).back() << std::endl
+     << line_break << std::endl;
+  for (auto& table : tables) {
+    os << GetLines({table}, column_width).back() << std::endl;
+  }
+  os << line_break << std::endl;
+
+  return absl::OkStatus();
+}
+
+absl::Status Executor::PrettyShowColumns(std::string_view table,
+                                         TupleDesc* tuple_desc,
+                                         std::ostream& os) {
+  std::string tuple_desc_str(*tuple_desc);
+  int column_width = tuple_desc_str.length() + 2;
+  std::string line_break = GetLineBreak(column_width, 1);
+  os << line_break << std::endl
+     << GetLines({tuple_desc_str}, column_width).back() << std::endl
+     << line_break << std::endl;
+  return absl::OkStatus();
 }
 
 absl::Status Executor::PrettyExecute(std::unique_ptr<OpIterator> iterator,

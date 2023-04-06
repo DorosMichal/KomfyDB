@@ -10,7 +10,12 @@ namespace komfydb::execution {
 
 class Query {
  public:
-  enum Type { ITERATOR, CREATE_TABLE };
+  enum Type {
+    ITERATOR,
+    CREATE_TABLE,
+    SHOW_TABLES,
+    SHOW_COLUMNS,
+  };
 
   std::unique_ptr<execution::OpIterator> iterator;
   std::string table_name;
@@ -21,9 +26,11 @@ class Query {
   Query(std::unique_ptr<execution::OpIterator> iterator);
 
   Query(std::string_view table_name, TupleDesc tuple_desc,
-        std::string primary_key);
+        std::string_view primary_key);
 
-  Query(std::string_view table_name, TupleDesc tuple_desc);
+  Query();
+
+  Query(std::string_view table_name);
 };
 
 };  // namespace komfydb::execution
