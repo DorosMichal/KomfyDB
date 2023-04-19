@@ -35,9 +35,13 @@ absl::StatusOr<std::unique_ptr<HeapFile>> HeapFile::Create(
     Permissions permissions) {
   std::ios_base::openmode mode = std::ios::binary | std::ios::in;
   if (permissions == Permissions::READ_WRITE) {
-    mode |= std::ios::out | std::ios::app;
+    mode |= std::ios::out;
   }
 
+  // This is a hack to open the file in append mode to create it if it didn't
+  // exist. Opening with std::ios::app prevents to read or write to the already
+  // existing part of the file.
+  (void)std::ofstream(file_path, std::ios::app | std::ios::binary);
   std::fstream file;
   file.open(file_path, mode);
   if (!file.good()) {
@@ -110,7 +114,7 @@ absl::Status HeapFile::WritePage(Page* page) {
   }
 
   ASSIGN_OR_RETURN(std::vector<uint8_t> data, page->GetPageData());
-  file.seekg(page_pos);
+  file.seekp(page_pos, std::ios_base::beg);
   file.write((char*)data.data(), CONFIG_PAGE_SIZE);
   return absl::OkStatus();
 }
