@@ -13,8 +13,10 @@ BufferPool::BufferPool(std::shared_ptr<Catalog> catalog, int pages_cnt)
     : pages_cnt(pages_cnt), catalog(std::move(catalog)) {}
 
 BufferPool::~BufferPool() {
+  LOG(INFO) << "Flushing all pages...";
   static_cast<void>(
       FlushPages(transaction::TransactionId(transaction::NO_TID)));
+  LOG(INFO) << "All pages flushed.";
 }
 
 absl::StatusOr<Page*> BufferPool::GetPage(TransactionId tid, PageId pid,
