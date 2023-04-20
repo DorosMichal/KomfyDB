@@ -100,6 +100,7 @@ cc_binary(
     ":database",
     "@com_github_google_glog//:glog",
   ],
+  visibility = ["//visibility:public"],
 )
 
 cc_binary(
