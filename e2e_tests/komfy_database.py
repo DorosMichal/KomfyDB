@@ -20,7 +20,7 @@ class KomfyDatabase():
     def __init__(self):
         signal(LOADING_DONE, SIG_IGN)
         pthread_sigmask(SIG_BLOCK, {LOADING_DONE})
-        self.db_process = Popen(["bazel", "run", "//komfydb:e2e_tests"], stdin=PIPE, stdout=PIPE, text=True)
+        self.db_process = Popen(["./komfydb/e2e_tests"], stdin=PIPE, stdout=PIPE, text=True)
         self.db_process.stdin.reconfigure(line_buffering=True)
         fd = self.db_process.stdout.fileno()
         fl = fcntl.fcntl(fd, fcntl.F_GETFL)
@@ -85,6 +85,3 @@ class KomfyDatabase():
         except SyntaxError:
             error(f"invalid response from komfydb: {full_response}")
 
-        
-db = KomfyDatabase()
-# db.load(Path("database.sql"))

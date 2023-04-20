@@ -15,6 +15,7 @@ class TestRunner:
         self.db2.load(db_file)
 
     def run_test(self, query):
+        info(f"Running test for query: {query}")
         result1, time1 = self.db1.execute(query)
         result2, time2 = self.db2.execute(query)
 
@@ -24,6 +25,7 @@ class TestRunner:
             error(f"different results on query {query}")
             if self.verbose:
                 error(f"{result1 = }\n{result2 = }")
+            assert(False)
 
     def run_tests(self, queries: List[str]):
         info(f"1. {self.db1}, 2. {self.db2}")
