@@ -1,42 +1,90 @@
 #include "komfydb/optimizer/int_histogram.h"
+#include "komfydb/storage/record.h"
+#include "komfydb/common/field.h"
+#include "komfydb/common/int_field.h"
+
+namespace {
+  using komfydb::storage::Record;
+  using komfydb::common::Field;
+
+}; // namespace
 
 namespace komfydb::optimizer {
 
-IntHistogram::IntHistogram(int number_of_buckets)
-    : number_of_buckets(number_of_buckets), min(min), max(max) {
-  bucket_size = (max - min + number_of_buckets - 1) / number_of_buckets;
-  buckets.reserve(number_of_buckets);
-  for (int i = 0; i < number_of_buckets; i++) {
-    buckets.push_back(0);
+IntHistogram::IntHistogram(std::vector<std::unique_ptr<Record>> &records, int field_index){
+  std::sort(records.begin(), records.end(),
+            [field_index](const std::unique_ptr<Record>& a,
+                   const std::unique_ptr<Record>& b) {
+              absl::StatusOr<Field*> fa = a->GetField(field_index);
+              absl::StatusOr<Field*> fb = b->GetField(field_index);
+              assert(fa.ok());
+              assert(fb.ok());
+              Op::Value comp = Op::Value::LESS_THAN;
+              absl::StatusOr<bool> result = (*fa)->Compare(Op(comp), *fb);
+              assert(result.ok());
+              return *result;
+            });
+
+  // bins should be roughly the same size
+  number_of_values = records.size();
+  int jump = number_of_values / N_BINS;
+  for(int i = 0, j = 0; i < N_BINS; i++, j += jump){
+    IntField *field = *records[j]->GetField(field_index);
+    ranges[i] = field->GetValue();
+    bins[i] = jump;
   }
-  number_of_values = 0;
-  min_outliers = 0;
-  max_outliers = 0;
+
+  // set max as closing range
+  IntField *field = *records[number_of_values-1]->GetField(field_index);
+  ranges[N_BINS] = field->GetValue();
+  // add remaining elements
+  bins[N_BINS - 1] += number_of_values % N_BINS;
+
+}
+
+inline int IntHistogram::GetMin(){
+  return ranges[0];
+}
+
+inline int IntHistogram::GetMax(){
+  return ranges[N_BINS];
+}
+
+int IntHistogram::GetBin(int v){
+  // we need min <= v < max
+  return std::upper_bound(std::begin(ranges) + 1, std::end(ranges), v) - ranges - 1;
 }
 
 void IntHistogram::AddValue(int v) {
-  number_of_values++;
-  if (v < min) {
-    min_outliers++;
-  } else if (max < v) {
-    max_outliers++;
+  if (v <= GetMin()){
+    ranges[0] = v;
+    bins[0]++;
+  } else if(GetMax() <= v){
+    ranges[N_BINS] = v;
+    bins[N_BINS - 1]++;
   } else {
-    int idx = (v - min) / bucket_size;
-    buckets[idx]++;
+    int bin = std::upper_bound(ranges, ranges + N_BINS, v) - ranges - 1;
+    bins[bin]++;
   }
-  return;
+  number_of_values++;
 }
 
 double IntHistogram::EstimateSelectivity(execution::Op op, int v) {
-  int number_of_smaller = min_outliers;
-  if (min <= v && v <= max) {
-    int idx = (v - min) / bucket_size;
-    for (int i = 0; i < idx; i++) {
-      number_of_smaller += buckets[i];
+  assert(number_of_values > 0);
+  
+  int number_of_smaller = 0;
+  if (v < GetMin()){
+    number_of_smaller = 0;
+  } else if (GetMax() <= v) {
+    number_of_smaller = number_of_values;
+  } else {
+    int bin = GetBin(v);
+    for(int i = 0; i < bin; i++){
+      number_of_smaller += counter[i];
     }
-    number_of_smaller +=
-        (buckets[idx] * (v - min - idx * bucket_size)) / bucket_size;
+    number_of_smaller += (v - ranges[bin]) * counter[bin] / (ranges[bin + 1] - ranges[bin]);
   }
+
   switch (op.value) {
     case execution::Op::GREATER_THAN:
     case execution::Op::GREATER_THAN_OR_EQ:
@@ -50,17 +98,20 @@ double IntHistogram::EstimateSelectivity(execution::Op op, int v) {
       return 0.95;
     case execution::Op::LIKE:
       // should never happen
+      assert(false);
   }
 }
 
-double IntHistogram::AverageSelecitivty() {
+double IntHistogram::AverageSelectivity() {
   // TODO
+  // what for, whats the semantics?
   return 1.0;
 }
 
 void IntHistogram::Dump() {
-  // TODO
-  return;
+  for(int i = 0; i < N_BINS; i++){
+    std::cout << '[' << ranges[i] << ',' << ranges[i+1] << ") \t->\t" << bins[i] << '\n';
+  }
 }
 
 };  // namespace komfydb::optimizer

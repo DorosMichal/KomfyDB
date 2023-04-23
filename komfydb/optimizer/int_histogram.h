@@ -6,9 +6,11 @@
 
 namespace komfydb::optimizer {
 
-class IntHistogram : Public Histogram {
+const int N_BINS = 20;
+
+class IntHistogram : ublic Histogram {
  public:
-  IntHistogram(int number_of_buckets, int min, int max);
+  IntHistogram(std::vector<std::unique_ptr<Record>> &records, int field_index);
 
   void AddValue(int v);
 
@@ -19,14 +21,15 @@ class IntHistogram : Public Histogram {
   void Dump();
 
  private:
-  int number_of_buckets;
-  int min;
-  int max;
-  int bucket_size;
-  std::vector<int> buckets;
   int number_of_values;
-  int min_outliers;
-  int max_outliers;
+  int ranges[N_BINS + 1];
+  int bins[N_BINS];
+
+  int GetMin();
+
+  int GetMax();
+
+
 };
 
 };  // namespace komfydb::optimizer

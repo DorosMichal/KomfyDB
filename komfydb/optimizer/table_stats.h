@@ -32,7 +32,7 @@ class TableStats {
 
  private:
   TableStats(int table_id, int io_cost_per_page);
-  str::vector<*Histogram> histograms;
+  std::vector<std::unique_ptr<Histogram>> histograms;
 
 };
 

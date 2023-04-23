@@ -6,12 +6,16 @@
 
 namespace komfydb::optimizer {
 
+// bin for every printable ASCII character
+const int N_BINS = 94;
+const int FIRST_PRINTABLE = 33;
+
 class StringHistogram : public Histogram {
  public:
   static const std::string MAX_VAL;
   static const std::string MIN_VAL;
 
-  StringHistogram(int buckets, std::string min, std::string max);
+  StringHistogram(std::vector<std::unique_ptr<Record>> &records, int field_index);
 
   void AddValue(std::string v);
 
@@ -20,6 +24,11 @@ class StringHistogram : public Histogram {
   double AverageSelecitivty();
 
   void Dump();
+
+ private:
+  int number_of_values;
+  int bins[94];
+  int empty_count;
 };
 
 };  // namespace komfydb::optimizer

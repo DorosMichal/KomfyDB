@@ -3,6 +3,10 @@
 #include "absl/status/statusor.h"
 #include "komfydb/utils/status_macros.h"
 
+#include "komfydb/optimizer/int_histogram.h"
+#include "komfydb/optimizer/string_histogram.h"
+
+
 
 namespace {
   using komfydb::storage::TableIterator;
@@ -28,26 +32,15 @@ absl::StatusOr<TableStats> TableStats::Create(int table_id,
   }
   ASSIGN_OR_RETURN(TupleDesc tuple_desc, catalog->GetTupleDesc(table_id));
   for(int i = 0; i < tuple_desc->Length(); i++){
-    std::sort(records.begin(), records.end(),
-            [this](const std::unique_ptr<Record>& a,
-                   const std::unique_ptr<Record>& b) {
-              absl::StatusOr<Field*> fa = a->GetField(i);
-              absl::StatusOr<Field*> fb = b->GetField(i);
-              assert(fa.ok());
-              assert(fb.ok());
-              Op::Value comp = Op::Value::LESS_THAN;
-              absl::StatusOr<bool> result = (*fa)->Compare(Op(comp), *fb);
-              assert(result.ok());
-              return *result;
-            });
-
     ASSIGN_OR_RETURN(Type field_type, tuple_desc->GetFieldType(i));
-    if(field_type.GetValue == Type::Value::INT){
-      
+    if(field_type.GetValue() == Type::Value::INT){
+      histograms.push_back(std::make_unique<IntHistogram>(records, i));
     } else {
-
+      histograms.push_back(std::make_unique<StringHistogram>(records, i));
     }
   }
+
+
     // calculate histograms for 
 
   return absl::UnimplementedError("TODO");
