@@ -23,12 +23,10 @@ absl::StatusOr<std::unique_ptr<Join>> JoinOptimizer::InstatiateJoin(
 
   // I think this MAY return an error, as this is the only place where we can
   // check if the right subquery the same type as the left child.
-  ASSIGN_OR_RETURN(int l_field, l_child->GetTupleDesc()->IndexForFieldName(
-                                    join_node.lref.column));
+  ASSIGN_OR_RETURN(int l_field, l_child->GetIndexForColumnRef(join_node.lref));
   int r_field = 0;
   if (join_node.type == JoinNode::COL_COL) {
-    ASSIGN_OR_RETURN(r_field, r_child->GetTupleDesc()->IndexForFieldName(
-                                  join_node.rref.column));
+    ASSIGN_OR_RETURN(r_field, r_child->GetIndexForColumnRef(join_node.rref));
   }
 
   ASSIGN_OR_RETURN(common::Type l_type,
