@@ -1,4 +1,5 @@
 from pathlib import Path
+from time import sleep
 from signal import (
     SIG_IGN,
     SIGUSR1 as LOADING_DONE,
@@ -9,8 +10,9 @@ from signal import (
     SIG_BLOCK,
 )
 from subprocess import Popen, PIPE
+import time
 from typing import List, Optional, Union
-from e2e_tests.database import Database, DatabaseRow
+from database import Database, DatabaseRow
 from utils import timeit
 import fcntl
 import os
@@ -31,10 +33,13 @@ signal(QUERY_DONE, query_done_handler)
 
 class KomfyDatabase(Database):
     def __init__(self):
-        signal(LOADING_DONE, SIG_IGN)
+        """signal(LOADING_DONE, SIG_IGN)"""
         pthread_sigmask(SIG_BLOCK, {LOADING_DONE})
         self.db_process = Popen(
-            ["./komfydb/e2e_tests"], stdin=PIPE, stdout=PIPE, text=True
+            ["./komfydb/e2e_tests", "--logtostderr=1"],
+            stdin=PIPE,
+            stdout=PIPE,
+            text=True,
         )
         self.db_process.stdin.reconfigure(line_buffering=True)
         fd = self.db_process.stdout.fileno()
@@ -45,7 +50,7 @@ class KomfyDatabase(Database):
         return "KomfyDB"
 
     def readline(self) -> str:
-        return self.db_process.stdout.readline()
+        return self.db_process.stdout.read(4096)
 
     def write(self, data: str) -> int:
         return self.db_process.stdin.write(data)
@@ -89,7 +94,12 @@ class KomfyDatabase(Database):
         QUERY_DONE_FLAG = False
         self.write(query)
         responses = []
-        while (response := self.readline()) or not QUERY_DONE_FLAG:
+        response = None
+        while (
+            (response := self.readline())
+            or not QUERY_DONE_FLAG
+            or (response := self.readline())
+        ):
             if response:
                 responses.append(response)
 
@@ -103,5 +113,8 @@ class KomfyDatabase(Database):
             return python_obj_response
 
         except SyntaxError:
-            error(f"invalid response from komfydb: {full_response}")
+            error(
+                f"invalid response from komfydb, {QUERY_DONE_FLAG = }, \
+                    {responses = }"
+            )
             raise
