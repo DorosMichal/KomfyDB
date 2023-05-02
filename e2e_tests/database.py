@@ -1,5 +1,8 @@
 from abc import ABC, abstractmethod
 from pathlib import Path
+from typing import List, NewType, Optional, Tuple, Union
+
+DatabaseRow = NewType("DatabaseRow", Tuple[Union[int, str]])
 
 
 class Database(ABC):
@@ -9,8 +12,6 @@ class Database(ABC):
         ...
 
     @abstractmethod
-    def execute(self, query: str):
+    def execute(self, query: str) -> Optional[List[DatabaseRow]]:
         """execute a single query and return results"""
         ...
-
-
