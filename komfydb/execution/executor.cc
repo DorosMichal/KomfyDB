@@ -5,6 +5,8 @@
 #include <algorithm>
 #include <vector>
 
+#include "glog/logging.h"
+
 #include "komfydb/common/td_item.h"
 #include "komfydb/common/tuple_desc.h"
 

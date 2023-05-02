@@ -1,19 +1,21 @@
 #include "komfydb/database.h"
 
+#include <signal.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include <signal.h>
 
 #include <readline/history.h>
 #include <readline/readline.h>
 
+#include <cstdio>
 #include <filesystem>
 #include <fstream>
+#include <iostream>
 #include <string>
 
+#include "absl/container/flat_hash_map.h"
 #include "absl/status/statusor.h"
 #include "absl/strings/str_cat.h"
-#include "absl/container/flat_hash_map.h"
 #include "glog/logging.h"
 
 #include "komfydb/common/tuple_desc.h"
@@ -61,27 +63,25 @@ enum Command {
 };
 
 const absl::flat_hash_map<std::string_view, Command> str_to_cmd = {
-  {"SYNC;", Command::SYNC}
-};
+    {"SYNC;", Command::SYNC}};
 
-Command StrToCommand(std::string_view query_str){
+Command StrToCommand(std::string_view query_str) {
   assert(str_to_cmd.contains(query_str));
   return str_to_cmd.find(query_str)->second;
 }
 
-bool IsDiagnosticCommand(std::string_view query_str){
+bool IsDiagnosticCommand(std::string_view query_str) {
   return str_to_cmd.contains(query_str);
 }
 
-void ParseDiagnosticCommand(std::string_view diagnostic_cmd_str){
-  switch(StrToCommand(diagnostic_cmd_str)){
+void ParseDiagnosticCommand(std::string_view diagnostic_cmd_str) {
+  switch (StrToCommand(diagnostic_cmd_str)) {
     case Command::SYNC: {
       kill(getppid(), SIGUSR1);
     }
   }
 }
 };  // namespace
-
 
 namespace komfydb {
 
@@ -213,25 +213,25 @@ void Database::Repl() {
   }
 }
 
-
 void Database::TestRepl() {
   execution::Executor executor;
   absl::Status status;
   std::string query_str;
 
   while (std::getline(std::cin, query_str)) {
-    if(IsDiagnosticCommand(query_str)){
+    LOG(INFO) << "In repl: " << query_str;
+
+    if (IsDiagnosticCommand(query_str)) {
       ParseDiagnosticCommand(query_str);
       continue;
     }
-
     hsql::SQLParserResult result;
     hsql::SQLParser::parse(query_str, &result);
 
     absl::StatusOr<Query> query =
         parser->ParseQuery(query_str, TransactionId(), false);
     if (!query.ok()) {
-      std::cout << "Parsing error: " << query.status().message() << std::endl;
+      LOG(ERROR) << "Parsing error: " << query.status().message();
       kill(getppid(), SIGUSR2);
       continue;
     }
@@ -240,25 +240,25 @@ void Database::TestRepl() {
       case Query::ITERATOR: {
         status = executor.PythonExecute(std::move(query->iterator));
         if (!status.ok()) {
-          std::cout << "Executor error: " << status.message() << std::endl;
+          LOG(ERROR) << "Executor error: " << status.message();
         }
         break;
       }
       case Query::CREATE_TABLE: {
         status = CreateTable(*query);
         if (!status.ok()) {
-          std::cout << "Create table error: " << status.message() << std::endl;
+          LOG(ERROR) << "Create table error: " << status.message();
         }
         break;
       }
       default: {
-        std::cout << "Only SELECT, INSERT, DELETE and CREATE TABLE supported "
-                     "in test repl."
-                  << std::endl;
+        LOG(ERROR) << "Only SELECT, INSERT, DELETE and CREATE TABLE supported "
+                      "in test repl.";
         break;
       }
     }
     // parent script must recieve signal after query completes regardless of errors etc.
+    std::cout << std::flush;
     kill(getppid(), SIGUSR2);
   }
 }
