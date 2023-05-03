@@ -1,10 +1,9 @@
 build --client_env=CC=clang-13 --cxxopt='-std=c++17' --cxxopt='-march=native' --cxxopt='-O2'
 
-build:asan --client_env=CC=g++
+build:asan --client_env=CC=cc
 build:asan --strip=never
-build:asan --copt -fsanitize=address
-build:asan --copt -fsanitize=undefined
 build:asan --copt -g
+build:asan --copt -Og
 build:asan --linkopt -fsanitize=address
 build:asan --linkopt -fsanitize=undefined
 
