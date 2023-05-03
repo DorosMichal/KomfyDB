@@ -25,6 +25,10 @@ struct ColumnRef {
   friend std::ostream& operator<<(std::ostream& os, const ColumnRef& ref) {
     return os << static_cast<std::string>(ref);
   }
+
+  bool operator==(const ColumnRef& ref) const {
+    return table == ref.table && column == ref.column;
+  }
 };
 
 const ColumnRef COLUMN_REF_STAR("null", "*");
