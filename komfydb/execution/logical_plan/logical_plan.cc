@@ -218,8 +218,7 @@ absl::StatusOr<common::Type> LogicalPlan::GetColumnType(ColumnRef ref) {
   }
   ASSIGN_OR_RETURN(TupleDesc * tuple_desc, catalog->GetTupleDesc(it->second));
   ASSIGN_OR_RETURN(int column_idx, tuple_desc->IndexForFieldName(ref.column));
-  ASSIGN_OR_RETURN(Type t, tuple_desc->GetFieldType(column_idx));
-  return t;
+  return tuple_desc->GetFieldType(column_idx);
 }
 
 absl::Status LogicalPlan::ProcessScanNodes(TransactionId tid) {
@@ -302,8 +301,7 @@ absl::StatusOr<std::unique_ptr<OpIterator>> LogicalPlan::ProcessAggregateNodes(
       continue;
     }
     ASSIGN_OR_RETURN(int field, plan->GetIndexForColumnRef(aggregate.col));
-    ASSIGN_OR_RETURN(Type field_type,
-                     plan->GetTupleDesc()->GetFieldType(field));
+    Type field_type = plan->GetTupleDesc()->GetFieldType(field);
     if (!Aggregator::IsApplicable(aggregate.type, field_type)) {
       return absl::FailedPreconditionError(absl::StrCat(
           "Cannot apply ", Aggregator::AggregateTypeToString(aggregate.type),

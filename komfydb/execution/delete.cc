@@ -83,7 +83,7 @@ absl::Status Delete::FetchNext() {
   RETURN_IF_NOT_OOR(record.status());
   RETURN_IF_ERROR(bufferpool->RemoveTuples(ids, table_id, tid));
   next_record = std::make_unique<Record>(1, RecordId(PageId(0, 0), -1));
-  RETURN_IF_ERROR(next_record->SetField(0, std::make_unique<IntField>(count)));
+  next_record->SetField(0, std::make_unique<IntField>(count));
   return absl::OkStatus();
 }
 

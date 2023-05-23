@@ -29,8 +29,7 @@ absl::StatusOr<std::unique_ptr<Project>> Project::Create(
   std::vector<std::string>* child_aliases = child->GetFieldsTableAliases();
   new_items.reserve(out_field_idxs.size());
   for (auto idx : out_field_idxs) {
-    ASSIGN_OR_RETURN(TDItem item, childTD->GetItem(idx));
-    new_items.push_back(item);
+    new_items.push_back(childTD->GetItem(idx));
     aliases.push_back((*child_aliases)[idx]);
   }
   return std::unique_ptr<Project>(new Project(std::move(child), out_field_idxs,
@@ -55,22 +54,11 @@ absl::Status Project::FetchNext() {
   int num_of_fields = tuple_desc.Length();
   Tuple new_tuple(num_of_fields);
   for (int i = 0; i < num_of_fields; i++) {
-    ASSIGN_OR_RETURN(Field * record_field, record->GetField(out_field_idxs[i]));
+    Field* record_field = record->GetField(out_field_idxs[i]);
     if (record_field == nullptr) {
       continue;
     }
-    switch (tuple_desc.GetFieldType(i).value().GetValue()) {
-      case Type::INT:
-        RETURN_IF_ERROR(
-            new_tuple.SetField(i, std::make_unique<IntField>(
-                                      *dynamic_cast<IntField*>(record_field))));
-        break;
-      case Type::STRING:
-        RETURN_IF_ERROR(new_tuple.SetField(
-            i, std::make_unique<StringField>(
-                   *dynamic_cast<StringField*>(record_field))));
-        break;
-    }
+    new_tuple.SetField(i, record_field);
   }
   next_record = std::make_unique<Record>(new_tuple, record->GetId());
   return absl::OkStatus();

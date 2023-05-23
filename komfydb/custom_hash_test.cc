@@ -10,7 +10,6 @@
 
 namespace {
 
-using komfydb::common::Field;
 using komfydb::common::IntField;
 using komfydb::common::StringField;
 using komfydb::common::Tuple;
@@ -65,17 +64,17 @@ TEST(Tuple, SupportsAbslHash) {
   std::unique_ptr<StringField> str4 = std::make_unique<StringField>("");
   Tuple t1(types.size()), t2(types.size()), t3(types2.size()),
       t4(types2.size()), t5(types3.size());
-  ASSERT_TRUE(t1.SetField(0, std::move(int1)).ok());
-  ASSERT_TRUE(t1.SetField(1, std::move(str1)).ok());
-  ASSERT_TRUE(t1.SetField(2, std::move(int2)).ok());
-  ASSERT_TRUE(t2.SetField(0, std::move(int3)).ok());
-  ASSERT_TRUE(t2.SetField(1, std::move(str2)).ok());
-  ASSERT_TRUE(t2.SetField(2, std::move(int4)).ok());
-  ASSERT_TRUE(t3.SetField(0, std::move(str3)).ok());
-  ASSERT_TRUE(t3.SetField(1, std::move(int5)).ok());
-  ASSERT_TRUE(t4.SetField(0, std::move(str4)).ok());
-  ASSERT_TRUE(t4.SetField(1, std::move(int6)).ok());
-  ASSERT_TRUE(t5.SetField(0, std::move(int7)).ok());
+  t1.SetField(0, std::move(int1));
+  t1.SetField(1, std::move(str1));
+  t1.SetField(2, std::move(int2));
+  t2.SetField(0, std::move(int3));
+  t2.SetField(1, std::move(str2));
+  t2.SetField(2, std::move(int4));
+  t3.SetField(0, std::move(str3));
+  t3.SetField(1, std::move(int5));
+  t4.SetField(0, std::move(str4));
+  t4.SetField(1, std::move(int6));
+  t5.SetField(0, std::move(int7));
 
   EXPECT_TRUE(absl::VerifyTypeImplementsAbslHashCorrectly({
       t1,

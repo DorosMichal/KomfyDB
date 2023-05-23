@@ -25,7 +25,8 @@ absl::StatusOr<std::unique_ptr<OrderBy>> OrderBy::Create(
     std::unique_ptr<OpIterator> child, int order_by_field, Order order) {
   TupleDesc* tuple_desc = child->GetTupleDesc();
   /* Check if tuple_desc has field nr order_by_field */
-  RETURN_IF_ERROR(tuple_desc->GetFieldType(order_by_field).status());
+  RETURN_IF_ERROR(tuple_desc->HasField(order_by_field));
+  tuple_desc->GetFieldType(order_by_field);
 
   return std::unique_ptr<OrderBy>(
       new OrderBy(std::move(child), order_by_field, order, *tuple_desc));

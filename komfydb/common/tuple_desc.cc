@@ -47,10 +47,7 @@ std::vector<TDItem> TupleDesc::GetItems() {
   return std::vector<TDItem>(items);
 }
 
-absl::StatusOr<TDItem> TupleDesc::GetItem(int idx) {
-  if (!(0 <= idx && idx < items.size())) {
-    return absl::InvalidArgumentError("Index out of range");
-  }
+TDItem TupleDesc::GetItem(int idx) {
   return items[idx];
 }
 
@@ -58,19 +55,11 @@ int TupleDesc::Length() const {
   return items.size();
 }
 
-absl::StatusOr<std::string> TupleDesc::GetFieldName(int i) const {
-  if (i >= items.size() || i < 0) {
-    return absl::InvalidArgumentError("Index out of range");
-  }
-
+std::string TupleDesc::GetFieldName(int i) const {
   return items[i].field_name;
 }
 
-absl::StatusOr<Type> TupleDesc::GetFieldType(int i) const {
-  if (i >= items.size() || i < 0) {
-    return absl::InvalidArgumentError("Index out of range");
-  }
-
+Type TupleDesc::GetFieldType(int i) const {
   return items[i].field_type;
 }
 
@@ -83,6 +72,14 @@ absl::StatusOr<int> TupleDesc::IndexForFieldName(
   }
 
   return absl::InvalidArgumentError(absl::StrCat("No field with name ", name));
+}
+
+absl::Status TupleDesc::HasField(int i) const {
+  if (i >= 0 && i < Length()) {
+    return absl::OkStatus();
+  }
+  return absl::InvalidArgumentError(absl::StrCat(
+      "TupleDesc has ", Length(), " fields, but ", i, " was checked."));
 }
 
 int TupleDesc::GetSize() const {

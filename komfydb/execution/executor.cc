@@ -127,7 +127,7 @@ std::vector<std::string> GetTupleLines(Tuple* tuple, int length,
                                        int column_width) {
   std::vector<std::string> values;
   for (int i = 0; i < length; i++) {
-    Field* field = *tuple->GetField(i);
+    Field* field = tuple->GetField(i);
     values.push_back(std::string(*field));
   }
   return GetLines(values, column_width);
@@ -136,7 +136,7 @@ std::vector<std::string> GetTupleLines(Tuple* tuple, int length,
 void PrintRecord(Record* record, int length, std::ostream& os) {
   os << "(";
   for (int i = 0; i < length; i++) {
-    Field* field = *record->GetField(i);
+    Field* field = record->GetField(i);
 
     switch (field->GetType().GetValue()) {
       case Type::INT: {

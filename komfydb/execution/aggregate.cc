@@ -28,8 +28,7 @@ absl::Status FillGroupIdFields(Tuple& group_id,
                                std::vector<Type>& groupby_types,
                                Record* record) {
   for (int i = 0; i < groupby_fields.size(); i++) {
-    ASSIGN_OR_RETURN(Field * field, record->GetField(groupby_fields[i]));
-    RETURN_IF_ERROR(group_id.SetField(i, field->CreateCopy()));
+    group_id.SetField(i, record->GetField(groupby_fields[i]));
   }
   return absl::OkStatus();
 }
@@ -39,8 +38,8 @@ absl::Status UpdateGroup(AggregateTuple* group,
                          std::vector<AggregateType>& aggregate_types,
                          Record* record) {
   for (int i = 0; i < aggregate_fields.size(); i++) {
-    ASSIGN_OR_RETURN(Field * next_field, record->GetField(aggregate_fields[i]));
-    RETURN_IF_ERROR(group->ApplyAggregate(aggregate_types[i], i, next_field));
+    RETURN_IF_ERROR(group->ApplyAggregate(
+        aggregate_types[i], i, record->GetField(aggregate_fields[i])));
   }
   group->IncremetGroupSize();
   return absl::OkStatus();
@@ -53,12 +52,11 @@ absl::Status InitializeGroup(AggregateTuple* group,
   for (int i = 0; i < aggregate_fields.size(); i++) {
     switch (aggregate_types[i]) {
       case AggregateType::COUNT: {
-        RETURN_IF_ERROR(group->SetField(i, std::make_unique<IntField>(1)));
+        group->SetField(i, std::make_unique<IntField>(1));
         break;
       }
       default: {
-        ASSIGN_OR_RETURN(Field * field, record->GetField(aggregate_fields[i]));
-        RETURN_IF_ERROR(group->SetField(i, field->CreateCopy()));
+        group->SetField(i, record->GetField(aggregate_fields[i]));
         break;
       }
     }
@@ -95,16 +93,13 @@ absl::StatusOr<std::unique_ptr<Aggregate>> Aggregate::Create(
     Type type(Type::INT);
     std::string name, alias;
     if (aggregate_type == AggregateType::NONE) {
-      ASSIGN_OR_RETURN(type,
-                       child_tuple_desc->GetFieldType(aggregate_fields[i]));
-      ASSIGN_OR_RETURN(name,
-                       child_tuple_desc->GetFieldName(aggregate_fields[i]));
+      type = child_tuple_desc->GetFieldType(aggregate_fields[i]);
+      name = child_tuple_desc->GetFieldName(aggregate_fields[i]);
       alias = (*child_aliases)[aggregate_fields[i]];
     } else {
-      ASSIGN_OR_RETURN(std::string field_name,
+      name =
+          absl::StrCat(Aggregator::AggregateTypeToString(aggregate_type), "__",
                        child_tuple_desc->GetFieldName(aggregate_fields[i]));
-      name = absl::StrCat(Aggregator::AggregateTypeToString(aggregate_type),
-                          "__", field_name);
       // This field comes from aggregation, so it does not come from any
       // table. Let the alias for this be "__aggregate__".
       alias = "__aggregate__";
@@ -124,8 +119,7 @@ absl::Status Aggregate::PrepareWithGrouping() {
   TupleDesc* child_tuple_desc = child->GetTupleDesc();
   std::vector<Type> groupby_types;
   for (int i = 0; i < groupby_fields.size(); i++) {
-    ASSIGN_OR_RETURN(Type type,
-                     child_tuple_desc->GetFieldType(groupby_fields[i]));
+    Type type = child_tuple_desc->GetFieldType(groupby_fields[i]);
     groupby_types.push_back(type);
   }
   absl::flat_hash_map<Tuple, AggregateTuple> map;

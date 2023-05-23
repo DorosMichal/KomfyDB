@@ -16,11 +16,8 @@ void IntField::SetValue(int i) {
   value = i;
 }
 
-absl::StatusOr<bool> IntField::Compare(const Op& op, const Field* f) const {
-  if (f->GetType() != GetType()) {
-    return absl::InvalidArgumentError("Can't compare fields of different type");
-  }
-
+bool IntField::Compare(const Op& op, const Field* f) const {
+  assert(f->GetType() == GetType());
   int fv = static_cast<const IntField*>(f)->GetValue();
 
   switch (op.value) {
@@ -37,8 +34,6 @@ absl::StatusOr<bool> IntField::Compare(const Op& op, const Field* f) const {
       return value < fv;
     case Op::LESS_THAN_OR_EQ:
       return value <= fv;
-    default:
-      return absl::InvalidArgumentError("Unknown operator value");
   }
 }
 

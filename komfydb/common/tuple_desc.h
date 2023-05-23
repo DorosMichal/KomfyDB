@@ -28,24 +28,23 @@ class TupleDesc {
 
   std::vector<TDItem> GetItems();
 
-  absl::StatusOr<TDItem> GetItem(int idx);
+  TDItem GetItem(int idx);
 
   int Length() const;
 
-  absl::StatusOr<std::string> GetFieldName(int i) const;
+  std::string GetFieldName(int i) const;
 
-  absl::StatusOr<Type> GetFieldType(int i) const;
+  Type GetFieldType(int i) const;
 
   absl::StatusOr<int> IndexForFieldName(const absl::string_view& name) const;
+
+  absl::Status HasField(int i) const;
 
   int GetSize() const;
 
   bool operator==(const TupleDesc& tuple_desc) const;
 
   bool operator!=(const TupleDesc& tuple_desc) const;
-
-  // TODO(HashCode)
-  // int HashCode();
 
   operator std::string() const;
 
