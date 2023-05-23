@@ -16,7 +16,7 @@ TEST(Tuple, StringConversion) {
 
   Tuple tuple(tv.size());
 
-  EXPECT_TRUE(tuple.SetField(0, std::make_unique<IntField>(1)).ok());
+  tuple.SetField(0, std::make_unique<IntField>(1));
 
   Field* f1 = tuple.GetField(0);
   int i = (static_cast<IntField*>(f1))->GetValue();
@@ -30,23 +30,23 @@ TEST(Tuple, Comparison) {
 
   Tuple t1(types1.size()), t2(types1.size()), t3(types1.size()),
       t4(types2.size());
-  ASSERT_TRUE(t1.SetField(0, std::make_unique<IntField>(1)).ok());
-  ASSERT_TRUE(t1.SetField(1, std::make_unique<StringField>("a")).ok());
-  ASSERT_TRUE(t1.SetField(2, std::make_unique<IntField>(2)).ok());
-  ASSERT_TRUE(t1.SetField(3, std::make_unique<StringField>("b")).ok());
+  t1.SetField(0, std::make_unique<IntField>(1));
+  t1.SetField(1, std::make_unique<StringField>("a"));
+  t1.SetField(2, std::make_unique<IntField>(2));
+  t1.SetField(3, std::make_unique<StringField>("b"));
 
-  ASSERT_TRUE(t2.SetField(0, std::make_unique<IntField>(1)).ok());
-  ASSERT_TRUE(t2.SetField(1, std::make_unique<StringField>("a")).ok());
-  ASSERT_TRUE(t2.SetField(2, std::make_unique<IntField>(2)).ok());
-  ASSERT_TRUE(t2.SetField(3, std::make_unique<StringField>("b")).ok());
+  t2.SetField(0, std::make_unique<IntField>(1));
+  t2.SetField(1, std::make_unique<StringField>("a"));
+  t2.SetField(2, std::make_unique<IntField>(2));
+  t2.SetField(3, std::make_unique<StringField>("b"));
 
-  ASSERT_TRUE(t3.SetField(0, std::make_unique<IntField>(1)).ok());
-  ASSERT_TRUE(t3.SetField(1, std::make_unique<StringField>("a")).ok());
-  ASSERT_TRUE(t3.SetField(2, std::make_unique<IntField>(2)).ok());
-  ASSERT_TRUE(t3.SetField(3, std::make_unique<StringField>("c")).ok());
+  t3.SetField(0, std::make_unique<IntField>(1));
+  t3.SetField(1, std::make_unique<StringField>("a"));
+  t3.SetField(2, std::make_unique<IntField>(2));
+  t3.SetField(3, std::make_unique<StringField>("c"));
 
-  ASSERT_TRUE(t4.SetField(0, std::make_unique<IntField>(1)).ok());
-  ASSERT_TRUE(t4.SetField(1, std::make_unique<StringField>("a")).ok());
+  t4.SetField(0, std::make_unique<IntField>(1));
+  t4.SetField(1, std::make_unique<StringField>("a"));
 
   EXPECT_EQ(t1, t1);
   EXPECT_EQ(t1, t2);
@@ -60,10 +60,10 @@ TEST(Tuple, CopyAssignment) {
   const std::vector<Type> types1 = {Type::INT, Type::STRING, Type::INT,
                                     Type::STRING};
   Tuple t1(types1.size());
-  ASSERT_TRUE(t1.SetField(0, std::make_unique<IntField>(1)).ok());
-  ASSERT_TRUE(t1.SetField(1, std::make_unique<StringField>("a")).ok());
-  ASSERT_TRUE(t1.SetField(2, std::make_unique<IntField>(2)).ok());
-  ASSERT_TRUE(t1.SetField(3, std::make_unique<StringField>("b")).ok());
+  t1.SetField(0, std::make_unique<IntField>(1));
+  t1.SetField(1, std::make_unique<StringField>("a"));
+  t1.SetField(2, std::make_unique<IntField>(2));
+  t1.SetField(3, std::make_unique<StringField>("b"));
 
   Tuple t2(types1.size());
   t2 = t1;

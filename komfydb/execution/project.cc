@@ -59,18 +59,7 @@ absl::Status Project::FetchNext() {
     if (record_field == nullptr) {
       continue;
     }
-    switch (tuple_desc.GetFieldType(i).value().GetValue()) {
-      case Type::INT:
-        RETURN_IF_ERROR(
-            new_tuple.SetField(i, std::make_unique<IntField>(
-                                      *dynamic_cast<IntField*>(record_field))));
-        break;
-      case Type::STRING:
-        RETURN_IF_ERROR(new_tuple.SetField(
-            i, std::make_unique<StringField>(
-                   *dynamic_cast<StringField*>(record_field))));
-        break;
-    }
+    new_tuple.SetField(i, record_field);
   }
   next_record = std::make_unique<Record>(new_tuple, record->GetId());
   return absl::OkStatus();

@@ -130,11 +130,18 @@ absl::StatusOr<std::unique_ptr<HeapPage>> HeapPage::Create(
     } else {
       for (int j = 0; j < n_fields; j++) {
         ASSIGN_OR_RETURN(Type field_type, tuple_desc->GetFieldType(j));
-        if (field_type.GetValue() == Type::INT) {
-          RETURN_IF_ERROR(record.SetField(j, ParseInt(data, data_idx)));
-        } else if (field_type.GetValue() == Type::STRING) {
-          RETURN_IF_ERROR(record.SetField(j, ParseString(data, data_idx)));
+        std::unique_ptr<Field> parsed;
+        switch (field_type.GetValue()) {
+          case Type::INT: {
+            parsed = ParseInt(data, data_idx);
+            break;
+          }
+          case Type::STRING: {
+            parsed = ParseString(data, data_idx);
+            break;
+          }
         }
+        record.SetField(j, std::move(parsed));
       }
     }
 

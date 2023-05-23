@@ -98,8 +98,7 @@ absl::StatusOr<Tuple> GetTuple(std::vector<hsql::Expr*>* values,
           return absl::InvalidArgumentError(absl::StrCat(
               "Invalid value ", i + 1, " type, string instead of int."));
         }
-        RETURN_IF_ERROR(
-            result.SetField(i, std::make_unique<IntField>(value->ival)));
+        result.SetField(i, std::make_unique<IntField>(value->ival));
         break;
       }
       case hsql::ExprType::kExprLiteralString: {
@@ -107,8 +106,7 @@ absl::StatusOr<Tuple> GetTuple(std::vector<hsql::Expr*>* values,
           return absl::InvalidArgumentError(absl::StrCat(
               "Invalid value ", i + 1, " type, int instead of string."));
         }
-        RETURN_IF_ERROR(
-            result.SetField(i, std::make_unique<StringField>(value->name)));
+        result.SetField(i, std::make_unique<StringField>(value->name));
         break;
       }
       default: {

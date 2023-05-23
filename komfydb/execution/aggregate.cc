@@ -28,7 +28,7 @@ absl::Status FillGroupIdFields(Tuple& group_id,
                                std::vector<Type>& groupby_types,
                                Record* record) {
   for (int i = 0; i < groupby_fields.size(); i++) {
-    RETURN_IF_ERROR(group_id.SetField(i, record->GetField(groupby_fields[i])));
+    group_id.SetField(i, record->GetField(groupby_fields[i]));
   }
   return absl::OkStatus();
 }
@@ -52,12 +52,11 @@ absl::Status InitializeGroup(AggregateTuple* group,
   for (int i = 0; i < aggregate_fields.size(); i++) {
     switch (aggregate_types[i]) {
       case AggregateType::COUNT: {
-        RETURN_IF_ERROR(group->SetField(i, std::make_unique<IntField>(1)));
+        group->SetField(i, std::make_unique<IntField>(1));
         break;
       }
       default: {
-        RETURN_IF_ERROR(
-            group->SetField(i, record->GetField(aggregate_fields[i])));
+        group->SetField(i, record->GetField(aggregate_fields[i]));
         break;
       }
     }
