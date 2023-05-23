@@ -12,7 +12,7 @@ bool JoinPredicate::Filter(Tuple const& l_tuple, Tuple const& r_tuple) {
   // we assume that if we got to this place all the values are correct
   Field* l_field = l_tuple.GetField(l_field_idx).value();
   Field* r_field = r_tuple.GetField(r_field_idx).value();
-  return l_field->Compare(op, r_field).value();
+  return l_field->Compare(op, r_field);
 }
 
 int JoinPredicate::GetField1idx() {

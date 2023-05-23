@@ -18,7 +18,7 @@ class IntField : public Field {
 
   ~IntField() override {}
 
-  absl::StatusOr<bool> Compare(const Op& op, const Field* f) const override;
+  bool Compare(const Op& op, const Field* f) const override;
 
   Type GetType() const override;
 

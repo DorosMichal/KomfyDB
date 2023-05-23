@@ -23,7 +23,7 @@ class StringField : public Field {
 
   ~StringField() override {}
 
-  absl::StatusOr<bool> Compare(const Op& op, const Field* f) const override;
+  bool Compare(const Op& op, const Field* f) const override;
 
   std::string GetValue() const;
 

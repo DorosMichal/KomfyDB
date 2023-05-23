@@ -25,7 +25,7 @@ class Field {
  public:
   virtual ~Field(){};
 
-  virtual absl::StatusOr<bool> Compare(const Op& op, const Field* f) const = 0;
+  virtual bool Compare(const Op& op, const Field* f) const = 0;
 
   virtual Type GetType() const = 0;
 
