@@ -129,7 +129,7 @@ absl::StatusOr<std::unique_ptr<HeapPage>> HeapPage::Create(
       free_space++;
     } else {
       for (int j = 0; j < n_fields; j++) {
-        ASSIGN_OR_RETURN(Type field_type, tuple_desc->GetFieldType(j));
+        Type field_type = tuple_desc->GetFieldType(j);
         std::unique_ptr<Field> parsed;
         switch (field_type.GetValue()) {
           case Type::INT: {
@@ -189,7 +189,7 @@ absl::StatusOr<std::vector<uint8_t>> HeapPage::GetPageData() {
     Record& record = records[i];
 
     for (int j = 0; j < tuple_len; j++) {
-      ASSIGN_OR_RETURN(Type field_type, tuple_desc->GetFieldType(j));
+      Type field_type = tuple_desc->GetFieldType(j);
       Field* field = record.GetField(j);
 
       switch (field_type.GetValue()) {

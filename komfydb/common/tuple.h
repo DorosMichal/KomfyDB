@@ -4,8 +4,6 @@
 #include <memory>
 #include <vector>
 
-#include "absl/status/statusor.h"
-
 #include "komfydb/common/field.h"
 #include "komfydb/common/int_field.h"
 #include "komfydb/common/string_field.h"
@@ -38,8 +36,6 @@ class Tuple {
   int Size() const;
 
   Field* GetField(int i) const;
-
-  absl::StatusOr<std::unique_ptr<Field>> ReleaseField(int i);
 
   void SetField(int i, std::unique_ptr<Field> f);
 

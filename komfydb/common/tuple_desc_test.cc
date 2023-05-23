@@ -42,7 +42,7 @@ TEST(TupleDesc, JoinTwoTDs) {
   absl::StatusOr<Type> t = td3.GetFieldType(3);
   EXPECT_TRUE(t.ok());
   EXPECT_EQ(*t, int_t);
-  EXPECT_FALSE(td3.GetFieldType(6).ok());
+  EXPECT_FALSE(td3.HasField(6).ok());
 
   EXPECT_EQ((std::string)td1, "f1(int), f2(str)");
 }

@@ -29,8 +29,7 @@ absl::StatusOr<std::unique_ptr<Project>> Project::Create(
   std::vector<std::string>* child_aliases = child->GetFieldsTableAliases();
   new_items.reserve(out_field_idxs.size());
   for (auto idx : out_field_idxs) {
-    ASSIGN_OR_RETURN(TDItem item, childTD->GetItem(idx));
-    new_items.push_back(item);
+    new_items.push_back(childTD->GetItem(idx));
     aliases.push_back((*child_aliases)[idx]);
   }
   return std::unique_ptr<Project>(new Project(std::move(child), out_field_idxs,
