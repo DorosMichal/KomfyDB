@@ -28,8 +28,7 @@ absl::Status FillGroupIdFields(Tuple& group_id,
                                std::vector<Type>& groupby_types,
                                Record* record) {
   for (int i = 0; i < groupby_fields.size(); i++) {
-    ASSIGN_OR_RETURN(Field * field, record->GetField(groupby_fields[i]));
-    RETURN_IF_ERROR(group_id.SetField(i, field->CreateCopy()));
+    RETURN_IF_ERROR(group_id.SetField(i, record->GetField(groupby_fields[i])));
   }
   return absl::OkStatus();
 }
@@ -39,8 +38,8 @@ absl::Status UpdateGroup(AggregateTuple* group,
                          std::vector<AggregateType>& aggregate_types,
                          Record* record) {
   for (int i = 0; i < aggregate_fields.size(); i++) {
-    ASSIGN_OR_RETURN(Field * next_field, record->GetField(aggregate_fields[i]));
-    RETURN_IF_ERROR(group->ApplyAggregate(aggregate_types[i], i, next_field));
+    RETURN_IF_ERROR(group->ApplyAggregate(
+        aggregate_types[i], i, record->GetField(aggregate_fields[i])));
   }
   group->IncremetGroupSize();
   return absl::OkStatus();
@@ -57,8 +56,8 @@ absl::Status InitializeGroup(AggregateTuple* group,
         break;
       }
       default: {
-        ASSIGN_OR_RETURN(Field * field, record->GetField(aggregate_fields[i]));
-        RETURN_IF_ERROR(group->SetField(i, field->CreateCopy()));
+        RETURN_IF_ERROR(
+            group->SetField(i, record->GetField(aggregate_fields[i])));
         break;
       }
     }

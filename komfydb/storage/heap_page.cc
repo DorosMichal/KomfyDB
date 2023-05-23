@@ -183,7 +183,7 @@ absl::StatusOr<std::vector<uint8_t>> HeapPage::GetPageData() {
 
     for (int j = 0; j < tuple_len; j++) {
       ASSIGN_OR_RETURN(Type field_type, tuple_desc->GetFieldType(j));
-      ASSIGN_OR_RETURN(Field * field, record.GetField(j));
+      Field* field = record.GetField(j);
 
       switch (field_type.GetValue()) {
         case Type::STRING: {

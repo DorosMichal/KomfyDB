@@ -18,9 +18,8 @@ TEST(Tuple, StringConversion) {
 
   EXPECT_TRUE(tuple.SetField(0, std::make_unique<IntField>(1)).ok());
 
-  auto f1 = tuple.GetField(0);
-  ASSERT_TRUE(f1.ok());
-  int i = (static_cast<IntField*>(*f1))->GetValue();
+  Field* f1 = tuple.GetField(0);
+  int i = (static_cast<IntField*>(f1))->GetValue();
   EXPECT_EQ(i, 1);
 };
 

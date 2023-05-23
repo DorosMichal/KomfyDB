@@ -4,8 +4,6 @@
 #include <iostream>
 #include <string>
 
-#include "absl/status/statusor.h"
-
 #include "komfydb/common/type.h"
 #include "komfydb/execution/aggregator.h"
 #include "komfydb/execution/op.h"
@@ -14,7 +12,6 @@ typedef komfydb::execution::Aggregator::AggregateType AggregateType;
 
 namespace {
 
-using komfydb::common::Type;
 using komfydb::execution::Op;
 
 };  // namespace

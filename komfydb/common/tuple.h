@@ -37,11 +37,13 @@ class Tuple {
 
   int Size() const;
 
-  absl::StatusOr<Field*> GetField(int i) const;
+  Field* GetField(int i) const;
 
   absl::StatusOr<std::unique_ptr<Field>> ReleaseField(int i);
 
   absl::Status SetField(int i, std::unique_ptr<Field> f);
+
+  absl::Status SetField(int i, Field* f);
 
   operator std::string() const;
 

@@ -46,11 +46,10 @@ bool Predicate::Evaluate(const Record& record) {
   /* We assume that GetField() or Compare() cannot fail here */
   switch (type) {
     case Type::COL_COL: {
-      return (*record.GetField(l_field))
-          ->Compare(op, *record.GetField(r_field));
+      return record.GetField(l_field)->Compare(op, record.GetField(r_field));
     }
     case Type::COL_CONST: {
-      return (*record.GetField(l_field))->Compare(op, const_field.get());
+      return record.GetField(l_field)->Compare(op, const_field.get());
     }
   }
 }

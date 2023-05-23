@@ -86,13 +86,7 @@ int Tuple::Size() const {
   return fields.size();
 }
 
-absl::StatusOr<Field*> Tuple::GetField(int i) const {
-  if (fields.size() <= i || i < 0) {
-    return absl::InvalidArgumentError("Index out of range");
-  }
-  if (fields[i] == nullptr) {
-    return absl::InvalidArgumentError("Field not set yet.");
-  }
+Field* Tuple::GetField(int i) const {
   return fields[i].get();
 }
 
@@ -113,6 +107,10 @@ absl::Status Tuple::SetField(int i, std::unique_ptr<Field> f) {
 
   fields[i] = std::move(f);
   return absl::OkStatus();
+}
+
+absl::Status Tuple::SetField(int i, Field* f) {
+  return SetField(i, f->CreateCopy());
 }
 
 Tuple::operator std::string() const {

@@ -95,7 +95,7 @@ absl::Status AggregateTuple::ApplyAggregate(AggregateType aggregate_type, int i,
 absl::Status AggregateTuple::FinalizeAggregates(
     std::vector<AggregateType> aggregate_types) {
   for (int i = 0; i < Size(); i++) {
-    ASSIGN_OR_RETURN(Field * field, GetField(i));
+    Field* field = GetField(i);
     switch (aggregate_types[i]) {
       case AggregateType::AVG: {
         IntField* int_field = static_cast<IntField*>(field);

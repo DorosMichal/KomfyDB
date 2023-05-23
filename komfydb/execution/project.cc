@@ -55,7 +55,7 @@ absl::Status Project::FetchNext() {
   int num_of_fields = tuple_desc.Length();
   Tuple new_tuple(num_of_fields);
   for (int i = 0; i < num_of_fields; i++) {
-    ASSIGN_OR_RETURN(Field * record_field, record->GetField(out_field_idxs[i]));
+    Field* record_field = record->GetField(out_field_idxs[i]);
     if (record_field == nullptr) {
       continue;
     }
