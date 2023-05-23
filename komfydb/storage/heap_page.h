@@ -37,11 +37,11 @@ class HeapPage : public Page {
 
   bool IsDirty() override;
 
-  absl::Status SetBeforeImage() override;
+  void SetBeforeImage() override;
 
   absl::StatusOr<std::unique_ptr<Page>> GetBeforeImage() override;
 
-  absl::StatusOr<std::vector<uint8_t>> GetPageData() override;
+  std::vector<uint8_t> GetPageData() override;
 
   std::vector<Record> GetRecords() override;
 

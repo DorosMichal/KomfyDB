@@ -30,11 +30,11 @@ class Page {
 
   virtual void SetDirty(bool dirty, TransactionId tid) = 0;
 
-  virtual absl::StatusOr<std::vector<uint8_t>> GetPageData() = 0;
+  virtual std::vector<uint8_t> GetPageData() = 0;
 
   virtual absl::StatusOr<std::unique_ptr<Page>> GetBeforeImage() = 0;
 
-  virtual absl::Status SetBeforeImage() = 0;
+  virtual void SetBeforeImage() = 0;
 
   virtual std::vector<Record> GetRecords() = 0;
 
