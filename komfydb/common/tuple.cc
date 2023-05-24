@@ -82,6 +82,17 @@ Tuple::Tuple(Tuple& t1, Tuple&& t2) {
   }
 }
 
+Tuple::Tuple(Tuple& t1, Tuple& t2) {
+  fields.resize(t1.Size() + t2.Size());
+  int idx = 0;
+  for (int i = 0; i < t1.Size(); i++, idx++) {
+    fields[idx] = t1.fields[i]->CreateCopy();
+  }
+  for (int i = 0; i < t2.Size(); i++, idx++) {
+    fields[idx] = t2.fields[i]->CreateCopy();
+  }
+}
+
 int Tuple::Size() const {
   return fields.size();
 }

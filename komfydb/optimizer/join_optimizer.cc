@@ -5,9 +5,12 @@
 
 namespace {
 
+using komfydb::execution::HashJoin;
+using komfydb::execution::Join;
 using komfydb::execution::JoinPredicate;
+using komfydb::execution::LoopsJoin;
 
-};
+};  // namespace
 
 namespace komfydb::optimizer {
 
@@ -40,9 +43,19 @@ absl::StatusOr<std::unique_ptr<Join>> JoinOptimizer::InstatiateJoin(
         " field has type ", static_cast<std::string>(l_type), ", right",
         r_field, " field has type ", static_cast<std::string>(r_type)));
   }
-  return Join::Create(std::move(l_child),
-                      JoinPredicate(l_field, join_node.op, r_field),
-                      std::move(r_child));
+  switch (join_node.op.value) {
+    case Op::EQUALS: {
+      return HashJoin::Create(std::move(l_child),
+                              JoinPredicate(l_field, join_node.op, r_field),
+                              std::move(r_child));
+    }
+    default: {
+      break;
+    }
+  }
+  return LoopsJoin::Create(std::move(l_child),
+                           JoinPredicate(l_field, join_node.op, r_field),
+                           std::move(r_child));
 }
 
 };  // namespace komfydb::optimizer

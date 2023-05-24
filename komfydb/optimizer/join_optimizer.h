@@ -3,8 +3,10 @@
 
 #include <memory>
 
+#include "komfydb/execution/hash_join.h"
 #include "komfydb/execution/join.h"
 #include "komfydb/execution/logical_plan/join_node.h"
+#include "komfydb/execution/loops_join.h"
 #include "komfydb/execution/op_iterator.h"
 #include "komfydb/storage/catalog.h"
 
