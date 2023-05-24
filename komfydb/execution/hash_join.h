@@ -7,6 +7,7 @@
 #include "komfydb/execution/join.h"
 #include "komfydb/execution/join_predicate.h"
 #include "komfydb/storage/record_id.h"
+#include "komfydb/utils/utility.h"
 
 namespace {
 

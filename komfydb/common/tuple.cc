@@ -83,15 +83,13 @@ Tuple::Tuple(Tuple& t1, Tuple&& t2) {
 }
 
 Tuple::Tuple(Tuple& t1, Tuple& t2) {
-  // copies both Tuples, used in hash join
   fields.resize(t1.Size() + t2.Size());
-  Tuple tmp_t1 = t1, tmp_t2 = t2;
   int idx = 0;
-  for (int i = 0; i < tmp_t1.Size(); i++, idx++) {
-    fields[idx] = std::move(tmp_t1.fields[i]);
+  for (int i = 0; i < t1.Size(); i++, idx++) {
+    fields[idx] = t1.fields[i]->CreateCopy();
   }
-  for (int i = 0; i < tmp_t2.Size(); i++, idx++) {
-    fields[idx] = std::move(tmp_t2.fields[i]);
+  for (int i = 0; i < t2.Size(); i++, idx++) {
+    fields[idx] = t2.fields[i]->CreateCopy();
   }
 }
 

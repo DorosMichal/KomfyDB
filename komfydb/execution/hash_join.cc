@@ -12,6 +12,7 @@
 namespace {
 
 using komfydb::common::Field;
+using komfydb::common::JoinVectors;
 using komfydb::common::TupleDesc;
 
 }  // namespace
@@ -21,8 +22,10 @@ namespace komfydb::execution {
 HashJoin::HashJoin(std::unique_ptr<OpIterator> l_child,
                    JoinPredicate join_predicate,
                    std::unique_ptr<OpIterator> r_child, TupleDesc tuple_desc)
-    : Join(std::move(l_child), join_predicate, std::move(r_child), tuple_desc) {
-}
+    : Join(tuple_desc,
+           JoinVectors(*l_child->GetFieldsTableAliases(),
+                       *r_child->GetFieldsTableAliases()),
+           join_predicate, std::move(l_child), std::move(r_child)) {}
 
 absl::StatusOr<std::unique_ptr<HashJoin>> HashJoin::Create(
     std::unique_ptr<OpIterator> l_child, JoinPredicate join_predicate,
