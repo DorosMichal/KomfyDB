@@ -6,6 +6,7 @@
 namespace {
   using komfydb::storage::Record;
   using komfydb::common::Field;
+  using komfydb::common::IntField;
 
 }; // namespace
 
@@ -69,8 +70,9 @@ void IntHistogram::AddValue(int v) {
   number_of_values++;
 }
 
-double IntHistogram::EstimateSelectivity(execution::Op op, int v) {
+double IntHistogram::EstimateSelectivity(execution::Op op, Field* constant) {
   assert(number_of_values > 0);
+  int v = ((IntField*)constant)->GetValue();
   
   int number_of_smaller = 0;
   if (v < GetMin()){
@@ -80,9 +82,9 @@ double IntHistogram::EstimateSelectivity(execution::Op op, int v) {
   } else {
     int bin = GetBin(v);
     for(int i = 0; i < bin; i++){
-      number_of_smaller += counter[i];
+      number_of_smaller += bins[i];
     }
-    number_of_smaller += (v - ranges[bin]) * counter[bin] / (ranges[bin + 1] - ranges[bin]);
+    number_of_smaller += (v - ranges[bin]) * bins[bin] / (ranges[bin + 1] - ranges[bin]);
   }
 
   switch (op.value) {

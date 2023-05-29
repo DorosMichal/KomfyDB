@@ -4,6 +4,7 @@
 
 namespace {
   using komfydb::storage::Record;
+  using komfydb::common::StringField;
 
 }; // namespace
 
@@ -33,18 +34,19 @@ void StringHistogram::AddValue(std::string v) {
   }
 }
 
-double StringHistogram::EstimateSelectivity(execution::Op op, std::string v) {
+double StringHistogram::EstimateSelectivity(execution::Op op, Field* constant) {
+  std::string value = ((StringField*)constant)->GetValue();
   int number_of_smaller_equal = empty_count;
 
-  if(!v.empty()){
-    int first_letter = v[0] - FIRST_PRINTABLE;
+  if(!value.empty()){
+    int first_letter = value[0] - FIRST_PRINTABLE;
 
     for(int i = 0; i < first_letter; i++){
       number_of_smaller_equal += bins[i];
     }
     // estimate possition in bucket, we simply use the next letter
-    if(v.size() > 1){
-      int second_letter = v[1] - FIRST_PRINTABLE;
+    if(value.size() > 1){
+      int second_letter = value[1] - FIRST_PRINTABLE;
       number_of_smaller_equal += second_letter * bins[first_letter] / N_BINS;
     }
   }

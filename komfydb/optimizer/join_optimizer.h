@@ -7,6 +7,7 @@
 #include "komfydb/execution/logical_plan/join_node.h"
 #include "komfydb/execution/op_iterator.h"
 #include "komfydb/storage/catalog.h"
+#include "table_stats.h"
 
 namespace {
 
@@ -24,7 +25,7 @@ class JoinOptimizer {
   JoinOptimizer(std::shared_ptr<Catalog> catalog)
       : catalog(std::move(catalog)) {}
 
-  absl::Status OrderJoins(std::vector<JoinNode>& joins);
+  absl::Status OrderJoins(std::vector<JoinNode>& joins, TableStatsMap& table_stats_map);
 
   absl::StatusOr<std::unique_ptr<Join>> InstatiateJoin(
       JoinNode& join_node, std::unique_ptr<OpIterator> l_child,

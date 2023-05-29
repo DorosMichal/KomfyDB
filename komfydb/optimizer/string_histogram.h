@@ -3,6 +3,13 @@
 
 #include "komfydb/execution/op.h"
 #include "komfydb/optimizer/histogram.h"
+#include "komfydb/storage/record.h"
+#include "komfydb/common/field.h"
+
+namespace {
+  using komfydb::storage::Record;
+  using komfydb::common::Field;
+}
 
 namespace komfydb::optimizer {
 
@@ -19,7 +26,7 @@ class StringHistogram : public Histogram {
 
   void AddValue(std::string v);
 
-  double EstimateSelectivity(execution::Op op, std::string v);
+  double EstimateSelectivity(execution::Op op, Field* value);
 
   double AverageSelecitivty();
 

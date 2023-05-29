@@ -24,6 +24,7 @@ using komfydb::common::ColumnRef;
 using komfydb::common::TupleDesc;
 using komfydb::common::Type;
 using komfydb::storage::TableIterator;
+using komfydb::optimizer::TableStats;
 
 // Find (like in Union-Find).
 std::string GetEquiv(const std::string& name,
@@ -237,12 +238,31 @@ absl::Status LogicalPlan::ProcessScanNodes(TransactionId tid) {
 }
 
 absl::Status LogicalPlan::ProcessFilterNodes(TableStatsMap& table_stats) {
+  // reset filter information for all tables
+  for(auto [name, stats]: table_stats){
+    stats.SetFilterInfoStatus(false);
+  }
+
   for (auto& filter : filters) {
     std::string table = filter.lcol.table;
     std::unique_ptr<OpIterator> subplan = std::move(subplans[table]);
 
     ASSIGN_OR_RETURN(Predicate predicate,
                      filter.GetPredicate(*subplan->GetTupleDesc()));
+
+    // set information on tables about filters used
+    // for now we can only handle COL:CONST cases
+    if(predicate.GetType() == Predicate::Type::COL_CONST){
+      TableStats stats = table_stats[table];
+      double selectivity = stats.EstimateSelectivity(predicate.GetLField(), predicate.GetOp(), predicate.GetConstField());
+      if(stats.IsFilterPresent()){
+        stats.SetCompoundSelectivity(selectivity);
+      } else {
+        stats.SetFilterInfoStatus(true);
+        stats.SetFilterSelectivity(selectivity);
+      }
+    }
+      
     ASSIGN_OR_RETURN(subplan,
                      Filter::Create(std::move(subplan), std::move(predicate)));
     subplans[table] = std::move(subplan);

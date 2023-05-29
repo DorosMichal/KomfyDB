@@ -2,12 +2,17 @@
 #define __HISTOGRAM_H__
 
 #include "komfydb/execution/op.h"
+#include "komfydb/common/field.h"
+
+namespace {
+  using komfydb::common::Field;
+};
 
 namespace komfydb::optimizer {
 
 class Histogram {
  public:
-  virtual double EstimateSelectivity(execution::Op op, int v);
+  virtual double EstimateSelectivity(execution::Op op, Field* value);
 
   virtual double AverageSelecitivty();
 
