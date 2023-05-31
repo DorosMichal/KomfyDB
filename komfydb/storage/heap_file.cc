@@ -113,7 +113,7 @@ absl::Status HeapFile::WritePage(Page* page) {
                      file_length / CONFIG_PAGE_SIZE, ")"));
   }
 
-  ASSIGN_OR_RETURN(std::vector<uint8_t> data, page->GetPageData());
+  std::vector<uint8_t> data = page->GetPageData();
   file.seekp(page_pos, std::ios_base::beg);
   file.write((char*)data.data(), CONFIG_PAGE_SIZE);
   return absl::OkStatus();

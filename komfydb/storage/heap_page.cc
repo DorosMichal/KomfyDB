@@ -13,24 +13,16 @@ namespace {
 
 using namespace komfydb::common;
 
-absl::StatusOr<bool> TuplePresent(std::vector<uint8_t>& header, int i) {
-  if (i / 8 >= header.size() || i < 0)
-    return absl::InvalidArgumentError("Index out of range");
+bool TuplePresent(std::vector<uint8_t>& header, int i) {
   return header[i / 8] & (1 << (i % 8));
 }
 
-absl::Status MarkOccupied(std::vector<uint8_t>& header, int i) {
-  if (i / 8 >= header.size() || i < 0)
-    return absl::InvalidArgumentError("Index out of range");
+void MarkOccupied(std::vector<uint8_t>& header, int i) {
   header[i / 8] |= (1 << (i % 8));
-  return absl::OkStatus();
 }
 
-absl::Status MarkFree(std::vector<uint8_t>& header, int i) {
-  if (i / 8 >= header.size() || i < 0)
-    return absl::InvalidArgumentError("Index out of range");
+void MarkFree(std::vector<uint8_t>& header, int i) {
   header[i / 8] &= ~(1 << (i % 8));
-  return absl::OkStatus();
 }
 
 inline uint32_t load32_le(uint8_t const* V) {
@@ -124,17 +116,24 @@ absl::StatusOr<std::unique_ptr<HeapPage>> HeapPage::Create(
   for (int i = 0; i < n_slots; i++) {
     Record record(tuple_desc->Length(), pid, i);
 
-    if (!*TuplePresent(header, i)) {
+    if (!TuplePresent(header, i)) {
       data_idx += tuple_desc->GetSize();
       free_space++;
     } else {
       for (int j = 0; j < n_fields; j++) {
-        ASSIGN_OR_RETURN(Type field_type, tuple_desc->GetFieldType(j));
-        if (field_type.GetValue() == Type::INT) {
-          RETURN_IF_ERROR(record.SetField(j, ParseInt(data, data_idx)));
-        } else if (field_type.GetValue() == Type::STRING) {
-          RETURN_IF_ERROR(record.SetField(j, ParseString(data, data_idx)));
+        Type field_type = tuple_desc->GetFieldType(j);
+        std::unique_ptr<Field> parsed;
+        switch (field_type.GetValue()) {
+          case Type::INT: {
+            parsed = ParseInt(data, data_idx);
+            break;
+          }
+          case Type::STRING: {
+            parsed = ParseString(data, data_idx);
+            break;
+          }
         }
+        record.SetField(j, std::move(parsed));
       }
     }
 
@@ -162,7 +161,7 @@ void HeapPage::SetDirty(bool dirty, TransactionId tid) {
   is_dirty = true;
 }
 
-absl::StatusOr<std::vector<uint8_t>> HeapPage::GetPageData() {
+std::vector<uint8_t> HeapPage::GetPageData() {
   // TODO(transactions) Not necessary for now, also requires prior call to
   // `SetBeforeImage`.
   // if (!is_dirty) {
@@ -173,8 +172,7 @@ absl::StatusOr<std::vector<uint8_t>> HeapPage::GetPageData() {
   int tuple_len = tuple_desc->Length();
 
   for (int i = 0; i < num_slots; i++) {
-    ASSIGN_OR_RETURN(bool tuple_present, TuplePresent(header, i));
-    if (!tuple_present) {
+    if (!TuplePresent(header, i)) {
       result.insert(result.end(), tuple_desc->GetSize(), '\0');
       continue;
     }
@@ -182,8 +180,8 @@ absl::StatusOr<std::vector<uint8_t>> HeapPage::GetPageData() {
     Record& record = records[i];
 
     for (int j = 0; j < tuple_len; j++) {
-      ASSIGN_OR_RETURN(Type field_type, tuple_desc->GetFieldType(j));
-      ASSIGN_OR_RETURN(Field * field, record.GetField(j));
+      Type field_type = tuple_desc->GetFieldType(j);
+      Field* field = record.GetField(j);
 
       switch (field_type.GetValue()) {
         case Type::STRING: {
@@ -208,16 +206,15 @@ absl::StatusOr<std::unique_ptr<Page>> HeapPage::GetBeforeImage() {
   return result;
 }
 
-absl::Status HeapPage::SetBeforeImage() {
+void HeapPage::SetBeforeImage() {
   absl::MutexLock l(&old_data_lock);
-  ASSIGN_OR_RETURN(old_data, GetPageData());
-  return absl::OkStatus();
+  old_data = GetPageData();
 }
 
 std::vector<Record> HeapPage::GetRecords() {
   std::vector<Record> result;
   for (int i = 0; i < records.size(); i++) {
-    if (TuplePresent(header, i).value()) {
+    if (TuplePresent(header, i)) {
       result.push_back(Record(records[i]));
     }
   }
@@ -234,9 +231,8 @@ absl::Status HeapPage::AddTuples(std::unique_ptr<Tuple> tuples[], int num) {
   for (int i = 0, j = 0; i < num_slots && j < num; i++) {
     // TODO: find first 0 bit faster
     // TODO(Transactions): invalidate transaction on error
-    ASSIGN_OR_RETURN(bool occupied, TuplePresent(header, i));
-    if (!occupied) {
-      RETURN_IF_ERROR(MarkOccupied(header, i));
+    if (!TuplePresent(header, i)) {
+      MarkOccupied(header, i);
       records[i] = Record(*tuples[j], RecordId(pid, i));
       j++;
     }
@@ -251,13 +247,12 @@ absl::Status HeapPage::RemoveRecord(RecordId& rid) {
         std::string(rid),
         " out of range [num_slots=", std::to_string(num_slots), "]"));
   }
-  ASSIGN_OR_RETURN(bool occupied, TuplePresent(header, rid.GetTupleNumber()));
-  if (rid.GetPageId() != pid || !occupied) {
+  if (rid.GetPageId() != pid || !TuplePresent(header, rid.GetTupleNumber())) {
     return absl::InvalidArgumentError(
         absl::StrCat(std::string(pid), " does not contain record with rid ",
                      std::string(rid)));
   }
-  RETURN_IF_ERROR(MarkFree(header, rid.GetTupleNumber()));
+  MarkFree(header, rid.GetTupleNumber());
   free_space++;
   return absl::OkStatus();
 }

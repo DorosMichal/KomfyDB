@@ -26,10 +26,8 @@ void StringField::SetValue(absl::string_view s) {
   value = s;
 }
 
-absl::StatusOr<bool> StringField::Compare(const Op& op, const Field* f) const {
-  if (f->GetType() != GetType()) {
-    return absl::InvalidArgumentError("Can't compare fields of different type");
-  }
+bool StringField::Compare(const Op& op, const Field* f) const {
+  assert(f->GetType() == GetType());
 
   std::string fs = static_cast<const StringField*>(f)->GetValue();
   int cmp_val = value.compare(fs);
@@ -49,8 +47,6 @@ absl::StatusOr<bool> StringField::Compare(const Op& op, const Field* f) const {
       return cmp_val <= 0;
     case Op::LIKE:
       return value.find(fs, 0) != std::string::npos;
-    default:
-      return absl::InvalidArgumentError("Unknown operator value");
   }
 }
 

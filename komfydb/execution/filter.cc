@@ -24,9 +24,9 @@ absl::StatusOr<std::unique_ptr<Filter>> Filter::Create(
     std::unique_ptr<OpIterator> child, Predicate predicate) {
   TupleDesc* td = child->GetTupleDesc();
   /* Check if td has field specified in predicate */
-  RETURN_IF_ERROR(td->GetFieldType(predicate.GetLField()).status());
+  RETURN_IF_ERROR(td->HasField(predicate.GetLField()));
   if (predicate.GetType() == Predicate::Type::COL_COL) {
-    RETURN_IF_ERROR(td->GetFieldType(predicate.GetRField()).status());
+    RETURN_IF_ERROR(td->HasField(predicate.GetRField()));
   }
 
   return std::unique_ptr<Filter>(

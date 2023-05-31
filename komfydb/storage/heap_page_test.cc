@@ -14,7 +14,6 @@
 namespace {
 
 using namespace komfydb::storage;
-using komfydb::common::Field;
 using komfydb::common::IntField;
 using komfydb::common::StringField;
 using komfydb::common::Type;
@@ -76,18 +75,12 @@ TEST_F(HeapPageTest, Records) {
     EXPECT_EQ(record.GetId(), RecordId(pid, i));
 
     Record comp_record(tuple_desc->Length(), pid, i);
-    ASSERT_TRUE(
-        comp_record.SetField(0, std::make_unique<IntField>(i + 1)).ok());
-    ASSERT_TRUE(
-        comp_record
-            .SetField(1, std::make_unique<StringField>(std::string(i + 1, 'a')))
-            .ok());
-    ASSERT_TRUE(
-        comp_record.SetField(2, std::make_unique<IntField>(i + 1)).ok());
-    ASSERT_TRUE(
-        comp_record
-            .SetField(3, std::make_unique<StringField>(std::string(i + 1, 'b')))
-            .ok());
+    comp_record.SetField(0, std::make_unique<IntField>(i + 1));
+    comp_record.SetField(
+        1, std::make_unique<StringField>(std::string(i + 1, 'a')));
+    comp_record.SetField(2, std::make_unique<IntField>(i + 1));
+    comp_record.SetField(
+        3, std::make_unique<StringField>(std::string(i + 1, 'b')));
     EXPECT_EQ(record, comp_record);
   }
 }
@@ -109,14 +102,14 @@ TEST_F(HeapPageTest, AddAndRemoveTuples) {
 
   Tuple t[3] = {Tuple(tuple_desc->Length()), Tuple(tuple_desc->Length()),
                 Tuple(tuple_desc->Length())};
-  ASSERT_TRUE(t[0].SetField(0, std::make_unique<IntField>(0)).ok());
-  ASSERT_TRUE(t[0].SetField(1, std::make_unique<StringField>("a")).ok());
-  ASSERT_TRUE(t[0].SetField(2, std::make_unique<IntField>(1)).ok());
-  ASSERT_TRUE(t[0].SetField(3, std::make_unique<StringField>("b")).ok());
+  t[0].SetField(0, std::make_unique<IntField>(0));
+  t[0].SetField(1, std::make_unique<StringField>("a"));
+  t[0].SetField(2, std::make_unique<IntField>(1));
+  t[0].SetField(3, std::make_unique<StringField>("b"));
   t[1] = t[0];
   t[2] = t[0];
-  ASSERT_TRUE(t[1].SetField(0, std::make_unique<IntField>(2)).ok());
-  ASSERT_TRUE(t[2].SetField(1, std::make_unique<StringField>("c")).ok());
+  t[1].SetField(0, std::make_unique<IntField>(2));
+  t[2].SetField(1, std::make_unique<StringField>("c"));
   std::unique_ptr<Tuple> t_pointers[3] = {std::make_unique<Tuple>(t[0]),
                                           std::make_unique<Tuple>(t[1]),
                                           std::make_unique<Tuple>(t[2])};

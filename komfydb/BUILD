@@ -111,3 +111,13 @@ cc_binary(
   ],
   linkopts = ["-lreadline",],
 )
+
+cc_binary(
+  name = "server",
+  srcs = ["server.cc",],
+  deps = [
+    ":config",
+    "//:sockpp",
+    "@com_github_google_glog//:glog",
+  ],
+)

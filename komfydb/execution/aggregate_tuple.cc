@@ -38,23 +38,21 @@ absl::Status AggregateTuple::ApplyAggregate(AggregateType aggregate_type, int i,
       IntField* old_int_field = static_cast<IntField*>(fields[i].get());
       IntField* new_int_field = static_cast<IntField*>(new_field);
       int old_value = old_int_field->GetValue();
+      int new_value = new_int_field->GetValue();
       switch (aggregate_type) {
         case AggregateType::NONE: {
           break;
         }
         case AggregateType::AVG:
         case AggregateType::SUM: {
-          int new_value = new_int_field->GetValue();
           old_int_field->SetValue(old_value + new_value);
           break;
         }
         case AggregateType::MAX: {
-          int new_value = new_int_field->GetValue();
           old_int_field->SetValue(std::max(old_value, new_value));
           break;
         }
         case AggregateType::MIN: {
-          int new_value = new_int_field->GetValue();
           old_int_field->SetValue(std::min(old_value, new_value));
           break;
         }
@@ -73,22 +71,12 @@ absl::Status AggregateTuple::ApplyAggregate(AggregateType aggregate_type, int i,
         case AggregateType::NONE: {
           break;
         }
+        case AggregateType::MIN:
         case AggregateType::MAX: {
-          std::string new_value = new_string_field->GetValue();
-          ASSIGN_OR_RETURN(bool replace, old_string_field->Compare(
-                                             Op::LESS_THAN, new_string_field));
-          if (replace) {
-            old_string_field->SetValue(new_value);
-          }
-          break;
-        }
-        case AggregateType::MIN: {
-          std::string new_value = new_string_field->GetValue();
-          ASSIGN_OR_RETURN(
-              bool replace,
-              old_string_field->Compare(Op::GREATER_THAN, new_string_field));
-          if (replace) {
-            old_string_field->SetValue(new_value);
+          Op op = aggregate_type == AggregateType::MAX ? Op::LESS_THAN
+                                                       : Op::GREATER_THAN;
+          if (old_string_field->Compare(op, new_string_field)) {
+            old_string_field->SetValue(new_string_field->GetValue());
           }
           break;
         }
@@ -107,7 +95,7 @@ absl::Status AggregateTuple::ApplyAggregate(AggregateType aggregate_type, int i,
 absl::Status AggregateTuple::FinalizeAggregates(
     std::vector<AggregateType> aggregate_types) {
   for (int i = 0; i < Size(); i++) {
-    ASSIGN_OR_RETURN(Field * field, GetField(i));
+    Field* field = GetField(i);
     switch (aggregate_types[i]) {
       case AggregateType::AVG: {
         IntField* int_field = static_cast<IntField*>(field);
