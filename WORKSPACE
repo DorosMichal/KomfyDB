@@ -61,6 +61,13 @@ http_archive(
   patch_args = ["-p1"],
 )
 
+http_archive(
+  name = "sockpp",
+  build_file_content = _ALL_CONTENT,
+  urls = ["https://github.com/fpagliughi/sockpp/archive/refs/tags/v0.8.1.zip"],
+  sha256 = "233c093e5150346779f5562e0a1b409cb4cd53ad16628de51ada2d85b5bc76ab",
+  strip_prefix = "sockpp-0.8.1",
+)
 
 http_archive(
     name = "rules_python",
