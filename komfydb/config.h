@@ -6,7 +6,7 @@
 
 #define CONFIG_SERVER_PORT 21377
 
-extern const char komfydb_logo[] =
+const char komfydb_logo[] =
     "\n"
     "██╗  ██╗ ██████╗ ███╗   ███╗███████╗██╗   ██╗██████╗ ██████╗ \n"
     "██║ ██╔╝██╔═══██╗████╗ ████║██╔════╝╚██╗ ██╔╝██╔══██╗██╔══██╗\n"
