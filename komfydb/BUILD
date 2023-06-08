@@ -30,6 +30,7 @@ cc_test(
     "//komfydb/common:common",
     "//komfydb/transaction:transaction",
     "//komfydb/execution:execution",
+    "//komfydb/optimizer:table_stats",
     "@com_google_googletest//:gtest_main",
   ],
 )
@@ -54,6 +55,7 @@ cc_test(
   deps = [
     ":parser",
     ":database",
+    "//komfydb/optimizer:table_stats",
     "@com_google_googletest//:gtest_main",
   ],
 )
@@ -88,6 +90,8 @@ cc_binary(
   data = [":database_test_data"],
   deps = [
     ":database",
+    "//komfydb/optimizer:table_stats",
+    "//komfydb/optimizer:histogram",
     "@com_github_google_glog//:glog",
   ],
 )
@@ -98,6 +102,8 @@ cc_binary(
   data = [":database_test_data"],
   deps = [
     ":database",
+    "//komfydb/optimizer:table_stats",
+    "//komfydb/optimizer:histogram",
     "@com_github_google_glog//:glog",
   ],
   visibility = ["//visibility:public"],

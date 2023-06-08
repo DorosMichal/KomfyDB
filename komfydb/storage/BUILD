@@ -66,6 +66,7 @@ cc_test(
   deps = [
     ":storage",
     "//komfydb:database",
+    "//komfydb/optimizer:table_stats",
     "@com_google_googletest//:gtest_main",
   ],
 )

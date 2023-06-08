@@ -23,8 +23,8 @@ namespace {
 using komfydb::common::ColumnRef;
 using komfydb::common::TupleDesc;
 using komfydb::common::Type;
-using komfydb::storage::TableIterator;
 using komfydb::optimizer::TableStats;
+using komfydb::storage::TableIterator;
 
 // Find (like in Union-Find).
 std::string GetEquiv(const std::string& name,
@@ -239,8 +239,8 @@ absl::Status LogicalPlan::ProcessScanNodes(TransactionId tid) {
 
 absl::Status LogicalPlan::ProcessFilterNodes(TableStatsMap& table_stats) {
   // reset filter information for all tables
-  for(auto [name, stats]: table_stats){
-    stats.SetFilterInfoStatus(false);
+  for (auto [name, stats] : table_stats) {
+    stats->SetFilterInfoStatus(false);
   }
 
   for (auto& filter : filters) {
@@ -252,17 +252,18 @@ absl::Status LogicalPlan::ProcessFilterNodes(TableStatsMap& table_stats) {
 
     // set information on tables about filters used
     // for now we can only handle COL:CONST cases
-    if(predicate.GetType() == Predicate::Type::COL_CONST){
-      TableStats stats = table_stats[table];
-      double selectivity = stats.EstimateSelectivity(predicate.GetLField(), predicate.GetOp(), predicate.GetConstField());
-      if(stats.IsFilterPresent()){
-        stats.SetCompoundSelectivity(selectivity);
+    if (predicate.GetType() == Predicate::Type::COL_CONST) {
+      std::shared_ptr<TableStats> stats = table_stats[table];
+      double selectivity = stats->EstimateSelectivity(
+          predicate.GetLField(), predicate.GetOp(), predicate.GetConstField());
+      if (stats->IsFilterPresent()) {
+        stats->SetCompoundSelectivity(selectivity);
       } else {
-        stats.SetFilterInfoStatus(true);
-        stats.SetFilterSelectivity(selectivity);
+        stats->SetFilterInfoStatus(true);
+        stats->SetFilterSelectivity(selectivity);
       }
     }
-      
+
     ASSIGN_OR_RETURN(subplan,
                      Filter::Create(std::move(subplan), std::move(predicate)));
     subplans[table] = std::move(subplan);
@@ -275,7 +276,7 @@ absl::Status LogicalPlan::ProcessJoinNodes(TransactionId tid,
                                            bool explain) {
   LOG(INFO) << "Processing join nodes.";
   optimizer::JoinOptimizer join_optimizer = optimizer::JoinOptimizer(catalog);
-  RETURN_IF_ERROR(join_optimizer.OrderJoins(joins));
+  RETURN_IF_ERROR(join_optimizer.OrderJoins(joins, table_stats));
 
   for (auto& join : joins) {
     std::unique_ptr<OpIterator> lsubplan, rsubplan;

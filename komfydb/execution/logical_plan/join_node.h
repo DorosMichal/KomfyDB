@@ -32,6 +32,11 @@ class JoinNode {
   JoinNode(ColumnRef lref, Op op, ColumnRef rref);
 
   JoinNode(ColumnRef lref, Op op, std::unique_ptr<LogicalPlan> subplan);
+
+  JoinNode(JoinNode&&) = default;
+
+  virtual ~JoinNode() = default;
+
 };
 
 };  // namespace komfydb::execution::logical_plan

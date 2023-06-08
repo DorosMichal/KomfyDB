@@ -1,13 +1,14 @@
 #ifndef __TABLE_STATS_H__
 #define __TABLE_STATS_H__
 
+#include <memory>
 #include "absl/container/flat_hash_map.h"
 #include "absl/status/statusor.h"
 
-#include "komfydb/storage/table_iterator.h"
 #include "komfydb/common/field.h"
 #include "komfydb/execution/op.h"
 #include "komfydb/optimizer/histogram.h"
+#include "komfydb/storage/table_iterator.h"
 
 namespace {
 
@@ -15,7 +16,7 @@ using komfydb::common::Field;
 using komfydb::storage::BufferPool;
 using komfydb::storage::Catalog;
 
-struct FilterInformation{
+struct FilterInformation {
   double compound_selectivity;
   bool filter_present;
 };
@@ -26,7 +27,8 @@ namespace komfydb::optimizer {
 
 class TableStats {
  public:
-  static absl::StatusOr<TableStats> Create(int table_id, int io_cost_per_page, std::shared_ptr<Catalog> catalog,
+  static absl::StatusOr<std::shared_ptr<TableStats>> Create(
+      int table_id, int io_cost_per_page, std::shared_ptr<Catalog> catalog,
       std::shared_ptr<BufferPool> bufferpool);
 
   double EstimateScanCost();
@@ -50,7 +52,8 @@ class TableStats {
   void SetCompoundSelectivity(double multiplier);
 
  private:
-  TableStats(int table_id, int io_cost_per_page) : table_id(table_id), io_cost_per_page(io_cost_per_page) {}
+  TableStats(int table_id, int io_cost_per_page)
+      : table_id(table_id), io_cost_per_page(io_cost_per_page) {}
   int table_id;
   int io_cost_per_page;
   int number_of_tuples;
@@ -63,7 +66,8 @@ class TableStats {
   FilterInformation filter_information;
 };
 
-using TableStatsMap = absl::flat_hash_map<std::string, TableStats>;
+using TableStatsMap =
+    absl::flat_hash_map<std::string, std::shared_ptr<TableStats>>;
 
 };  // namespace komfydb::optimizer
 

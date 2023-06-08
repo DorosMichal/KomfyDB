@@ -5,7 +5,11 @@ cc_library(
   deps = [
     "//komfydb/execution:op",
     "//komfydb/common:fields",
-    "@com_google_absl//absl/status:statusor"
+    "//komfydb/storage",
+    "//komfydb/execution:execution",
+    ":histogram",
+    "@com_google_absl//absl/status:statusor",
+    "@com_github_google_glog//:glog",
   ],
   visibility = ["//visibility:public"],
 )
@@ -19,10 +23,14 @@ cc_library(
   hdrs = [
     "int_histogram.h",
     "string_histogram.h",
+    "histogram.h",
   ],
   deps = [
     "//komfydb/execution:op",
+    "//komfydb/common:fields",
+    "//komfydb/storage",
     "@com_google_absl//absl/status:statusor",
+    "@com_github_google_glog//:glog",
   ],
   visibility = ["//visibility:public"],
 )
@@ -35,7 +43,8 @@ cc_library(
     "//komfydb/execution/logical_plan:nodes",
     "//komfydb/execution",
     "//komfydb/storage",
-    "@com_google_absl//absl/status:status",
+    "@com_google_absl//absl/status:statusor",
+    "@com_github_google_glog//:glog",
   ],
   visibility = ["//visibility:public"],
 )

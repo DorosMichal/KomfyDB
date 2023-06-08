@@ -6,39 +6,36 @@
 #include "komfydb/storage/record.h"
 
 namespace {
-  using komfydb::storage::Record;
-  using komfydb::common::Field;
-};
+using komfydb::common::Field;
+using komfydb::storage::Record;
 
+};  // namespace
 
 namespace komfydb::optimizer {
 
-const int N_BINS = 20;
-
 class IntHistogram : public Histogram {
  public:
-  IntHistogram(std::vector<std::unique_ptr<Record>> &records, int field_index);
+  IntHistogram(std::vector<std::unique_ptr<Record>>& records, int field_index);
 
   void AddValue(int v);
 
-  double EstimateSelectivity(execution::Op op, Field* v);
+  double EstimateSelectivity(execution::Op op, Field* v) override;
 
-  double AverageSelecitivty();
+  double AverageSelectivity() override;
 
-  void Dump();
+  void Dump() override;
 
  private:
+  const static int NUM_BINS = 20;
   int number_of_values;
-  int ranges[N_BINS + 1];
-  int bins[N_BINS];
+  int ranges[NUM_BINS + 1];
+  int bins[NUM_BINS];
 
   int GetBin(int value);
 
   int GetMin();
 
   int GetMax();
-
-
 };
 
 };  // namespace komfydb::optimizer
