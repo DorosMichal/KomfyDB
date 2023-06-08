@@ -47,10 +47,10 @@ absl::StatusOr<std::shared_ptr<TableStats>> TableStats::Create(
     ASSIGN_OR_RETURN(Type field_type, tuple_desc->GetFieldType(i));
     if (field_type.GetValue() == Type::Value::INT) {
       table_stats->histograms.push_back(
-          std::move(std::make_unique<IntHistogram>(records, i)));
+          std::make_unique<IntHistogram>(records, i));
     } else {
       table_stats->histograms.push_back(
-          std::move(std::make_unique<StringHistogram>(records, i)));
+          std::make_unique<StringHistogram>(records, i));
     }
   }
 
